@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>LSPD Bußgeldrechner - Professional</title>
+<title>LSPD Bußgeldrechner - Full List</title>
 <style>
   :root {
     --bg-black: #080808;
@@ -13,6 +13,11 @@
     --switch-red: #e63946;
     --switch-green: #2ecc71;
     --input-bg: #0a0a0a;
+  }
+
+  * {
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   body { margin: 0; background: var(--bg-black); color: var(--text-white); font-family: 'Segoe UI', sans-serif; overflow: hidden; }
@@ -59,27 +64,28 @@
   .res-title { text-align: center; font-size: 26px; font-weight: bold; margin-bottom: 5px; }
   .res-sub { font-size: 11px; color: var(--text-gray); text-align: center; font-style: italic; margin-bottom: 20px; }
 
-  /* Neue Grund Anzeige ohne Kasten */
-  .res-line { font-size: 15px; margin-bottom: 6px; color: var(--text-gray); line-height: 1.4; }
+  .res-line { font-size: 15px; margin-bottom: 8px; color: var(--text-gray); line-height: 1.4; }
   .res-line span { color: white; font-weight: bold; }
-  .grund-display { color: var(--text-gray); font-weight: normal; word-break: break-word; }
+
+  .grund-display { 
+    color: var(--text-white); 
+    font-weight: normal; 
+    word-break: break-word; 
+    font-size: 14px;
+    user-select: text !important; 
+    -webkit-user-select: text !important;
+    cursor: text;
+  }
 
   .info-header { font-weight: bold; margin: 20px 0 10px; font-size: 15px; color: white; }
 
-  /* Switch Style */
   .switch-row { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; cursor: pointer; }
-  .dot { 
-    width: 20px; height: 20px; 
-    background: var(--switch-red); 
-    border-radius: 50%; 
-    flex-shrink: 0; 
-    transition: 0.3s;
-  }
+  .dot { width: 20px; height: 20px; background: var(--switch-red); border-radius: 50%; flex-shrink: 0; transition: 0.3s; }
   .dot.active { background: var(--switch-green); }
   .switch-text b { font-size: 14px; color: white; }
 
   .input-area { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
-  .field { background: var(--input-bg); border: 1px solid #222; color: #fff; padding: 10px; border-radius: 5px; font-size: 13px; width: 100%; box-sizing: border-box; }
+  .field { background: var(--input-bg); border: 1px solid #222; color: #fff; padding: 10px; border-radius: 5px; font-size: 13px; width: 100%; box-sizing: border-box; user-select: text; }
   textarea.field { height: 70px; resize: none; }
 
   .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
@@ -88,7 +94,7 @@
   .selected-row { border-left: 3px solid var(--accent-orange); background: #1d1d1d !important; }
 </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
 <div class="main-container">
   <section class="penalty-list">
@@ -102,7 +108,7 @@
 
   <aside class="result-sidebar">
     <div class="res-title">Ergebnis</div>
-    <div class="res-sub">Indem man die grauen Wanteds anklickt kann man auswählen ob diese hinzugefügt werden.</div>
+    <div class="res-sub">Klicke links auf die Tatbestände.</div>
 
     <div class="res-line">Geldstrafe: <span id="outM">$0</span></div>
     <div class="res-line">Wanteds: <span id="outW">0</span></div>
@@ -111,7 +117,7 @@
 
     <div class="info-header">Optionen:</div>
 
-    <div class="switch-row" id="longReasonSwitch" onclick="toggleSwitch(this)">
+    <div class="switch-row" onclick="toggleSwitch(this)">
       <div class="dot"></div>
       <div class="switch-text"><b>Langer Grund</b></div>
     </div>
@@ -209,8 +215,8 @@ const laws = [
     {p:"BDG", n:"Dienstvergehen", m:50000, w:0, g:5}
   ]}
 ];
-let curM = 0; let curW = 0;
-let activeParas = [];
+
+let curM = 0; let curW = 0; let activeParas = [];
 
 function render() {
   const b = document.getElementById('tableBody');
@@ -233,44 +239,35 @@ function calc(m, w, p, e) {
   updateDisplay();
 }
 
-function toggleSwitch(el) {
-  el.querySelector('.dot').classList.toggle('active');
-  updateDisplay();
-}
+function toggleSwitch(el) { el.querySelector('.dot').classList.toggle('active'); updateDisplay(); }
 
 function updateDisplay() {
   document.getElementById('outM').innerText = '$' + curM.toLocaleString();
   document.getElementById('outW').innerText = curW;
-  
   const now = new Date();
   const dateStr = now.toLocaleDateString('de-DE');
   const timeStr = now.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'});
-  
   const plate = document.getElementById('inPlate').value;
   const blitzer = document.getElementById('inBlitzer').value;
-  
   let grund = "";
   if(activeParas.length > 0) {
     grund = `${dateStr} ${timeStr} | ${activeParas.join(", ")}`;
     if(plate) grund += ` - ${plate}`;
     if(blitzer) grund += ` - ${blitzer}`;
   }
-  
   document.getElementById('outGrund').innerText = grund;
 }
 
-function updateCharCounter(e) {
-  document.getElementById('outChars').innerText = e.value.length + "/150";
-}
+function updateCharCounter(e) { document.getElementById('outChars').innerText = e.value.length + "/150"; }
 
 function copyGrund() {
-  const text = document.getElementById('outGrund').innerText;
-  if(text) {
-    navigator.clipboard.writeText(text);
-    alert("Grund kopiert!");
+  const t = document.getElementById('outGrund').innerText;
+  if(t) {
+    const d = document.createElement("textarea"); document.body.appendChild(d);
+    d.value = t; d.select(); document.execCommand("copy");
+    document.body.removeChild(d); alert("Grund kopiert!");
   }
 }
-
 render();
 </script>
 </body>
