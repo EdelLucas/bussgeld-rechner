@@ -16,7 +16,6 @@
     --input-bg: #0a0a0a;
   }
 
-  /* Markieren überall verbieten */
   * { user-select: none; -webkit-user-select: none; }
 
   body { margin: 0; background: var(--bg-black); color: var(--text-white); font-family: 'Segoe UI', sans-serif; overflow: hidden; }
@@ -40,7 +39,6 @@
 
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
   
-  /* Header Design */
   th { 
     text-align: center; 
     padding: 15px; 
@@ -49,10 +47,8 @@
     top: 0; 
     background: var(--bg-card); 
     z-index: 10; 
-    color: var(--text-white);
   }
 
-  /* Größere Kästchen & Mittige Schrift */
   td { 
     padding: 18px 10px; 
     border-bottom: 1px solid #1a1a1a; 
@@ -68,19 +64,17 @@
     font-weight: bold; 
     padding: 30px 0 15px 0; 
     font-size: 18px; 
-    border-bottom: none; 
     pointer-events: none; 
   }
 
-  .col-para { color: var(--accent-orange); font-weight: bold; width: 15%; }
-  .col-name { color: var(--text-gray); width: 45%; }
-  .col-stars { width: 20%; font-size: 16px; white-space: nowrap; }
-  .col-money { color: var(--text-gray); width: 20%; }
+  .col-para { color: var(--accent-orange); font-weight: bold; }
+  .col-name { color: var(--text-gray); }
+  .col-stars { font-size: 16px; white-space: nowrap; }
+  .col-money { color: var(--text-gray); }
 
   .star-gold { color: var(--accent-orange); }
   .star-gray { color: #444; }
 
-  /* Sidebar Design */
   .result-sidebar {
     background: #151515;
     border-radius: 15px;
@@ -91,40 +85,32 @@
 
   .res-title { text-align: center; font-size: 26px; font-weight: bold; margin-bottom: 5px; }
   .res-sub { font-size: 11px; color: var(--text-gray); text-align: center; font-style: italic; margin-bottom: 20px; }
-  .res-line { font-size: 15px; margin-bottom: 8px; color: var(--text-gray); line-height: 1.4; }
-  .res-line span { color: white; font-weight: bold; }
+  
+  .res-line { font-size: 15px; margin-bottom: 12px; color: var(--text-gray); line-height: 1.4; }
+  .res-line b { color: white; }
 
-  /* Grund Feld - Einzige Ausnahme für Kopieren */
-  .grund-display { 
-    display: block;
-    margin-top: 5px;
+  /* Grund Design: Kein Kasten, klickbar zum Kopieren */
+  .grund-clickable { 
     color: var(--text-white); 
     font-weight: normal; 
-    word-break: break-word; 
-    font-size: 14px;
-    padding: 10px;
-    background: #0d0d0d;
-    border-radius: 5px;
-    user-select: text !important; 
-    -webkit-user-select: text !important;
-    cursor: text;
+    cursor: copy;
+    transition: color 0.2s;
+    word-break: break-word;
+    display: inline;
   }
+  .grund-clickable:hover { color: var(--accent-orange); text-decoration: underline; }
+  .copy-success { color: var(--switch-green) !important; }
 
   /* Toggle Switch */
   .switch-row { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; cursor: pointer; }
-  .switch-pill {
-    width: 44px; height: 22px; background: var(--switch-bg); border-radius: 11px; position: relative; flex-shrink: 0;
-  }
-  .switch-circle {
-    width: 18px; height: 18px; background: var(--switch-red); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s;
-  }
-  .active .switch-pill { background: #333; }
+  .switch-pill { width: 44px; height: 22px; background: var(--switch-bg); border-radius: 11px; position: relative; }
+  .switch-circle { width: 18px; height: 18px; background: var(--switch-red); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s; }
   .active .switch-circle { transform: translateX(22px); background: var(--switch-green); }
 
   .input-area { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
-  .field { background: var(--input-bg); border: 1px solid #222; color: #fff; padding: 12px; border-radius: 5px; font-size: 13px; width: 100%; box-sizing: border-box; user-select: text; }
+  .field { background: var(--input-bg); border: 1px solid #222; color: #fff; padding: 12px; border-radius: 5px; width: 100%; box-sizing: border-box; user-select: text; }
   
-  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+  .btn-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; }
   .btn { background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 5px; font-size: 11px; cursor: pointer; text-align: center; text-transform: uppercase; font-weight: bold; }
   
   .selected-row { border-left: 4px solid var(--accent-orange); background: #1d1d1d !important; }
@@ -144,12 +130,12 @@
 
   <aside class="result-sidebar">
     <div class="res-title">Ergebnis</div>
-    <div class="res-sub">Klicke links auf die Tatbestände.</div>
+    <div class="res-sub">Klicke auf den Grund zum Kopieren.</div>
 
-    <div class="res-line">Geldstrafe: <span id="outM">$0</span></div>
-    <div class="res-line">Wanteds: <span id="outW">0</span></div>
-    <div class="res-line">Grund: <span id="outGrund" class="grund-display"></span></div>
-    <div class="res-line">Zeichen: <span id="outChars">0/150</span></div>
+    <div class="res-line"><b>Geldstrafe:</b> <span id="outM">$0</span></div>
+    <div class="res-line"><b>Wanteds:</b> <span id="outW">0</span></div>
+    <div class="res-line"><b>Grund:</b> <span id="outGrund" class="grund-clickable" onclick="copyGrundText()"></span></div>
+    <div class="res-line"><b>Zeichen:</b> <span id="outChars">0/150</span></div>
 
     <div class="switch-row" onclick="toggleSwitch(this)">
       <div class="switch-pill"><div class="switch-circle"></div></div>
@@ -163,8 +149,7 @@
     </div>
 
     <div class="btn-grid">
-      <div class="btn" onclick="copyGrund()">Grund Kopieren</div>
-      <div class="btn" onclick="location.reload()">Reset</div>
+      <div class="btn" onclick="location.reload()">Rechner zurücksetzen</div>
     </div>
   </aside>
 </div>
@@ -280,18 +265,28 @@ function updateDisplay() {
     if(blitzer) grund += ` - ${blitzer}`;
   }
   document.getElementById('outGrund').innerText = grund;
+  document.getElementById('outChars').innerText = grund.length + "/150";
 }
 
-function updateCharCounter(e) { document.getElementById('outChars').innerText = e.value.length + "/150"; }
+function updateCharCounter(e) { /* Nur für Notizfeld falls nötig */ }
 
-function copyGrund() {
-  const t = document.getElementById('outGrund').innerText;
-  if(t) {
-    const d = document.createElement("textarea"); document.body.appendChild(d);
-    d.value = t; d.select(); document.execCommand("copy");
-    document.body.removeChild(d); alert("Grund kopiert!");
+function copyGrundText() {
+  const text = document.getElementById('outGrund').innerText;
+  if(text) {
+    const el = document.createElement('textarea');
+    el.value = text;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    
+    // Visuelles Feedback
+    const g = document.getElementById('outGrund');
+    g.classList.add('copy-success');
+    setTimeout(() => g.classList.remove('copy-success'), 1000);
   }
 }
+
 render();
 </script>
 </body>
