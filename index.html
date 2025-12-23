@@ -2,17 +2,17 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>LSPD Bußgeldrechner - Pro</title>
+<title>LSPD Bußgeldrechner - Professional</title>
 <style>
   :root {
     --bg-black: #080808;
     --bg-card: #121212;
     --accent-orange: #d18a2c;
     --text-white: #ffffff;
-    --text-gray: #888888;
-    --switch-red: #ff4d4d;
+    --text-gray: #a0a0a0;
+    --switch-red: #e63946;
     --switch-green: #2ecc71;
-    --input-bg: #050505;
+    --input-bg: #0a0a0a;
   }
 
   body { margin: 0; background: var(--bg-black); color: var(--text-white); font-family: 'Segoe UI', sans-serif; overflow: hidden; }
@@ -34,12 +34,12 @@
     border: 1px solid #222;
   }
 
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th { text-align: left; padding: 10px; border-bottom: 1px solid #333; position: sticky; top: 0; background: var(--bg-card); z-index: 10; }
   td { padding: 8px 10px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
   tr:hover { background: #1a1a1a; }
 
-  .category-row { color: var(--accent-orange); text-align: center; font-weight: bold; padding: 20px 0 10px 0; font-size: 15px; border-bottom: none; pointer-events: none; }
+  .category-row { color: var(--accent-orange); text-align: center; font-weight: bold; padding: 25px 0 10px 0; font-size: 16px; border-bottom: none; pointer-events: none; }
   .col-para { color: var(--accent-orange); width: 110px; font-weight: bold; }
   .col-name { color: var(--text-gray); }
   .col-stars { text-align: center; width: 110px; font-size: 14px; white-space: nowrap; }
@@ -56,46 +56,36 @@
     overflow-y: auto;
   }
 
-  .res-title { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 5px; }
+  .res-title { text-align: center; font-size: 26px; font-weight: bold; margin-bottom: 5px; }
   .res-sub { font-size: 11px; color: var(--text-gray); text-align: center; font-style: italic; margin-bottom: 20px; }
 
-  .res-line { font-size: 14px; margin-bottom: 6px; color: var(--text-gray); }
+  /* Neue Grund Anzeige ohne Kasten */
+  .res-line { font-size: 15px; margin-bottom: 6px; color: var(--text-gray); line-height: 1.4; }
   .res-line span { color: white; font-weight: bold; }
-  
-  /* Neuer Grund-Bereich */
-  #outGrund { 
-    background: #0a0a0a; 
-    padding: 8px; 
-    border-radius: 4px; 
-    border: 1px solid #222; 
-    font-size: 12px; 
-    min-height: 40px; 
-    word-break: break-all;
-    color: #bbb;
-    margin-top: 5px;
-  }
+  .grund-display { color: var(--text-gray); font-weight: normal; word-break: break-word; }
 
-  /* Neuer Switch Style */
+  .info-header { font-weight: bold; margin: 20px 0 10px; font-size: 15px; color: white; }
+
+  /* Switch Style */
   .switch-row { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; cursor: pointer; }
   .dot { 
-    width: 22px; 
-    height: 22px; 
+    width: 20px; height: 20px; 
     background: var(--switch-red); 
     border-radius: 50%; 
     flex-shrink: 0; 
-    transition: background 0.3s;
+    transition: 0.3s;
   }
   .dot.active { background: var(--switch-green); }
   .switch-text b { font-size: 14px; color: white; }
 
   .input-area { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
-  .field { background: var(--input-bg); border: 1px solid #222; color: #fff; padding: 10px; border-radius: 4px; font-size: 12px; width: 100%; box-sizing: border-box; }
-  textarea.field { height: 60px; resize: none; }
+  .field { background: var(--input-bg); border: 1px solid #222; color: #fff; padding: 10px; border-radius: 5px; font-size: 13px; width: 100%; box-sizing: border-box; }
+  textarea.field { height: 70px; resize: none; }
 
-  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
-  .btn { background: #000; border: 1px solid #333; color: white; padding: 10px; border-radius: 4px; font-size: 10px; cursor: pointer; text-align: center; text-transform: uppercase; }
+  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+  .btn { background: #000; border: 1px solid #333; color: white; padding: 10px; border-radius: 5px; font-size: 11px; cursor: pointer; text-align: center; text-transform: uppercase; font-weight: bold; }
   
-  .selected-row { border-left: 3px solid var(--accent-orange); background: #1a1a1a !important; }
+  .selected-row { border-left: 3px solid var(--accent-orange); background: #1d1d1d !important; }
 </style>
 </head>
 <body>
@@ -112,16 +102,16 @@
 
   <aside class="result-sidebar">
     <div class="res-title">Ergebnis</div>
-    <div class="res-sub">Klicke Paragrafen links an, um die Strafe zu berechnen.</div>
+    <div class="res-sub">Indem man die grauen Wanteds anklickt kann man auswählen ob diese hinzugefügt werden.</div>
 
     <div class="res-line">Geldstrafe: <span id="outM">$0</span></div>
     <div class="res-line">Wanteds: <span id="outW">0</span></div>
-    <div class="res-line">Grund: <div id="outGrund"></div></div>
-    <div class="res-line" style="margin-top:10px;">Zeichen: <span id="outChars">0/150</span></div>
+    <div class="res-line">Grund: <span id="outGrund" class="grund-display"></span></div>
+    <div class="res-line">Zeichen: <span id="outChars">0/150</span></div>
 
-    <div style="font-weight: bold; margin: 15px 0 10px; font-size: 14px;">Optionen:</div>
+    <div class="info-header">Optionen:</div>
 
-    <div class="switch-row" onclick="this.querySelector('.dot').classList.toggle('active')">
+    <div class="switch-row" id="longReasonSwitch" onclick="toggleSwitch(this)">
       <div class="dot"></div>
       <div class="switch-text"><b>Langer Grund</b></div>
     </div>
@@ -132,22 +122,22 @@
       <input type="text" class="field" placeholder="Systemwanteds">
       <select class="field"><option>TV-Abtransport auswählen</option></select>
       <input type="text" class="field" placeholder="TV Abtransport Beauftragter">
-      <textarea class="field" placeholder="Schreibe deine Notizen hier rein..." oninput="updateChars(this)"></textarea>
+      <textarea class="field" placeholder="Schreibe deine Notizen hier rein..." oninput="updateCharCounter(this)"></textarea>
     </div>
 
-    <div class="switch-row" style="margin-top:15px" onclick="this.querySelector('.dot').classList.toggle('active')">
+    <div class="switch-row" style="margin-top:15px" onclick="toggleSwitch(this)">
       <div class="dot"></div>
       <div class="switch-text"><b>Reue</b></div>
     </div>
 
-    <div class="switch-row" onclick="this.querySelector('.dot').classList.toggle('active')">
+    <div class="switch-row" onclick="toggleSwitch(this)">
       <div class="dot"></div>
       <div class="switch-text"><b>Systemfehler</b></div>
     </div>
 
     <div class="btn-grid">
       <div class="btn">Rechte des TV</div>
-      <div class="btn" onclick="copyToClipboard()">Grund Kopieren</div>
+      <div class="btn" onclick="copyGrund()">Grund Kopieren</div>
       <div class="btn">Anwaltsregister</div>
       <div class="btn" onclick="location.reload()">Reset</div>
     </div>
@@ -159,19 +149,66 @@ const laws = [
   { cat: "Straßenverkehrsordnung (StVO)", items: [
     {p:"StVO §2", n:"Gefährdung anderer Verkehrsteilnehmer", m:10000, w:0, g:0},
     {p:"StVO §4", n:"Missachten von Rechtsfahrgebot", m:8000, w:0, g:0},
+    {p:"StVO §5", n:"Überschreiten der Fahrzeugkapazitäten", m:5000, w:0, g:0},
+    {p:"StVO §6", n:"Fahren mit demoliertem Fahrzeug", m:2000, w:0, g:0},
+    {p:"StVO §7", n:"Fahren ohne Licht (Dunkelheit, Wetter)", m:5000, w:0, g:0},
+    {p:"StVO §8", n:"Geschw. 10-40 km/h", m:5000, w:0, g:0},
+    {p:"StVO §8", n:"Geschw. 41-60 km/h", m:10000, w:0, g:0},
+    {p:"StVO §8", n:"Geschw. 61-100 km/h", m:15000, w:0, g:0},
     {p:"StVO §8", n:"Geschw. ab 101 km/h", m:20000, w:0, g:0},
-    {p:"StVO §24", n:"Fahrerflucht", m:10000, w:1, g:0}
+    {p:"StVO §9 Art. 3", n:"Fahren ohne gültige Zulassung", m:10000, w:0, g:0},
+    {p:"StVO §10 Art. 1", n:"Missachten Rechts vor Links", m:1000, w:0, g:0},
+    {p:"StVO §10 Art. 2", n:"Missachten von Verkehrsschildern", m:2000, w:0, g:0},
+    {p:"StVO §10 Art. 4", n:"Fahren ohne genügend Tankkapazität", m:10000, w:0, g:0},
+    {p:"StVO §10 Art. 6", n:"Nutzung Mobilgerät am Steuer", m:3000, w:0, g:0},
+    {p:"StVO §10 Art. 7", n:"Lärmbelästigung / Hupen", m:20000, w:0, g:0},
+    {p:"StVO §10 Art. 16", n:"Fahren entgegeng. Fahrtrichtung", m:30000, w:0, g:0},
+    {p:"StVO §12.1", n:"Falsch Parken / Halten", m:10000, w:0, g:0},
+    {p:"StVO §17", n:"Fahren im berauschten Zustand", m:10000, w:0, g:2},
+    {p:"StVO §20", n:"Fahren ohne Gurt", m:5000, w:0, g:0},
+    {p:"StVO §24", n:"Fahrerflucht", m:10000, w:1, g:0},
+    {p:"StVO §26", n:"Abschleppkosten", m:20000, w:0, g:0},
+    {p:"StVO §28", n:"Anti-Radar Sharing-Cars", m:30000, w:3, g:0}
   ]},
   { cat: "Waffengesetz (WaffG)", items: [
     {p:"WaffG §1", n:"Besitz legaler Waffen ohne Schein", m:10000, w:1, g:1},
-    {p:"WaffG §5.1", n:"Besitz illegaler Waffen", m:30000, w:3, g:0}
+    {p:"WaffG §5.1", n:"Besitz illegaler Waffen", m:30000, w:3, g:0},
+    {p:"WaffG §8.1", n:"Offenes Tragen einer Waffe", m:5000, w:1, g:0},
+    {p:"WaffG §11", n:"Ungesetzlicher Waffenhandel", m:25000, w:3, g:0}
+  ]},
+  { cat: "Betäubungsmittelgesetz (BtMG)", items: [
+    {p:"BtMG §2.1", n:"Drogenbesitz Klein", m:15000, w:0, g:1},
+    {p:"BtMG §2.1", n:"Drogenbesitz Groß (50+)", m:30000, w:2, g:0},
+    {p:"BtMG §2.2", n:"Drogenhandel", m:30000, w:3, g:0},
+    {p:"BtMG §2.1", n:"Drogen Herstellung", m:30000, w:3, g:0}
   ]},
   { cat: "Umgang mit Beamten (StGB)", items: [
     {p:"StGB §15.1", n:"Nichtbeachten amtl. Anweisung", m:10000, w:0, g:2},
-    {p:"StGB §15.5", n:"Widerstand gegen Vollstreckungsbeamte", m:20000, w:2, g:0}
+    {p:"StGB §15.5", n:"Widerstand gegen Vollstreckungsbeamte", m:20000, w:2, g:0},
+    {p:"StGB §16", n:"Befreiung von Gefangenen", m:30000, w:3, g:2},
+    {p:"StGB §24", n:"Amtsanmaßung", m:25000, w:2, g:1}
+  ]},
+  { cat: "Psychische & Physische Integrität (StGB)", items: [
+    {p:"StGB §3.1", n:"Beleidigung", m:10000, w:0, g:1},
+    {p:"StGB §4.1", n:"Mord / Mordversuch", m:30000, w:4, g:0},
+    {p:"StGB §4.2", n:"Körperverletzung", m:15000, w:2, g:0},
+    {p:"StGB §4.3", n:"Körperverletzung mit Todesfolge", m:20000, w:3, g:0},
+    {p:"StGB §27", n:"Geiselnahme", m:30000, w:3, g:0},
+    {p:"StGB §42", n:"Erpressung", m:45000, w:3, g:0}
+  ]},
+  { cat: "Wirtschaftskriminalität (StGB)", items: [
+    {p:"StGB §7", n:"Fahrzeug Diebstahl", m:10000, w:2, g:0},
+    {p:"StGB §11", n:"Raub", m:25000, w:3, g:0},
+    {p:"StGB §12.1", n:"Ammu Rob / Geschäfts Raub", m:35000, w:2, g:0},
+    {p:"StGB §41.1", n:"Besitz staatl. Eigentum", m:50000, w:3, g:0}
+  ]},
+  { cat: "Sperrzonen & Sonstiges", items: [
+    {p:"StGB §18", n:"Betreten Militärgelände", m:50000, w:5, g:0},
+    {p:"StGB §25", n:"Terrorismus", m:25000, w:3, g:0},
+    {p:"§6 StPO", n:"Bußgelder nicht bezahlt", m:0, w:5, g:0},
+    {p:"BDG", n:"Dienstvergehen", m:50000, w:0, g:5}
   ]}
 ];
-
 let curM = 0; let curW = 0;
 let activeParas = [];
 
@@ -189,12 +226,15 @@ function render() {
 function calc(m, w, p, e) {
   e.classList.toggle('selected-row');
   if (e.classList.contains('selected-row')) {
-    curM += m; curW += w;
-    activeParas.push(p);
+    curM += m; curW += w; activeParas.push(p);
   } else {
-    curM -= m; curW -= w;
-    activeParas = activeParas.filter(item => item !== p);
+    curM -= m; curW -= w; activeParas = activeParas.filter(x => x !== p);
   }
+  updateDisplay();
+}
+
+function toggleSwitch(el) {
+  el.querySelector('.dot').classList.toggle('active');
   updateDisplay();
 }
 
@@ -209,22 +249,26 @@ function updateDisplay() {
   const plate = document.getElementById('inPlate').value;
   const blitzer = document.getElementById('inBlitzer').value;
   
-  let grund = `${dateStr} ${timeStr} | ${activeParas.join(", ")}`;
-  if(plate) grund += ` - ${plate}`;
-  if(blitzer) grund += ` - ${blitzer}`;
+  let grund = "";
+  if(activeParas.length > 0) {
+    grund = `${dateStr} ${timeStr} | ${activeParas.join(", ")}`;
+    if(plate) grund += ` - ${plate}`;
+    if(blitzer) grund += ` - ${blitzer}`;
+  }
   
-  document.getElementById('outGrund').innerText = activeParas.length > 0 ? grund : "";
+  document.getElementById('outGrund').innerText = grund;
 }
 
-function updateChars(e) {
+function updateCharCounter(e) {
   document.getElementById('outChars').innerText = e.value.length + "/150";
 }
 
-function copyToClipboard() {
+function copyGrund() {
   const text = document.getElementById('outGrund').innerText;
-  if(!text) return;
-  navigator.clipboard.writeText(text);
-  alert("Grund kopiert!");
+  if(text) {
+    navigator.clipboard.writeText(text);
+    alert("Grund kopiert!");
+  }
 }
 
 render();
