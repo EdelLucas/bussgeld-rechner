@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>LSPD Bußgeldrechner - Professional Pink</title>
+<title>LSPD Bußgeldrechner - Stacked Edition</title>
 <style>
   :root {
     --bg-black: #080808;
@@ -31,7 +31,7 @@
 
   .main-container {
     display: grid;
-    grid-template-columns: 1fr 380px; /* Sidebar etwas schmaler */
+    grid-template-columns: 1fr 400px;
     gap: 20px;
     width: 98vw;
     height: 95vh;
@@ -47,32 +47,15 @@
   }
 
   table { width: 100%; border-collapse: collapse; font-size: 16px; }
+  th { padding: 15px; border-bottom: 2px solid #333; position: sticky; top: 0; background: var(--bg-card); z-index: 10; }
+  td { padding: 12px 10px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
   
-  th { 
-    padding: 15px; 
-    border-bottom: 2px solid #333; 
-    position: sticky; 
-    top: 0; 
-    background: var(--bg-card); 
-    z-index: 10; 
-    font-size: 18px;
-  }
-
-  td { padding: 15px 10px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
-  
-  .category-row { 
-    color: var(--accent-pink); 
-    font-weight: bold; 
-    padding: 30px 0 10px 0; 
-    font-size: 20px; 
-    pointer-events: none; 
-  }
-
+  .category-row { color: var(--accent-pink); font-weight: bold; padding: 25px 0 10px 0; font-size: 20px; pointer-events: none; }
   .col-para { color: var(--accent-pink); font-weight: bold; }
   .star-gold { color: var(--accent-pink); }
   .star-gray { color: #444; }
 
-  /* Sidebar kompakter */
+  /* Sidebar Design */
   .result-sidebar {
     background: #151515;
     border-radius: 15px;
@@ -85,40 +68,42 @@
   }
 
   .res-title { font-size: 24px; font-weight: bold; margin-bottom: 5px; color: var(--accent-pink); }
-  .res-sub { font-size: 12px; color: var(--text-gray); font-style: italic; margin-bottom: 15px; }
+  .res-sub { font-size: 11px; color: var(--text-gray); font-style: italic; margin-bottom: 15px; }
   
-  .res-line { font-size: 16px; margin-bottom: 12px; color: var(--text-gray); width: 100%; }
-  .res-line b { color: white; display: block; margin-bottom: 2px; font-size: 14px; text-transform: uppercase; }
+  .res-line { font-size: 16px; margin-bottom: 10px; color: var(--text-gray); width: 100%; }
+  .res-line b { color: white; display: block; margin-bottom: 2px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
 
   .grund-clickable { 
     color: var(--text-white); 
     cursor: copy;
     word-break: break-word;
     display: block;
-    min-height: 20px;
-    padding: 5px;
+    min-height: 18px;
+    padding: 2px;
+    font-size: 14px;
   }
   .copy-success { color: var(--switch-green) !important; font-weight: bold; }
 
-  /* Switches */
-  .switch-container { width: 100%; margin-bottom: 10px; }
-  .switch-row { display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; font-size: 14px; }
-  .switch-pill { width: 40px; height: 20px; background: var(--switch-bg); border-radius: 10px; position: relative; flex-shrink: 0; }
-  .switch-circle { width: 16px; height: 16px; background: var(--switch-red); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s; }
-  .active .switch-circle { transform: translateX(20px); background: var(--switch-green); }
+  /* Switches untereinander */
+  .switch-section { width: 100%; display: flex; flex-direction: column; gap: 15px; margin-top: 5px; }
+  .switch-container { width: 100%; }
+  .switch-row { display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer; font-size: 14px; }
+  .switch-pill { width: 38px; height: 19px; background: var(--switch-bg); border-radius: 10px; position: relative; flex-shrink: 0; }
+  .switch-circle { width: 15px; height: 15px; background: var(--switch-red); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s; }
+  .active .switch-circle { transform: translateX(19px); background: var(--switch-green); }
   
-  .info-text { font-size: 11px; color: var(--text-gray); margin-top: 4px; display: block; line-height: 1.2; }
+  .info-text { font-size: 10.5px; color: var(--text-gray); margin-top: 4px; display: block; line-height: 1.3; }
 
-  .input-area { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; width: 100%; }
+  .input-area { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; width: 100%; }
   .field { 
     background: var(--input-bg); border: 1px solid #222; color: #fff; padding: 10px; 
-    border-radius: 6px; width: 100%; font-size: 14px; text-align: center;
+    border-radius: 6px; width: 100%; font-size: 13px; text-align: center;
   }
   
-  .btn-grid { margin-top: auto; padding-top: 20px; width: 100%; }
+  .btn-grid { margin-top: auto; padding-top: 15px; width: 100%; }
   .btn { 
-    background: #000; border: 1px solid #333; color: white; padding: 12px; 
-    border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; width: 100%; 
+    background: #000; border: 1px solid #333; color: white; padding: 10px; 
+    border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: bold; width: 100%; text-transform: uppercase;
   }
   .btn:hover { border-color: var(--accent-pink); color: var(--accent-pink); }
   
@@ -146,25 +131,34 @@
     <div class="res-line"><b>Grund</b><span id="outGrund" class="grund-clickable" onclick="copyGrundText()"></span></div>
     <div class="res-line"><b>Zeichen</b><span id="outChars">0/150</span></div>
 
-    <div class="switch-container">
-      <div class="switch-row" id="swRechte" onclick="toggleSwitch(this)">
-        <div class="switch-pill"><div class="switch-circle"></div></div>
-        <span><b>Rechte vorgelesen</b></span>
+    <div class="switch-section">
+      <div class="switch-container">
+        <div class="switch-row" onclick="toggleSwitch(this)">
+          <div class="switch-pill"><div class="switch-circle"></div></div>
+          <span><b>Rechte vorgelesen</b></span>
+        </div>
       </div>
-    </div>
 
-    <div class="switch-container">
-      <div class="switch-row" id="swReue" onclick="toggleSwitch(this)">
-        <div class="switch-pill"><div class="switch-circle"></div></div>
-        <span><b>Reue zeigen</b></span>
+      <div class="switch-container">
+        <div class="switch-row" id="swReue" onclick="toggleSwitch(this)">
+          <div class="switch-pill"><div class="switch-circle"></div></div>
+          <span><b>Reue zeigen</b></span>
+        </div>
+        <span class="info-text">(Entfernt 2 Wanteds, 1 Wanted muss verbleiben gemäß StBG §35 - Reue)</span>
       </div>
-      <span class="info-text">(Entfernt 2 Wanteds, 1 Wanted muss verbleiben gemäß StBG §35 - Reue)</span>
+
+      <div class="switch-container">
+        <div class="switch-row" onclick="toggleSwitch(this)">
+          <div class="switch-pill"><div class="switch-circle"></div></div>
+          <span><b>Systemfehler</b></span>
+        </div>
+      </div>
     </div>
 
     <div class="input-area">
       <input type="text" class="field" placeholder="Kennzeichen" id="inPlate" oninput="updateDisplay()">
       <input type="text" class="field" placeholder="Blitzerort" id="inBlitzer" oninput="updateDisplay()">
-      <textarea class="field" style="height: 50px; resize: none;" placeholder="Notizen..." id="inNote" oninput="updateDisplay()"></textarea>
+      <textarea class="field" style="height: 45px; resize: none;" placeholder="Notizen..." id="inNote" oninput="updateDisplay()"></textarea>
     </div>
 
     <div class="btn-grid">
@@ -177,13 +171,65 @@
 const laws = [
   { cat: "Straßenverkehrsordnung (StVO)", items: [
     {p:"StVO §2", n:"Gefährdung anderer Verkehrsteilnehmer", m:10000, w:0, g:0},
+    {p:"StVO §4", n:"Missachten von Rechtsfahrgebot", m:8000, w:0, g:0},
+    {p:"StVO §5", n:"Überschreiten der Fahrzeugkapazitäten", m:5000, w:0, g:0},
+    {p:"StVO §6", n:"Fahren mit demoliertem Fahrzeug", m:2000, w:0, g:0},
+    {p:"StVO §7", n:"Fahren ohne Licht (Dunkelheit, Wetter)", m:5000, w:0, g:0},
+    {p:"StVO §8", n:"Geschw. 10-40 km/h", m:5000, w:0, g:0},
+    {p:"StVO §8", n:"Geschw. 41-60 km/h", m:10000, w:0, g:0},
+    {p:"StVO §8", n:"Geschw. 61-100 km/h", m:15000, w:0, g:0},
     {p:"StVO §8", n:"Geschw. ab 101 km/h", m:20000, w:0, g:0},
+    {p:"StVO §9 Art. 3", n:"Fahren ohne gültige Zulassung", m:10000, w:0, g:0},
+    {p:"StVO §10 Art. 1", n:"Missachten Rechts vor Links", m:1000, w:0, g:0},
+    {p:"StVO §10 Art. 2", n:"Missachten von Verkehrsschildern", m:2000, w:0, g:0},
+    {p:"StVO §10 Art. 4", n:"Fahren ohne genügend Tankkapazität", m:10000, w:0, g:0},
+    {p:"StVO §10 Art. 6", n:"Nutzung Mobilgerät am Steuer", m:3000, w:0, g:0},
+    {p:"StVO §10 Art. 7", n:"Lärmbelästigung / Hupen", m:20000, w:0, g:0},
+    {p:"StVO §10 Art. 16", n:"Fahren entgegeng. Fahrtrichtung", m:30000, w:0, g:0},
+    {p:"StVO §12.1", n:"Falsch Parken / Halten", m:10000, w:0, g:0},
+    {p:"StVO §17", n:"Fahren im berauschten Zustand", m:10000, w:0, g:2},
+    {p:"StVO §20", n:"Fahren ohne Gurt", m:5000, w:0, g:0},
     {p:"StVO §24", n:"Fahrerflucht", m:10000, w:1, g:0},
+    {p:"StVO §26", n:"Abschleppkosten", m:20000, w:0, g:0},
     {p:"StVO §28", n:"Anti-Radar Sharing-Cars", m:30000, w:3, g:0}
+  ]},
+  { cat: "Waffengesetz (WaffG)", items: [
+    {p:"WaffG §1", n:"Besitz legaler Waffen ohne Schein", m:10000, w:1, g:1},
+    {p:"WaffG §5.1", n:"Besitz illegaler Waffen", m:30000, w:3, g:0},
+    {p:"WaffG §8.1", n:"Offenes Tragen einer Waffe", m:5000, w:1, g:0},
+    {p:"WaffG §11", n:"Ungesetzlicher Waffenhandel", m:25000, w:3, g:0}
+  ]},
+  { cat: "Betäubungsmittelgesetz (BtMG)", items: [
+    {p:"BtMG §2.1", n:"Drogenbesitz Klein", m:15000, w:0, g:1},
+    {p:"BtMG §2.1", n:"Drogenbesitz Groß (50+)", m:30000, w:2, g:0},
+    {p:"BtMG §2.2", n:"Drogenhandel", m:30000, w:3, g:0},
+    {p:"BtMG §2.1", n:"Drogen Herstellung", m:30000, w:3, g:0}
+  ]},
+  { cat: "Umgang mit Beamten (StGB)", items: [
+    {p:"StGB §15.1", n:"Nichtbeachten amtl. Anweisung", m:10000, w:0, g:2},
+    {p:"StGB §15.5", n:"Widerstand gegen Vollstreckungsbeamte", m:20000, w:2, g:0},
+    {p:"StGB §16", n:"Befreiung von Gefangenen", m:30000, w:3, g:2},
+    {p:"StGB §24", n:"Amtsanmaßung", m:25000, w:2, g:1}
   ]},
   { cat: "Psychische & Physische Integrität (StGB)", items: [
     {p:"StGB §3.1", n:"Beleidigung", m:10000, w:0, g:1},
-    {p:"StGB §4.1", n:"Mord / Mordversuch", m:30000, w:4, g:0}
+    {p:"StGB §4.1", n:"Mord / Mordversuch", m:30000, w:4, g:0},
+    {p:"StGB §4.2", n:"Körperverletzung", m:15000, w:2, g:0},
+    {p:"StGB §4.3", n:"Körperverletzung mit Todesfolge", m:20000, w:3, g:0},
+    {p:"StGB §27", n:"Geiselnahme", m:30000, w:3, g:0},
+    {p:"StGB §42", n:"Erpressung", m:45000, w:3, g:0}
+  ]},
+  { cat: "Wirtschaftskriminalität (StGB)", items: [
+    {p:"StGB §7", n:"Fahrzeug Diebstahl", m:10000, w:2, g:0},
+    {p:"StGB §11", n:"Raub", m:25000, w:3, g:0},
+    {p:"StGB §12.1", n:"Ammu Rob / Geschäfts Raub", m:35000, w:2, g:0},
+    {p:"StGB §41.1", n:"Besitz staatl. Eigentum", m:50000, w:3, g:0}
+  ]},
+  { cat: "Sperrzonen & Sonstiges", items: [
+    {p:"StGB §18", n:"Betreten Militärgelände", m:50000, w:5, g:0},
+    {p:"StGB §25", n:"Terrorismus", m:25000, w:3, g:0},
+    {p:"§6 StPO", n:"Bußgelder nicht bezahlt", m:0, w:5, g:0},
+    {p:"BDG", n:"Dienstvergehen", m:50000, w:0, g:5}
   ]}
 ];
 
@@ -214,7 +260,7 @@ function toggleSwitch(el) { el.classList.toggle('active'); updateDisplay(); }
 
 function updateDisplay() {
   let finalW = curW;
-  // Reue Logik: -2 Wanteds, aber mind. 1 muss bleiben (wenn vorher welche da waren)
+  // Reue Logik gemäß StBG §35
   if (document.getElementById('swReue').classList.contains('active') && finalW > 0) {
     finalW = Math.max(1, finalW - 2);
   }
@@ -222,20 +268,19 @@ function updateDisplay() {
   document.getElementById('outM').innerText = '$' + curM.toLocaleString();
   document.getElementById('outW').innerText = finalW;
   
-  const plate = document.getElementById('inPlate').value;
-  const blitzer = document.getElementById('inBlitzer').value;
-  
   let grund = "";
   if(activeParas.length > 0) {
     const now = new Date();
     const timeStr = `${now.toLocaleDateString('de-DE')} ${now.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})}`;
     grund = `${timeStr} | ${activeParas.join(", ")}`;
+    const plate = document.getElementById('inPlate').value;
+    const blitzer = document.getElementById('inBlitzer').value;
     if(plate) grund += ` - ${plate}`;
     if(blitzer) grund += ` - ${blitzer}`;
   }
   
   const outG = document.getElementById('outGrund');
-  outG.innerText = grund; // Jetzt leer wenn nichts gewählt
+  outG.innerText = grund;
   document.getElementById('outChars').innerText = grund.length + "/150";
 }
 
