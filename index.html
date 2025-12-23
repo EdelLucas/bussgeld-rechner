@@ -2,316 +2,227 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Bußgeldrechner – LSPD / Justiz</title>
+<title>Bußgeldrechner</title>
 <style>
   :root {
-    --bg-body: #0a0a0a;
-    --bg-panel: #111111;
-    --bg-input: #1a1a1a;
+    --bg-main: #0c0c0c;
+    --bg-card: #141414;
     --accent-orange: #d18a2c;
-    --accent-red: #e63946;
-    --accent-blue: #1d4ed8;
-    --text-main: #ffffff;
-    --text-dim: #999;
+    --text-dim: #a0a0a0;
+    --red-dot: #e63946;
+    --input-bg: #0a0a0a;
   }
 
   body {
     margin: 0;
-    background: var(--bg-body);
-    color: var(--text-main);
-    font-family: 'Segoe UI', Roboto, sans-serif;
-    overflow-x: hidden;
+    background: var(--bg-main);
+    color: white;
+    font-family: 'Segoe UI', sans-serif;
   }
 
-  /* Header & Search */
   header {
+    background: #000;
+    padding: 10px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 20px;
-    background: #000;
     border-bottom: 1px solid #222;
   }
 
-  .logo { font-weight: bold; font-size: 1.2rem; }
-  .search-input {
-    background: var(--bg-input);
-    border: 1px solid #333;
-    color: #fff;
-    padding: 6px 12px;
-    border-radius: 4px;
-    width: 250px;
-    font-size: 14px;
-  }
-
-  /* Layout */
-  .main-wrapper {
+  .container {
     display: grid;
-    grid-template-columns: 1fr 350px;
+    grid-template-columns: 1fr 400px;
     gap: 15px;
     padding: 20px;
   }
 
-  .content-panel {
-    background: var(--bg-panel);
-    border-radius: 12px;
-    padding: 20px;
+  /* Linke Seite (Tabelle) */
+  .list-section { background: var(--bg-card); padding: 15px; border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 10px; border-bottom: 1px solid #333; }
+  td { padding: 8px 10px; border-bottom: 1px solid #1a1a1a; }
+  .cat-title { color: var(--accent-orange); text-align: center; padding: 15px; font-weight: bold; }
+  .para { color: var(--accent-orange); width: 100px; }
+  .crime { color: var(--text-dim); }
+
+  /* RECHTE SEITE (EXAKT WIE SCREENSHOT) */
+  .ergebnis-panel {
+    background: #181818;
+    border-radius: 15px;
+    padding: 25px;
     border: 1px solid #222;
   }
 
-  /* Tabelle Styling */
-  table {
+  .panel-title { text-align: center; font-size: 26px; font-weight: bold; margin-bottom: 5px; }
+  .panel-info-text { font-size: 12px; color: var(--text-dim); text-align: center; font-style: italic; margin-bottom: 20px; }
+
+  .stat-row { font-size: 16px; margin-bottom: 4px; }
+  .stat-row span { font-weight: bold; }
+
+  .info-header { font-weight: bold; margin: 20px 0 10px 0; font-size: 15px; }
+
+  /* Schalter-Optionen */
+  .option-item { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 15px; cursor: pointer; }
+  .dot { width: 22px; height: 22px; background: var(--red-dot); border-radius: 50%; flex-shrink: 0; margin-top: 2px; }
+  .dot.inactive { background: #333; }
+  .option-content strong { display: block; font-size: 14px; margin-bottom: 2px; }
+  .option-content small { display: block; font-size: 11px; color: var(--text-dim); line-height: 1.3; }
+
+  /* Eingabefelder */
+  .input-group { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
+  .field {
+    background: var(--input-bg);
+    border: 1px solid #222;
+    color: #888;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 13px;
     width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
+    box-sizing: border-box;
   }
+  textarea.field { height: 90px; resize: none; }
+  select.field { appearance: none; color: white; }
 
-  th {
-    color: var(--text-main);
-    text-align: left;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #333;
-    font-weight: 600;
-  }
-
-  td { padding: 8px 5px; border-bottom: 1px solid #1a1a1a; }
-
-  .cat-header {
-    color: var(--accent-orange);
-    text-align: center;
-    padding: 20px 0 10px 0;
-    font-weight: bold;
-    font-size: 16px;
-  }
-
-  .para-col { color: var(--accent-orange); width: 120px; }
-  .name-col { color: var(--text-dim); }
-  .money-col { text-align: right; width: 100px; }
-  .jail-col { text-align: center; width: 100px; }
-
-  /* Sterne */
-  .stars { color: #444; cursor: pointer; font-size: 18px; }
-  .stars .active { color: var(--accent-orange); }
-
-  /* Right Sidebar Boxes */
-  .sidebar { display: flex; flex-direction: column; gap: 15px; }
-  
-  .box-container {
-    background: var(--bg-panel);
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid #222;
-    text-align: center;
-  }
-
-  .box-title { font-weight: bold; margin-bottom: 15px; font-size: 18px; }
-
-  .stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .stat-card {
-    border-radius: 8px;
-    padding: 15px 5px;
-    font-size: 20px;
-    font-weight: bold;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .stat-red { background: var(--accent-red); margin-bottom: 10px; }
-  .stat-blue { background: var(--accent-blue); }
-  .stat-dark { background: #000; color: var(--accent-blue); }
-  .stat-outline { background: #000; border: 1px solid #333; }
-
-  .summary-box {
+  /* Buttons unten */
+  .button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+  .btn-action {
     background: #000;
     border: 1px solid #333;
-    border-radius: 8px;
-    padding: 15px;
-    min-height: 80px;
-    margin-top: 10px;
-    color: #ccc;
-    font-size: 13px;
-    cursor: pointer;
-    text-align: left;
-  }
-
-  .btn-reset {
-    background: var(--accent-red);
     color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 8px;
-    font-weight: bold;
+    padding: 10px 5px;
+    border-radius: 5px;
+    font-size: 11px;
     cursor: pointer;
-    width: 100%;
-    margin-top: 20px;
+    text-align: center;
   }
+  .btn-action:hover { background: #111; }
 
-  .hint-text { color: #4caf50; font-size: 11px; margin-top: 5px; }
   .hidden { display: none; }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">Bußgeldrechner – LSPD / Justiz</div>
-  <input type="text" class="search-input" placeholder="Nach Tat oder § suchen..." id="searchInput">
+  <div style="font-weight: bold; font-size: 20px;">Bußgeldrechner</div>
+  <input type="text" placeholder="Nach Straftat oder Paragraph suchen..." style="background:#111; border:1px solid #333; color:white; padding:8px; border-radius:5px; width:250px;">
 </header>
 
-<main class="main-wrapper">
-  <section class="content-panel">
+<main class="container">
+  <section class="list-section">
     <table>
       <thead>
-        <tr>
-          <th>Paragraph</th>
-          <th>Strafbestand</th>
-          <th style="text-align: center;">Haftstrafe</th>
-          <th style="text-align: right;">Bußgeld</th>
-        </tr>
+        <tr><th>Paragraph</th><th>Strafbestand</th><th style="text-align:center">Haftstrafe</th><th style="text-align:right">Bußgeld</th></tr>
       </thead>
-      <tbody id="tableBody">
-        </tbody>
+      <tbody>
+        <tr><td colspan="4" class="cat-title">Straßenverkehrsordnung (StVO)</td></tr>
+        <tr onclick="toggleCrime('StVO §2', 10000, 0)">
+          <td class="para">StVO §2</td><td class="crime">Gefährdung anderer Verkehrsteilnehmer</td><td></td><td style="text-align:right">$10.000</td>
+        </tr>
+        <tr onclick="toggleCrime('StVO §24', 10000, 1)">
+          <td class="para">StVO §24</td><td class="crime">Fahrerflucht</td><td style="text-align:center; color:var(--accent-orange)">★</td><td style="text-align:right">$10.000</td>
+        </tr>
+      </tbody>
     </table>
   </section>
 
-  <aside class="sidebar">
-    <div class="box-container">
-      <div class="box-title">Gesamtsumme</div>
-      <div class="stats-grid">
-        <div class="stat-card stat-red" id="totalMoney">$0</div>
-        <div class="stat-card stat-outline" id="totalJail1">0 Min</div>
-        <div class="stat-card stat-blue" id="totalJail2">0 Min</div>
-        <div class="stat-card stat-dark" id="totalJail3">0 Min</div>
+  <aside class="ergebnis-panel">
+    <div class="panel-title">Ergebnis</div>
+    <div class="panel-info-text">Indem man die grauen Wanteds anklickt kann man auswählen ob diese hinzugefügt werden.</div>
+
+    <div class="stat-row">Geldstrafe: <span id="resMoney">$0</span></div>
+    <div class="stat-row">Wanteds: <span id="resWanteds">0</span></div>
+    <div class="stat-row">Grund:</div>
+    <div class="stat-row">Zeichen: <span id="charCount">0/150</span></div>
+
+    <div class="info-header">Information:</div>
+
+    <div class="option-item" onclick="toggleSwitch(this)">
+      <div class="dot"></div>
+      <div class="option-content">
+        <strong>Rechte und Tatvorwürfe vorgelesen</strong>
+        <small>(Bestätigt, dass die Rechte und Tatvorwürfe vorgelesen wurden. Notwendig zum Kopieren des Grundes)</small>
       </div>
     </div>
 
-    <div class="box-container">
-      <div class="box-title">Box Zusammenfassung<br><small style="font-size: 12px;">(Klicken zum Kopieren)</small></div>
-      <div class="summary-box" id="summaryBox">Wähle Tatbestände durch Sterne aus....</div>
-      <div id="copyHint" class="hint-text"></div>
-      <button class="btn-reset" onclick="resetAll()">Rechner zurücksetzen</button>
+    <div class="option-item" onclick="toggleSwitch(this)">
+      <div class="dot"></div>
+      <div class="option-content">
+        <strong>Nur höchstes Vergehen (Ein Grund)</strong>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <input type="text" class="field" placeholder="Kennzeichen" id="inputPlate">
+      <input type="text" class="field" placeholder="Blitzerort" id="inputBlitzer">
+      <input type="text" class="field" placeholder="Systemwanteds">
+      
+      <select class="field">
+        <option>TV-Abtransport auswählen</option>
+        <option>Streifenwagen</option>
+        <option>Gefangenentransporter</option>
+      </select>
+      
+      <input type="text" class="field" placeholder="TV Abtransport Beauftragter">
+      
+      <textarea class="field" placeholder="Schreibe deine Notizen hier rein..." oninput="updateChars(this)"></textarea>
+    </div>
+
+    <div class="option-item" style="margin-top:20px;" onclick="toggleSwitch(this)">
+      <div class="dot"></div>
+      <div class="option-content">
+        <strong>Reue</strong>
+        <small>(Entfernt 2 Wanteds, 1 Wanted muss verbleiben gemäß StGB §35 - Reue)</small>
+      </div>
+    </div>
+
+    <div class="option-item" onclick="toggleSwitch(this)">
+      <div class="dot"></div>
+      <div class="option-content">
+        <strong>Systemfehler</strong>
+      </div>
+    </div>
+
+    <div class="button-grid">
+      <div class="btn-action">Rechte des Tatverdächtigen</div>
+      <div class="btn-action">Bußgelder anzeigen</div>
+      <div class="btn-action">Anwaltsregister anzeigen</div>
+      <div class="btn-action" onclick="location.reload()">Zurücksetzen</div>
     </div>
   </aside>
 </main>
 
 <script>
-const data = [
-  {
-    category: "Straßenverkehrsordnung (StVO)",
-    items: [
-      { id:"s1", para:"StVO §8", name:"Geschwindigkeitsüberschreitung 10-40 km/h", base:8000 },
-      { id:"s2", para:"StVO §24", name:"Fahrerflucht", base:10000, perStar:5000, maxStars:2, jailPerStar:10 },
-      { id:"s3", para:"StVO §28", name:"Sharing-Cars mit Anti-Radar wurde nicht aus dem Verkehr gezogen", base:30000, perStar:10000, maxStars:3, jailPerStar:15 }
-    ]
-  },
-  {
-    category: "Psychische & Physische Integrität (StGB)",
-    items: [
-      { id:"g1", para:"StGB §3.1", name:"Beleidigung", base:10000, perStar:5000, maxStars:1, jailPerStar:5 },
-      { id:"g2", para:"StGB §2.2", name:"Belästigung", base:10000, perStar:5000, maxStars:1, jailPerStar:10 }
-    ]
+  let totalMoney = 0;
+  let totalWanteds = 0;
+  let selectedParagraphs = [];
+
+  function toggleCrime(para, price, wanteds) {
+    if(selectedParagraphs.includes(para)) {
+      selectedParagraphs = selectedParagraphs.filter(p => p !== para);
+      totalMoney -= price;
+      totalWanteds -= wanteds;
+    } else {
+      selectedParagraphs.push(para);
+      totalMoney += price;
+      totalWanteds += wanteds;
+    }
+    updateDisplay();
   }
-];
 
-let state = {};
-
-function render() {
-  const tbody = document.getElementById("tableBody");
-  tbody.innerHTML = "";
-
-  data.forEach(cat => {
-    // Kategorie Überschrift
-    const catRow = document.createElement("tr");
-    catRow.innerHTML = `<td colspan="4" class="cat-header">${cat.category}</td>`;
-    tbody.appendChild(catRow);
-
-    cat.items.forEach(item => {
-      state[item.id] = state[item.id] || { stars: 0 };
-      const row = document.createElement("tr");
-      row.className = "item-row";
-      row.dataset.search = (item.para + " " + item.name).toLowerCase();
-      
-      row.innerHTML = `
-        <td class="para-col">${item.para}</td>
-        <td class="name-col">${item.name}</td>
-        <td class="jail-col">${item.perStar ? renderStars(item.id, item.maxStars) : ""}</td>
-        <td class="money-col">$${(item.base + (state[item.id].stars * (item.perStar || 0))).toLocaleString()}</td>
-      `;
-      tbody.appendChild(row);
-    });
-  });
-}
-
-function renderStars(id, max) {
-  let html = `<div class="stars" onclick="setStar(event, '${id}')">`;
-  for(let i=1; i<=max; i++) {
-    const active = state[id].stars >= i ? "active" : "";
-    html += `<span data-val="${i}" class="${active}">${state[id].stars >= i ? '★' : '☆'}</span>`;
+  function updateDisplay() {
+    document.getElementById('resMoney').textContent = '$' + totalMoney.toLocaleString();
+    document.getElementById('resWanteds').textContent = totalWanteds;
   }
-  return html + `</div>`;
-}
 
-window.setStar = (e, id) => {
-  const val = parseInt(e.target.dataset.val);
-  if(!val) return;
-  state[id].stars = (state[id].stars === val) ? val - 1 : val;
-  render();
-  updateTotal();
-};
-
-function updateTotal() {
-  let money = 0;
-  let jail = 0;
-  let selected = [];
-
-  data.forEach(cat => {
-    cat.items.forEach(item => {
-      if(state[item.id].stars > 0) {
-        money += item.base + (state[item.id].stars * (item.perStar || 0));
-        jail += (state[item.id].stars * (item.jailPerStar || 0));
-        selected.push(item.para);
-      }
-    });
-  });
-
-  document.getElementById("totalMoney").textContent = `$${money.toLocaleString()}`;
-  document.getElementById("totalJail1").textContent = `${jail} Min`;
-  document.getElementById("totalJail2").textContent = `${jail} Min`;
-  document.getElementById("totalJail3").textContent = `${jail} Min`;
-
-  const box = document.getElementById("summaryBox");
-  if(selected.length > 0) {
-    box.textContent = `Tatbestände: ${selected.join(", ")} | Gesamt: $${money.toLocaleString()} | ${jail} Min Haft.`;
-  } else {
-    box.textContent = "Wähle Tatbestände durch Sterne aus....";
+  function toggleSwitch(el) {
+    const dot = el.querySelector('.dot');
+    dot.classList.toggle('inactive');
   }
-}
 
-document.getElementById("searchInput").oninput = (e) => {
-  const q = e.target.value.toLowerCase();
-  document.querySelectorAll(".item-row").forEach(row => {
-    row.classList.toggle("hidden", !row.dataset.search.includes(q));
-  });
-};
-
-document.getElementById("summaryBox").onclick = function() {
-  if(this.textContent.includes("Wähle")) return;
-  navigator.clipboard.writeText(this.textContent);
-  document.getElementById("copyHint").textContent = "✓ Kopiert!";
-  setTimeout(() => document.getElementById("copyHint").textContent = "", 2000);
-};
-
-function resetAll() {
-  Object.keys(state).forEach(k => state[k].stars = 0);
-  render();
-  updateTotal();
-}
-
-render();
+  function updateChars(el) {
+    document.getElementById('charCount').textContent = el.value.length + "/150";
+  }
 </script>
+
 </body>
 </html>
