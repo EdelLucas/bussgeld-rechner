@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>LSPD Bußgeldrechner - Full List</title>
+<title>LSPD Bußgeldrechner - Professional</title>
 <style>
   :root {
     --bg-black: #080808;
@@ -10,15 +10,14 @@
     --accent-orange: #d18a2c;
     --text-white: #ffffff;
     --text-gray: #a0a0a0;
+    --switch-bg: #2a2a2a;
     --switch-red: #e63946;
     --switch-green: #2ecc71;
     --input-bg: #0a0a0a;
   }
 
-  * {
-    user-select: none;
-    -webkit-user-select: none;
-  }
+  /* Markieren überall verbieten */
+  * { user-select: none; -webkit-user-select: none; }
 
   body { margin: 0; background: var(--bg-black); color: var(--text-white); font-family: 'Segoe UI', sans-serif; overflow: hidden; }
 
@@ -39,20 +38,49 @@
     border: 1px solid #222;
   }
 
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { text-align: left; padding: 10px; border-bottom: 1px solid #333; position: sticky; top: 0; background: var(--bg-card); z-index: 10; }
-  td { padding: 8px 10px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  
+  /* Header Design */
+  th { 
+    text-align: center; 
+    padding: 15px; 
+    border-bottom: 2px solid #333; 
+    position: sticky; 
+    top: 0; 
+    background: var(--bg-card); 
+    z-index: 10; 
+    color: var(--text-white);
+  }
+
+  /* Größere Kästchen & Mittige Schrift */
+  td { 
+    padding: 18px 10px; 
+    border-bottom: 1px solid #1a1a1a; 
+    cursor: pointer; 
+    text-align: center; 
+    vertical-align: middle;
+  }
+  
   tr:hover { background: #1a1a1a; }
 
-  .category-row { color: var(--accent-orange); text-align: center; font-weight: bold; padding: 25px 0 10px 0; font-size: 16px; border-bottom: none; pointer-events: none; }
-  .col-para { color: var(--accent-orange); width: 110px; font-weight: bold; }
-  .col-name { color: var(--text-gray); }
-  .col-stars { text-align: center; width: 110px; font-size: 14px; white-space: nowrap; }
-  .col-money { text-align: right; color: var(--text-gray); width: 120px; }
+  .category-row { 
+    color: var(--accent-orange); 
+    font-weight: bold; 
+    padding: 30px 0 15px 0; 
+    font-size: 18px; 
+    border-bottom: none; 
+    pointer-events: none; 
+  }
+
+  .col-para { color: var(--accent-orange); font-weight: bold; width: 15%; }
+  .col-name { color: var(--text-gray); width: 45%; }
+  .col-stars { width: 20%; font-size: 16px; white-space: nowrap; }
+  .col-money { color: var(--text-gray); width: 20%; }
 
   .star-gold { color: var(--accent-orange); }
   .star-gray { color: #444; }
 
+  /* Sidebar Design */
   .result-sidebar {
     background: #151515;
     border-radius: 15px;
@@ -63,35 +91,43 @@
 
   .res-title { text-align: center; font-size: 26px; font-weight: bold; margin-bottom: 5px; }
   .res-sub { font-size: 11px; color: var(--text-gray); text-align: center; font-style: italic; margin-bottom: 20px; }
-
   .res-line { font-size: 15px; margin-bottom: 8px; color: var(--text-gray); line-height: 1.4; }
   .res-line span { color: white; font-weight: bold; }
 
+  /* Grund Feld - Einzige Ausnahme für Kopieren */
   .grund-display { 
+    display: block;
+    margin-top: 5px;
     color: var(--text-white); 
     font-weight: normal; 
     word-break: break-word; 
     font-size: 14px;
+    padding: 10px;
+    background: #0d0d0d;
+    border-radius: 5px;
     user-select: text !important; 
     -webkit-user-select: text !important;
     cursor: text;
   }
 
-  .info-header { font-weight: bold; margin: 20px 0 10px; font-size: 15px; color: white; }
-
-  .switch-row { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; cursor: pointer; }
-  .dot { width: 20px; height: 20px; background: var(--switch-red); border-radius: 50%; flex-shrink: 0; transition: 0.3s; }
-  .dot.active { background: var(--switch-green); }
-  .switch-text b { font-size: 14px; color: white; }
+  /* Toggle Switch */
+  .switch-row { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; cursor: pointer; }
+  .switch-pill {
+    width: 44px; height: 22px; background: var(--switch-bg); border-radius: 11px; position: relative; flex-shrink: 0;
+  }
+  .switch-circle {
+    width: 18px; height: 18px; background: var(--switch-red); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s;
+  }
+  .active .switch-pill { background: #333; }
+  .active .switch-circle { transform: translateX(22px); background: var(--switch-green); }
 
   .input-area { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
-  .field { background: var(--input-bg); border: 1px solid #222; color: #fff; padding: 10px; border-radius: 5px; font-size: 13px; width: 100%; box-sizing: border-box; user-select: text; }
-  textarea.field { height: 70px; resize: none; }
-
-  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-  .btn { background: #000; border: 1px solid #333; color: white; padding: 10px; border-radius: 5px; font-size: 11px; cursor: pointer; text-align: center; text-transform: uppercase; font-weight: bold; }
+  .field { background: var(--input-bg); border: 1px solid #222; color: #fff; padding: 12px; border-radius: 5px; font-size: 13px; width: 100%; box-sizing: border-box; user-select: text; }
   
-  .selected-row { border-left: 3px solid var(--accent-orange); background: #1d1d1d !important; }
+  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+  .btn { background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 5px; font-size: 11px; cursor: pointer; text-align: center; text-transform: uppercase; font-weight: bold; }
+  
+  .selected-row { border-left: 4px solid var(--accent-orange); background: #1d1d1d !important; }
 </style>
 </head>
 <body oncontextmenu="return false;">
@@ -100,7 +136,7 @@
   <section class="penalty-list">
     <table>
       <thead>
-        <tr><th>Paragraph</th><th>Strafbestand</th><th style="text-align:center">Haftstrafe</th><th style="text-align:right">Bußgeld</th></tr>
+        <tr><th>Paragraph</th><th>Strafbestand</th><th>Haftstrafe</th><th>Bußgeld</th></tr>
       </thead>
       <tbody id="tableBody"></tbody>
     </table>
@@ -115,36 +151,19 @@
     <div class="res-line">Grund: <span id="outGrund" class="grund-display"></span></div>
     <div class="res-line">Zeichen: <span id="outChars">0/150</span></div>
 
-    <div class="info-header">Optionen:</div>
-
     <div class="switch-row" onclick="toggleSwitch(this)">
-      <div class="dot"></div>
-      <div class="switch-text"><b>Langer Grund</b></div>
+      <div class="switch-pill"><div class="switch-circle"></div></div>
+      <div class="switch-text"><b>Rechte vorgelesen</b></div>
     </div>
 
     <div class="input-area">
       <input type="text" class="field" placeholder="Kennzeichen" id="inPlate" oninput="updateDisplay()">
       <input type="text" class="field" placeholder="Blitzerort" id="inBlitzer" oninput="updateDisplay()">
-      <input type="text" class="field" placeholder="Systemwanteds">
-      <select class="field"><option>TV-Abtransport auswählen</option></select>
-      <input type="text" class="field" placeholder="TV Abtransport Beauftragter">
-      <textarea class="field" placeholder="Schreibe deine Notizen hier rein..." oninput="updateCharCounter(this)"></textarea>
-    </div>
-
-    <div class="switch-row" style="margin-top:15px" onclick="toggleSwitch(this)">
-      <div class="dot"></div>
-      <div class="switch-text"><b>Reue</b></div>
-    </div>
-
-    <div class="switch-row" onclick="toggleSwitch(this)">
-      <div class="dot"></div>
-      <div class="switch-text"><b>Systemfehler</b></div>
+      <textarea class="field" placeholder="Notizen..." oninput="updateCharCounter(this)"></textarea>
     </div>
 
     <div class="btn-grid">
-      <div class="btn">Rechte des TV</div>
       <div class="btn" onclick="copyGrund()">Grund Kopieren</div>
-      <div class="btn">Anwaltsregister</div>
       <div class="btn" onclick="location.reload()">Reset</div>
     </div>
   </aside>
@@ -224,7 +243,12 @@ function render() {
     b.innerHTML += `<tr><td colspan="4" class="category-row">${c.cat}</td></tr>`;
     c.items.forEach(i => {
       let s = '<span class="star-gold">'+'★'.repeat(i.w)+'</span>' + '<span class="star-gray">'+'★'.repeat(i.g)+'</span>';
-      b.innerHTML += `<tr onclick="calc(${i.m},${i.w},'${i.p}',this)"><td class="col-para">${i.p}</td><td class="col-name">${i.n}</td><td class="col-stars">${s}</td><td class="col-money">$${i.m.toLocaleString()}</td></tr>`;
+      b.innerHTML += `<tr onclick="calc(${i.m},${i.w},'${i.p}',this)">
+        <td class="col-para">${i.p}</td>
+        <td class="col-name">${i.n}</td>
+        <td class="col-stars">${s}</td>
+        <td class="col-money">$${i.m.toLocaleString()}</td>
+      </tr>`;
     });
   });
 }
@@ -239,7 +263,7 @@ function calc(m, w, p, e) {
   updateDisplay();
 }
 
-function toggleSwitch(el) { el.querySelector('.dot').classList.toggle('active'); updateDisplay(); }
+function toggleSwitch(el) { el.classList.toggle('active'); updateDisplay(); }
 
 function updateDisplay() {
   document.getElementById('outM').innerText = '$' + curM.toLocaleString();
