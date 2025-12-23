@@ -2,206 +2,324 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Bußgeldrechner – Prototyp</title>
+<title>Bußgeldrechner V2 – Prototyp</title>
 <style>
-body {
-  margin: 0;
-  background: #0e0e0e;
-  color: #fff;
-  font-family: Inter, Arial, sans-serif;
-}
-header {
-  padding: 15px 25px;
-  background: #111;
-  font-size: 22px;
-}
-.container {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
-  padding: 20px;
-}
-.left, .right {
-  background: #141414;
-  padding: 15px;
-  border-radius: 10px;
-}
-h3 {
-  margin-top: 25px;
-  color: #bbb;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-th, td {
-  padding: 10px;
-  border-bottom: 1px solid #222;
-}
-.stars span {
-  cursor: pointer;
-  font-size: 18px;
-  color: #777;
-}
-.stars span:hover {
-  color: #fff;
-}
-.box {
-  background: #1a1a1a;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 12px;
-}
-.total {
-  font-size: 22px;
-  text-align: center;
-  margin-top: 10px;
-}
-.grund {
-  margin-top: 6px;
-  padding: 8px;
-  background: #222;
-  border-radius: 6px;
-  font-size: 14px;
-  color: #ccc;
-}
-.clickable {
-  cursor: pointer;
-}
-.clickable:hover {
-  background: #2a2a2a;
-  color: #fff;
-}
-small {
-  color: #4caf50;
-}
-button {
-  width: 100%;
-  padding: 10px;
-  border: none;
-  border-radius: 6px;
-  background: #ff3b3b;
-  color: #fff;
-  cursor: pointer;
-}
+  :root {
+    --bg-dark: #0e0e0e;
+    --bg-card: #141414;
+    --primary: #ff3b3b;
+    --accent: #4caf50;
+    --text-dim: #bbb;
+  }
+  body {
+    margin: 0;
+    background: var(--bg-dark);
+    color: #fff;
+    font-family: 'Inter', Arial, sans-serif;
+  }
+  header {
+    padding: 15px 25px;
+    background: #111;
+    font-size: 22px;
+    border-bottom: 2px solid var(--primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .search-box {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #333;
+    background: #1a1a1a;
+    color: white;
+    width: 250px;
+  }
+  .container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    padding: 20px;
+  }
+  .left, .right {
+    background: var(--bg-card);
+    padding: 15px;
+    border-radius: 10px;
+  }
+  h3 {
+    margin-top: 25px;
+    color: var(--text-dim);
+    border-left: 4px solid var(--primary);
+    padding-left: 10px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  th, td {
+    padding: 12px;
+    border-bottom: 1px solid #222;
+    text-align: left;
+  }
+  .stars span {
+    cursor: pointer;
+    font-size: 18px;
+    color: #444;
+    transition: 0.2s;
+  }
+  .stars span:hover { color: var(--primary); }
+  .box {
+    background: #1a1a1a;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+  }
+  .total-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    text-align: center;
+  }
+  .total-val { font-size: 24px; font-weight: bold; color: var(--primary); }
+  .jail-val { font-size: 24px; font-weight: bold; color: #3b82f6; }
+  
+  .grund {
+    margin-top: 8px;
+    padding: 10px;
+    background: #222;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #ccc;
+    min-height: 40px;
+    word-break: break-all;
+  }
+  .clickable { cursor: pointer; }
+  .clickable:hover { background: #2a2a2a; }
+  small { color: var(--accent); font-weight: bold; }
+  button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    background: var(--primary);
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  button:hover { opacity: 0.8; }
+  .hidden { display: none; }
 </style>
 </head>
 <body>
 
-<header>Bußgeldrechner – Prototyp</header>
+<header>
+  <span>Bußgeldrechner – LSPD / Justiz</span>
+  <input type="text" id="search" class="search-box" placeholder="Nach Tat oder § suchen..." oninput="filterList()">
+</header>
 
 <main class="container">
-  <section class="left" id="strafen"></section>
+  <section class="left" id="strafen-container"></section>
 
   <aside class="right">
     <div class="box">
-      <strong>Grund:</strong>
-      <div id="grund" class="grund clickable" title="Klicken zum Kopieren"></div>
-      <small id="hint"></small>
+      <strong>Gesamtsumme:</strong>
+      <div class="total-grid">
+        <div><small>Geldstrafe</small><div class="total-val" id="total">$0</div></div>
+        <div><small>Haftzeit</small><div class="jail-val" id="totalJail">0 Min.</div></div>
+      </div>
     </div>
 
     <div class="box">
-      <strong>Summe:</strong>
-      <div class="total" id="total">$0</div>
+      <strong>Zusammenfassung (Klicken zum Kopieren):</strong>
+      <div id="grund" class="grund clickable" title="Klicken zum Kopieren"></div>
+      <div id="copy-hint" style="height: 15px; font-size: 12px; margin-top: 5px;"></div>
     </div>
 
-    <button onclick="resetAll()">Zurücksetzen</button>
+    <button onclick="resetAll()">Rechner zurücksetzen</button>
   </aside>
 </main>
 
 <script>
+// Datenstruktur erweitert um jailBase und jailPerStar
 const data = [
   {
     category: "Psychische & Physische Integrität (StGB)",
     items: [
-      { id:"s1", paragraph:"StGB §3.1", name:"Beleidigung", base:10000 },
-      { id:"s2", paragraph:"StGB §4.4", name:"Gewaltsame Drohung", base:0, perStar:5000, maxStars:5 },
-      { id:"s3", paragraph:"StGB §5", name:"Sexuelle Belästigung", base:30000, perStar:10000, maxStars:3 }
+      { id:"s1", paragraph:"StGB §3.1", name:"Beleidigung", base:10000, jailBase: 15 },
+      { id:"s2", paragraph:"StGB §4.4", name:"Gewaltsame Drohung", base:5000, perStar:5000, maxStars:5, jailPerStar: 10 },
+      { id:"s3", paragraph:"StGB §5", name:"Sexuelle Belästigung", base:30000, perStar:10000, maxStars:3, jailBase: 30, jailPerStar: 20 }
+    ]
+  },
+  {
+    category: "Betäubungsmittelgesetz (BtMG)",
+    items: [
+      { id:"b1", paragraph:"BtMG §1.1", name:"Besitz (Eigenbedarf)", base:2500, jailBase: 0 },
+      { id:"b2", paragraph:"BtMG §1.2", name:"Besitz (Großmenge)", base:15000, perStar:5000, maxStars:5, jailBase: 20, jailPerStar: 15 },
+      { id:"b3", paragraph:"BtMG §2.1", name:"Anbau/Herstellung", base:50000, jailBase: 60 }
     ]
   },
   {
     category: "Straßenverkehrsordnung (StVO)",
     items: [
-      { id:"s4", paragraph:"StVO §8", name:"Geschwindigkeit 10–40 km/h", base:5000 },
-      { id:"s5", paragraph:"StVO §28", name:"Sharing-Car Anti-Radar", base:0, perStar:10000, maxStars:3 }
+      { id:"s4", paragraph:"StVO §8", name:"Geschwindigkeit 10–40 km/h", base:5000, jailBase: 0 },
+      { id:"s5", paragraph:"StVO §28", name:"Illegales Straßenrennen", base:20000, perStar:10000, maxStars:3, jailBase: 15, jailPerStar: 15 }
     ]
   }
 ];
 
-const fines = {};
-const container = document.getElementById("strafen");
+let finesState = {};
 
-function now() {
-  const d = new Date();
-  return `${String(d.getDate()).padStart(2,"0")}.${String(d.getMonth()+1).padStart(2,"0")} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
-}
-
-function render() {
+function init() {
+  const container = document.getElementById("strafen-container");
+  container.innerHTML = "";
+  
   data.forEach(cat => {
-    container.innerHTML += `<h3>${cat.category}</h3>`;
-    let table = `<table>
-      <tr><th>Paragraph</th><th>Tat</th><th>Sterne</th><th>$</th></tr>`;
+    let section = document.createElement("div");
+    section.className = "category-section";
+    section.innerHTML = `<h3>${cat.category}</h3>`;
+    
+    let table = `<table id="table-${cat.category.substring(0,3)}">
+      <thead><tr><th>§</th><th>Tatbestand</th><th>Schwere</th><th>Strafe</th></tr></thead>
+      <tbody>`;
+    
     cat.items.forEach(i => {
-      fines[i.id] = { ...i, stars:0 };
+      finesState[i.id] = { ...i, stars: 0 };
       table += `
-        <tr>
-          <td>${i.paragraph}</td>
+        <tr class="item-row" data-name="${i.name.toLowerCase()}" data-para="${i.paragraph.toLowerCase()}">
+          <td width="80">${i.paragraph}</td>
           <td>${i.name}</td>
-          <td>${i.perStar ? stars(i) : "-"}</td>
-          <td id="p-${i.id}">$${(i.base||0).toLocaleString()}</td>
+          <td width="100">${i.perStar ? renderStars(i) : "-"}</td>
+          <td id="p-${i.id}" width="120">$${i.base.toLocaleString()}</td>
         </tr>`;
     });
-    table += "</table>";
-    container.innerHTML += table;
+    
+    table += `</tbody></table>`;
+    section.innerHTML += table;
+    container.appendChild(section);
   });
 }
 
-function stars(i) {
+function renderStars(i) {
   let s = `<div class="stars" data-id="${i.id}">`;
-  for (let x=1;x<=i.maxStars;x++) s += `<span data-star="${x}">☆</span>`;
-  return s+"</div>";
+  for (let x=1; x<=i.maxStars; x++) s += `<span data-star="${x}">☆</span>`;
+  return s + "</div>";
 }
 
+// Event Delegation für die Sterne
 document.addEventListener("click", e => {
   if (!e.target.matches(".stars span")) return;
   const id = e.target.parentElement.dataset.id;
-  const val = +e.target.dataset.star;
-  fines[id].stars = val;
-  e.target.parentElement.querySelectorAll("span")
-    .forEach(s => s.textContent = s.dataset.star <= val ? "⭐" : "☆");
+  const val = parseInt(e.target.dataset.star);
+  
+  // Toggle-Logik: Wenn man auf den gleichen Stern klickt, wird er abgewählt
+  finesState[id].stars = (finesState[id].stars === val) ? val - 1 : val;
+  
+  const starContainer = e.target.parentElement;
+  starContainer.querySelectorAll("span").forEach(s => {
+    s.textContent = parseInt(s.dataset.star) <= finesState[id].stars ? "⭐" : "☆";
+  });
+  
   recalc();
 });
 
 function recalc() {
-  let sum = 0;
-  const paragraphs = [];
-  for (const f of Object.values(fines)) {
-    const price = (f.base||0)+(f.stars||0)*(f.perStar||0);
-    sum += price;
-    document.getElementById(`p-${f.id}`).textContent = `$${price.toLocaleString()}`;
-    if (price>0) paragraphs.push(f.paragraph);
+  let totalMoney = 0;
+  let totalJail = 0;
+  const selectedParagraphs = [];
+
+  for (const f of Object.values(finesState)) {
+    // Nur berechnen, wenn Grundbetrag > 0 oder Sterne gewählt
+    if (f.stars > 0 || f.base > 0) {
+        // Wir zählen ein Item nur, wenn es "aktiviert" ist (z.B. durch Sterne oder wenn es ein Fixbetrag ist, den man anklicken müsste)
+        // Hier im Prototyp: Wir berechnen alles, was Sterne hat oder base > 0. 
+        // Optimierung: Man könnte eine Checkbox hinzufügen, ob die Tat überhaupt vorliegt.
+    }
+    
+    // Einfachheitshalber: Wenn Sterne > 0 oder es ein Fix-Eintrag ist (hier manuell zu steuern)
+    // In diesem Beispiel rechnen wir nur Einträge, die Sterne haben ODER keinen "perStar"-Wert (fixe Strafen)
+    const isActive = f.perStar ? (f.stars > 0) : false; // Hier müssten wir noch eine Auswahl-Logik einbauen
   }
-  document.getElementById("total").textContent = `$${sum.toLocaleString()}`;
-  document.getElementById("grund").textContent =
-    paragraphs.length ? `${now()} – ${paragraphs.join(", ")}` : "";
+
+  // Da wir keine Checkboxen haben, nehmen wir hier alle Zeilen, die Sterne > 0 haben ODER 
+  // wir führen eine Logik ein: Klicken auf den Namen aktiviert die Tat.
 }
 
-document.getElementById("grund").onclick = () => {
-  const t = grund.textContent;
-  if (!t) return;
-  navigator.clipboard.writeText(t);
-  hint.textContent = "✓ Kopiert";
-  setTimeout(()=>hint.textContent="",1200);
+// Verbesserte Recalc Logik
+function recalc() {
+  let money = 0;
+  let jail = 0;
+  let activeParas = [];
+
+  Object.values(finesState).forEach(f => {
+    if (f.stars > 0 || (!f.perStar && f.isSelected)) {
+      const m = (f.base || 0) + (f.stars * (f.perStar || 0));
+      const j = (f.jailBase || 0) + (f.stars * (f.jailPerStar || 0));
+      
+      money += m;
+      jail += j;
+      activeParas.push(f.paragraph);
+      
+      document.getElementById(`p-${f.id}`).innerHTML = `$${m.toLocaleString()}<br><small style="color:#3b82f6">${j} Min</small>`;
+    } else {
+      document.getElementById(`p-${f.id}`).textContent = `$${f.base.toLocaleString()}`;
+    }
+  });
+
+  document.getElementById("total").textContent = `$${money.toLocaleString()}`;
+  document.getElementById("totalJail").textContent = `${jail} Min.`;
+  
+  const now = new Date();
+  const timeStr = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth()+1).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  
+  document.getElementById("grund").textContent = activeParas.length 
+    ? `${timeStr} | Tatbestände: ${activeParas.join(", ")} | Strafe: $${money.toLocaleString()} & ${jail} Min. Haft.`
+    : "Wähle Tatbestände durch Sterne aus...";
+}
+
+// Klick auf Zeile zum Aktivieren von Fix-Strafen (ohne Sterne)
+document.addEventListener("click", e => {
+    const row = e.target.closest(".item-row");
+    if(!row || e.target.matches(".stars span")) return;
+    
+    const id = row.querySelector(".stars")?.dataset.id || Object.keys(finesState).find(key => finesState[key].paragraph === row.cells[0].textContent);
+    
+    if(id && !finesState[id].perStar) {
+        finesState[id].isSelected = !finesState[id].isSelected;
+        row.style.background = finesState[id].isSelected ? "#1d1d1d" : "transparent";
+        recalc();
+    }
+});
+
+function filterList() {
+  const query = document.getElementById("search").value.toLowerCase();
+  document.querySelectorAll(".item-row").forEach(row => {
+    const text = row.dataset.name + " " + row.dataset.para;
+    row.classList.toggle("hidden", !text.includes(query));
+  });
+}
+
+document.getElementById("grund").onclick = function() {
+  const text = this.textContent;
+  if (!text || text.includes("Wähle")) return;
+  navigator.clipboard.writeText(text);
+  const hint = document.getElementById("copy-hint");
+  hint.innerHTML = "<small>✓ In Zwischenablage kopiert</small>";
+  setTimeout(() => hint.innerHTML = "", 2000);
 };
 
 function resetAll() {
-  Object.values(fines).forEach(f=>f.stars=0);
-  document.querySelectorAll(".stars span").forEach(s=>s.textContent="☆");
-  document.getElementById("grund").textContent="";
-  document.getElementById("total").textContent="$0";
+  Object.values(finesState).forEach(f => {
+    f.stars = 0;
+    f.isSelected = false;
+  });
+  document.querySelectorAll(".stars span").forEach(s => s.textContent = "☆");
+  document.querySelectorAll(".item-row").forEach(r => r.style.background = "transparent");
+  recalc();
 }
 
-render();
+init();
+recalc();
 </script>
 
 </body>
