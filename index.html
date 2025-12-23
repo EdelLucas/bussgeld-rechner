@@ -5,253 +5,210 @@
 <title>Bußgeldrechner</title>
 <style>
   :root {
-    --bg-main: #0c0c0c;
-    --bg-panel: #141414;
+    --bg-black: #080808;
+    --bg-card: #121212;
     --accent-orange: #d18a2c;
-    --text-primary: #ffffff; /* Überschriften */
-    --text-secondary: #a0a0a0; /* Fließtext/Grau */
-    --text-black: #000000;
-    --red-dot: #e63946;
-    --input-bg: #0a0a0a;
+    --text-white: #ffffff;
+    --text-gray: #888888;
+    --red-dot: #ff4d4d;
+    --input-bg: #050505;
   }
 
   body {
     margin: 0;
-    background: var(--bg-main);
-    color: var(--text-primary);
-    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--bg-black);
+    color: var(--text-white);
+    font-family: 'Segoe UI', sans-serif;
   }
 
-  header {
-    background: #000;
-    padding: 10px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #222;
-  }
-
-  .container {
+  /* Layout */
+  .main-container {
     display: grid;
     grid-template-columns: 1fr 400px;
-    gap: 15px;
+    gap: 20px;
     padding: 20px;
   }
 
-  /* Linke Seite (Tabelle) */
-  .list-section { 
-    background: var(--bg-panel); 
-    padding: 15px; 
-    border-radius: 10px; 
-    max-height: 90vh; 
-    overflow-y: auto; 
+  /* Tabelle Links */
+  .penalty-list {
+    background: var(--bg-card);
+    padding: 15px;
+    border-radius: 10px;
+    height: 92vh;
+    overflow-y: auto;
   }
-  
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th { text-align: left; padding: 10px; border-bottom: 1px solid #333; color: var(--text-primary); }
-  td { padding: 8px 10px; border-bottom: 1px solid #1a1a1a; color: var(--text-secondary); }
-  
-  .cat-title { color: var(--accent-orange); text-align: center; padding: 15px; font-weight: bold; font-size: 16px; }
-  .para { color: var(--accent-orange); width: 100px; font-weight: bold; }
-  .money-cell { text-align: right; color: var(--text-secondary); }
-  .star-cell { text-align: center; color: var(--accent-orange); cursor: pointer; }
 
-  /* RECHTE SEITE (ERGEBNIS PANEL) */
-  .ergebnis-panel {
-    background: #181818;
-    border-radius: 20px;
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 10px; border-bottom: 1px solid #222; color: white; font-size: 15px; }
+  td { padding: 8px 10px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
+
+  .category-row { color: var(--accent-orange); text-align: center; font-weight: bold; padding: 25px 0 10px 0; font-size: 16px; }
+  .col-para { color: var(--accent-orange); width: 120px; font-weight: bold; }
+  .col-name { color: var(--text-gray); }
+  .col-stars { text-align: center; width: 100px; font-size: 16px; }
+  .col-money { text-align: right; color: var(--text-gray); width: 100px; }
+
+  .star-gold { color: var(--accent-orange); }
+  .star-gray { color: #333; }
+
+  /* Ergebnis Panel Rechts */
+  .result-sidebar {
+    background: #151515;
+    border-radius: 15px;
     padding: 25px;
     border: 1px solid #222;
     position: sticky;
     top: 20px;
   }
 
-  .panel-title { text-align: center; font-size: 26px; font-weight: bold; margin-bottom: 5px; color: var(--text-primary); }
-  .panel-info-text { font-size: 12px; color: var(--text-secondary); text-align: center; font-style: italic; margin-bottom: 20px; }
+  .res-title { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 5px; }
+  .res-sub { font-size: 11px; color: var(--text-gray); text-align: center; font-style: italic; margin-bottom: 20px; }
 
-  .stat-row { font-size: 15px; margin-bottom: 4px; color: var(--text-secondary); }
-  .stat-row span { font-weight: bold; color: var(--text-primary); }
+  .res-line { font-size: 14px; margin-bottom: 4px; color: var(--text-gray); }
+  .res-line span { color: white; font-weight: bold; }
 
-  .info-header { font-weight: bold; margin: 20px 0 10px 0; font-size: 15px; color: var(--text-primary); }
+  .info-title { font-weight: bold; margin: 20px 0 10px; font-size: 14px; }
 
-  /* Schalter-Optionen */
-  .option-item { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 15px; cursor: pointer; }
-  .dot { width: 22px; height: 22px; background: var(--red-dot); border-radius: 50%; flex-shrink: 0; margin-top: 2px; transition: 0.3s; }
-  .dot.inactive { background: #333; }
-  
-  .option-content strong { display: block; font-size: 14px; margin-bottom: 2px; color: var(--text-primary); }
-  .option-content small { display: block; font-size: 11px; color: var(--text-secondary); line-height: 1.3; }
+  /* Switches */
+  .switch-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 15px; cursor: pointer; }
+  .dot { width: 20px; height: 20px; background: var(--red-dot); border-radius: 50%; flex-shrink: 0; margin-top: 2px; }
+  .dot.off { background: #333; }
+  .switch-text b { display: block; font-size: 13px; color: white; }
+  .switch-text s { display: block; font-size: 10px; color: var(--text-gray); text-decoration: none; line-height: 1.2; }
 
-  /* Eingabefelder */
-  .input-group { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
-  .field {
-    background: var(--input-bg);
-    border: 1px solid #222;
-    color: var(--text-secondary);
-    padding: 10px;
-    border-radius: 5px;
-    font-size: 13px;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  textarea.field { height: 90px; resize: none; }
+  /* Inputs */
+  .input-area { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
+  .field { background: var(--input-bg); border: 1px solid #222; color: #777; padding: 10px; border-radius: 4px; font-size: 12px; width: 100%; box-sizing: border-box; }
+  textarea.field { height: 80px; resize: none; }
 
   /* Buttons */
-  .button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-  .btn-action {
-    background: #000;
-    border: 1px solid #333;
-    color: var(--text-primary);
-    padding: 10px 5px;
-    border-radius: 5px;
-    font-size: 11px;
-    cursor: pointer;
-    text-align: center;
-  }
+  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+  .btn { background: #000; border: 1px solid #333; color: white; padding: 10px; border-radius: 4px; font-size: 10px; cursor: pointer; text-align: center; text-transform: uppercase; }
+  
+  .selected-row { background: #1a1a1a !important; }
 </style>
 </head>
 <body>
 
-<header>
-  <div style="font-weight: bold; font-size: 20px;">Bußgeldrechner</div>
-  <input type="text" id="search" placeholder="Nach Straftat oder Paragraph suchen..." oninput="filterTable()" style="background:#111; border:1px solid #333; color:white; padding:8px; border-radius:5px; width:250px;">
-</header>
-
-<main class="container">
-  <section class="list-section">
-    <table id="penaltyTable">
+<div class="main-container">
+  <section class="penalty-list">
+    <table>
       <thead>
-        <tr><th>Paragraph</th><th>Strafbestand</th><th style="text-align:center">Haftstrafe</th><th style="text-align:right">Bußgeld</th></tr>
+        <tr>
+          <th>Paragraph</th>
+          <th>Strafbestand</th>
+          <th style="text-align:center">Haftstrafe</th>
+          <th style="text-align:right">Bußgeld</th>
+        </tr>
       </thead>
-      <tbody id="tableBody">
-        </tbody>
+      <tbody id="tableBody"></tbody>
     </table>
   </section>
 
-  <aside class="ergebnis-panel">
-    <div class="panel-title">Ergebnis</div>
-    <div class="panel-info-text">Indem man die grauen Wanteds anklickt kann man auswählen ob diese hinzugefügt werden.</div>
+  <aside class="result-sidebar">
+    <div class="res-title">Ergebnis</div>
+    <div class="res-sub">Indem man die grauen Wanteds anklickt kann man auswählen ob diese hinzugefügt werden.</div>
 
-    <div class="stat-row">Geldstrafe: <span id="resMoney">$0</span></div>
-    <div class="stat-row">Wanteds: <span id="resWanteds">0</span></div>
-    <div class="stat-row">Grund:</div>
-    <div class="stat-row">Zeichen: <span id="charCount">0/150</span></div>
+    <div class="res-line">Geldstrafe: <span id="outMoney">$0</span></div>
+    <div class="res-line">Wanteds: <span id="outWanteds">0</span></div>
+    <div class="res-line">Grund:</div>
+    <div class="res-line">Zeichen: <span id="outChars">0/150</span></div>
 
-    <div class="info-header">Information:</div>
+    <div class="info-title">Information:</div>
 
-    <div class="option-item" onclick="toggleSwitch(this)">
+    <div class="switch-row" onclick="toggleSw(this)">
       <div class="dot"></div>
-      <div class="option-content">
-        <strong>Rechte und Tatvorwürfe vorgelesen</strong>
-        <small>(Bestätigt, dass die Rechte und Tatvorwürfe vorgelesen wurden. Notwendig zum Kopieren des Grundes)</small>
+      <div class="switch-text">
+        <b>Rechte und Tatvorwürfe vorgelesen</b>
+        <s>(Bestätigt, dass die Rechte und Tatvorwürfe vorgelesen wurden.)</s>
       </div>
     </div>
 
-    <div class="option-item" onclick="toggleSwitch(this)">
-      <div class="dot inactive"></div>
-      <div class="option-content">
-        <strong>Nur höchstes Vergehen (Ein Grund)</strong>
-      </div>
+    <div class="switch-row" onclick="toggleSw(this)">
+      <div class="dot"></div>
+      <div class="switch-text"><b>Nur höchstes Vergehen (Ein Grund)</b></div>
     </div>
 
-    <div class="input-group">
-      <input type="text" class="field" placeholder="Kennzeichen" id="inputPlate">
-      <input type="text" class="field" placeholder="Blitzerort" id="inputBlitzer">
+    <div class="input-area">
+      <input type="text" class="field" placeholder="Kennzeichen">
+      <input type="text" class="field" placeholder="Blitzerort">
       <input type="text" class="field" placeholder="Systemwanteds">
       <select class="field"><option>TV-Abtransport auswählen</option></select>
       <input type="text" class="field" placeholder="TV Abtransport Beauftragter">
       <textarea class="field" placeholder="Schreibe deine Notizen hier rein..." oninput="updateChars(this)"></textarea>
     </div>
 
-    <div class="option-item" style="margin-top:20px;" onclick="toggleSwitch(this)">
-      <div class="dot inactive"></div>
-      <div class="option-content">
-        <strong>Reue</strong>
-        <small>(Entfernt 2 Wanteds, 1 Wanted muss verbleiben gemäß StGB §35 - Reue)</small>
-      </div>
+    <div class="switch-row" style="margin-top:20px" onclick="toggleSw(this)">
+      <div class="dot"></div>
+      <div class="switch-text"><b>Reue</b><s>(Entfernt 2 Wanteds, 1 Wanted muss verbleiben)</s></div>
     </div>
 
-    <div class="option-item" onclick="toggleSwitch(this)">
-      <div class="dot inactive"></div>
-      <div class="option-content">
-        <strong>Systemfehler</strong>
-      </div>
+    <div class="switch-row" onclick="toggleSw(this)">
+      <div class="dot"></div>
+      <div class="switch-text"><b>Systemfehler</b></div>
     </div>
 
-    <div class="button-grid">
-      <div class="btn-action">Rechte des Tatverdächtigen</div>
-      <div class="btn-action">Bußgelder anzeigen</div>
-      <div class="btn-action">Anwaltsregister anzeigen</div>
-      <div class="btn-action" onclick="location.reload()">Zurücksetzen</div>
+    <div class="btn-grid">
+      <div class="btn">Rechte des Tatverdächtigen</div>
+      <div class="btn">Bußgelder anzeigen</div>
+      <div class="btn">Anwaltsregister anzeigen</div>
+      <div class="btn" onclick="location.reload()">Zurücksetzen</div>
     </div>
   </aside>
-</main>
+</div>
 
 <script>
-  // Daten aus allen Screenshots zusammengefügt
-  const penaltyData = [
-    { cat: "Straßenverkehrsordnung (StVO)", items: [
-      { p: "StVO §2", n: "Gefährdung anderer Verkehrsteilnehmer", w: 0, m: 10000 },
-      { p: "StVO §8", n: "Geschwindigkeitsüberschreitung 10-40 km/h", w: 0, m: 5000 },
-      { p: "StVO §24", n: "Fahrerflucht", w: 1, m: 10000 },
-      { p: "StVO §28", n: "Sharing-Cars mit Anti-Radar", w: 3, m: 30000 }
-    ]},
-    { cat: "Psychische & Physische Integrität (StGB)", items: [
-      { p: "StGB §3.1", n: "Beleidigung", w: 1, m: 10000 },
-      { p: "StGB §4.1", n: "Versuchter Mord / Mord", w: 4, m: 30000 },
-      { p: "StGB §5", n: "Sexuelle Belästigung", w: 2, m: 30000 }
-    ]},
-    { cat: "Wirtschaftskriminalität (StGB)", items: [
-      { p: "StGB §6", n: "Diebstahl / Betrug", w: 1, m: 5000 },
-      { p: "StGB §12.1", n: "Geschäfts Raub", w: 2, m: 35000 }
-    ]},
-    { cat: "Umgang mit Beamten (StGB)", items: [
-      { p: "StGB §15.1", n: "Nichtbeachten einer Anweisung", w: 1, m: 10000 },
-      { p: "StGB §15.5", n: "Widerstand gegen Vollstreckungsbeamte", w: 2, m: 20000 }
-    ]}
-  ];
+const laws = [
+  { cat: "Straßenverkehrsordnung (StVO)", items: [
+    {p:"StVO §2", n:"Gefährdung anderer Verkehrsteilnehmer", m:10000, w:0, g:0},
+    {p:"StVO §4", n:"Missachten von Rechtsfahrgebot", m:8000, w:0, g:0},
+    {p:"StVO §8", n:"Geschwindigkeitsüberschreitung 10-40 km/h", m:5000, w:0, g:0},
+    {p:"StVO §8", n:"Geschwindigkeitsüberschreitung ab 101 km/h", m:20000, w:0, g:0},
+    {p:"StVO §17", n:"Fahren im berauschten Zustand", m:10000, w:0, g:2},
+    {p:"StVO §24", n:"Fahrerflucht", m:10000, w:1, g:0},
+    {p:"StVO §28", n:"Sharing-Cars mit Anti-Radar", m:30000, w:3, g:0}
+  ]},
+  { cat: "Waffengesetz (WaffG)", items: [
+    {p:"WaffG §1", n:"Besitz legaler Waffen ohne Schein", m:10000, w:1, g:1},
+    {p:"WaffG §5.1", n:"Besitz illegaler Waffen", m:10000, w:3, g:0},
+    {p:"WaffG §11", n:"Ungesetzlicher Waffenhandel", m:25000, w:3, g:0}
+  ]},
+  { cat: "Umgang mit Beamten (StGB)", items: [
+    {p:"StGB §15.1", n:"Nichtbeachten amtl. Anweisung", m:10000, w:0, g:2},
+    {p:"StGB §15.5", n:"Widerstand gegen Vollstreckungsbeamte", m:20000, w:2, g:0},
+    {p:"StGB §16", n:"Befreiung von Gefangenen", m:10000, w:3, g:2}
+  ]},
+  { cat: "Psychische & Physische Integrität (StGB)", items: [
+    {p:"StGB §4.1", n:"Versuchter Mord / Mord", m:30000, w:4, g:0},
+    {p:"StGB §5", n:"Sexuelle Belästigung", m:30000, w:2, g:1}
+  ]}
+];
 
-  let currentMoney = 0;
-  let currentWanteds = 0;
+let totalM = 0; let totalW = 0;
 
-  function initTable() {
-    const tbody = document.getElementById('tableBody');
-    penaltyData.forEach(section => {
-      tbody.innerHTML += `<tr><td colspan="4" class="cat-title">${section.cat}</td></tr>`;
-      section.items.forEach(item => {
-        tbody.innerHTML += `
-          <tr onclick="addPenalty(${item.m}, ${item.w}, this)">
-            <td class="para">${item.p}</td>
-            <td>${item.n}</td>
-            <td class="star-cell">${'★'.repeat(item.w)}${'☆'.repeat(item.w ? 0 : 0)}</td>
-            <td class="money-cell">$${item.m.toLocaleString()}</td>
-          </tr>`;
-      });
+function render() {
+  const b = document.getElementById('tableBody');
+  laws.forEach(c => {
+    b.innerHTML += `<tr><td colspan="4" class="category-row">${c.cat}</td></tr>`;
+    c.items.forEach(i => {
+      let stars = '<span class="star-gold">'+'★'.repeat(i.w)+'</span>' + '<span class="star-gray">'+'★'.repeat(i.g)+'</span>';
+      b.innerHTML += `<tr onclick="calc(${i.m}, ${i.w}, this)"><td class="col-para">${i.p}</td><td class="col-name">${i.n}</td><td class="col-stars">${stars}</td><td class="col-money">$${i.m.toLocaleString()}</td></tr>`;
     });
-  }
+  });
+}
 
-  function addPenalty(money, wanteds, row) {
-    row.style.background = row.style.background ? "" : "#1d1d1d";
-    const isActive = row.style.background !== "";
-    currentMoney += isActive ? money : -money;
-    currentWanteds += isActive ? wanteds : -wanteds;
-    document.getElementById('resMoney').textContent = "$" + currentMoney.toLocaleString();
-    document.getElementById('resWanteds').textContent = currentWanteds;
-  }
+function calc(m, w, el) {
+  el.classList.toggle('selected-row');
+  const add = el.classList.contains('selected-row');
+  totalM += add ? m : -m; totalW += add ? w : -w;
+  document.getElementById('outMoney').innerText = '$' + totalM.toLocaleString();
+  document.getElementById('outWanteds').innerText = totalW;
+}
 
-  function toggleSwitch(el) { el.querySelector('.dot').classList.toggle('inactive'); }
-  function updateChars(el) { document.getElementById('charCount').textContent = el.value.length + "/150"; }
-  
-  function filterTable() {
-    let input = document.getElementById("search").value.toUpperCase();
-    let rows = document.getElementById("tableBody").getElementsByTagName("tr");
-    for (let i = 0; i < rows.length; i++) {
-      let text = rows[i].textContent.toUpperCase();
-      rows[i].style.display = text.includes(input) ? "" : "none";
-    }
-  }
+function toggleSw(el) { el.querySelector('.dot').classList.toggle('off'); }
+function updateChars(el) { document.getElementById('outChars').innerText = el.value.length + "/150"; }
 
-  initTable();
+render();
 </script>
 </body>
 </html>
