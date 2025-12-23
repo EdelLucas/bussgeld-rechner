@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Bußgeldrechner – Prototyp</title>
+<style>
+body {
+  margin: 0;
+  background: #0e0e0e;
+  color: #fff;
+  font-family: Inter, Arial, sans-serif;
+}
+header {
+  padding: 15px 25px;
+  background: #111;
+  font-size: 22px;
+}
+.container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  padding: 20px;
+}
+.left, .right {
+  background: #141414;
+  padding: 15px;
+  border-radius: 10px;
+}
+h3 {
+  margin-top: 25px;
+  color: #bbb;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 10px;
+  border-bottom: 1px solid #222;
+}
+.stars span {
+  cursor: pointer;
+  font-size: 18px;
+  color: #777;
+}
+.stars span:hover {
+  color: #fff;
+}
+.box {
+  background: #1a1a1a;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+.total {
+  font-size: 22px;
+  text-align: center;
+  margin-top: 10px;
+}
+.grund {
+  margin-top: 6px;
+  padding: 8px;
+  background: #222;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #ccc;
+}
+.clickable {
+  cursor: pointer;
+}
+.clickable:hover {
+  background: #2a2a2a;
+  color: #fff;
+}
+small {
+  color: #4caf50;
+}
+button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  background: #ff3b3b;
+  color: #fff;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<header>Bußgeldrechner – Prototyp</header>
+
+<main class="container">
+  <section class="left" id="strafen"></section>
+
+  <aside class="right">
+    <div class="box">
+      <strong>Grund:</strong>
+      <div id="grund" class="grund clickable" title="Klicken zum Kopieren"></div>
+      <small id="hint"></small>
+    </div>
+
+    <div class="box">
+      <strong>Summe:</strong>
+      <div class="total" id="total">$0</div>
+    </div>
+
+    <button onclick="resetAll()">Zurücksetzen</button>
+  </aside>
+</main>
+
+<script>
+const data = [
+  {
+    category: "Psychische & Physische Integrität (StGB)",
+    items: [
+      { id:"s1", paragraph:"StGB §3.1", name:"Beleidigung", base:10000 },
+      { id:"s2", paragraph:"StGB §4.4", name:"Gewaltsame Drohung", base:0, perStar:5000, maxStars:5 },
+      { id:"s3", paragraph:"StGB §5", name:"Sexuelle Belästigung", base:30000, perStar:10000, maxStars:3 }
+    ]
+  },
+  {
+    category: "Straßenverkehrsordnung (StVO)",
+    items: [
+      { id:"s4", paragraph:"StVO §8", name:"Geschwindigkeit 10–40 km/h", base:5000 },
+      { id:"s5", paragraph:"StVO §28", name:"Sharing-Car Anti-Radar", base:0, perStar:10000, maxStars:3 }
+    ]
+  }
+];
+
+const fines = {};
+const container = document.getElementById("strafen");
+
+function now() {
+  const d = new Date();
+  return `${String(d.getDate()).padStart(2,"0")}.${String(d.getMonth()+1).padStart(2,"0")} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+}
+
+function render() {
+  data.forEach(cat => {
+    container.innerHTML += `<h3>${cat.category}</h3>`;
+    let table = `<table>
+      <tr><th>Paragraph</th><th>Tat</th><th>Sterne</th><th>$</th></tr>`;
+    cat.items.forEach(i => {
+      fines[i.id] = { ...i, stars:0 };
+      table += `
+        <tr>
+          <td>${i.paragraph}</td>
+          <td>${i.name}</td>
+          <td>${i.perStar ? stars(i) : "-"}</td>
+          <td id="p-${i.id}">$${(i.base||0).toLocaleString()}</td>
+        </tr>`;
+    });
+    table += "</table>";
+    container.innerHTML += table;
+  });
+}
+
+function stars(i) {
+  let s = `<div class="stars" data-id="${i.id}">`;
+  for (let x=1;x<=i.maxStars;x++) s += `<span data-star="${x}">☆</span>`;
+  return s+"</div>";
+}
+
+document.addEventListener("click", e => {
+  if (!e.target.matches(".stars span")) return;
+  const id = e.target.parentElement.dataset.id;
+  const val = +e.target.dataset.star;
+  fines[id].stars = val;
+  e.target.parentElement.querySelectorAll("span")
+    .forEach(s => s.textContent = s.dataset.star <= val ? "⭐" : "☆");
+  recalc();
+});
+
+function recalc() {
+  let sum = 0;
+  const paragraphs = [];
+  for (const f of Object.values(fines)) {
+    const price = (f.base||0)+(f.stars||0)*(f.perStar||0);
+    sum += price;
+    document.getElementById(`p-${f.id}`).textContent = `$${price.toLocaleString()}`;
+    if (price>0) paragraphs.push(f.paragraph);
+  }
+  document.getElementById("total").textContent = `$${sum.toLocaleString()}`;
+  document.getElementById("grund").textContent =
+    paragraphs.length ? `${now()} – ${paragraphs.join(", ")}` : "";
+}
+
+document.getElementById("grund").onclick = () => {
+  const t = grund.textContent;
+  if (!t) return;
+  navigator.clipboard.writeText(t);
+  hint.textContent = "✓ Kopiert";
+  setTimeout(()=>hint.textContent="",1200);
+};
+
+function resetAll() {
+  Object.values(fines).forEach(f=>f.stars=0);
+  document.querySelectorAll(".stars span").forEach(s=>s.textContent="☆");
+  document.getElementById("grund").textContent="";
+  document.getElementById("total").textContent="$0";
+}
+
+render();
+</script>
+
+</body>
+</html>
