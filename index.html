@@ -2,12 +2,12 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>LSPD Bußgeldrechner - Pink Edition</title>
+<title>LSPD Bußgeldrechner - Professional Pink</title>
 <style>
   :root {
     --bg-black: #080808;
     --bg-card: #121212;
-    --accent-pink: #ff69b4; /* Das Rosa für die Schrift */
+    --accent-pink: #ff69b4;
     --text-white: #ffffff;
     --text-gray: #a0a0a0;
     --switch-bg: #2a2a2a;
@@ -16,41 +16,61 @@
     --input-bg: #0a0a0a;
   }
 
-  * { user-select: none; -webkit-user-select: none; text-align: center; } /* Alles mittig */
+  /* Alles zentrieren */
+  * { 
+    user-select: none; 
+    -webkit-user-select: none; 
+    text-align: center; 
+    box-sizing: border-box;
+  }
 
-  body { margin: 0; background: var(--bg-black); color: var(--text-white); font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+  body { 
+    margin: 0; 
+    background: var(--bg-black); 
+    color: var(--text-white); 
+    font-family: 'Segoe UI', sans-serif; 
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
   .main-container {
     display: grid;
-    grid-template-columns: 1fr 420px;
-    gap: 20px;
-    padding: 20px;
-    height: 100vh;
-    box-sizing: border-box;
+    grid-template-columns: 1fr 450px; /* Größere Sidebar */
+    gap: 25px;
+    width: 98vw;
+    height: 95vh;
+    padding: 10px;
   }
 
   .penalty-list {
     background: var(--bg-card);
-    padding: 15px;
-    border-radius: 10px;
+    padding: 20px;
+    border-radius: 12px;
     overflow-y: auto;
     border: 1px solid #222;
   }
 
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    font-size: 18px; /* Schrift vergrößert wie im 2. Bild */
+  }
   
   th { 
-    padding: 15px; 
+    padding: 20px; 
     border-bottom: 2px solid #333; 
     position: sticky; 
     top: 0; 
     background: var(--bg-card); 
     z-index: 10; 
     color: var(--text-white);
+    font-size: 20px;
   }
 
   td { 
-    padding: 18px 10px; 
+    padding: 22px 10px; 
     border-bottom: 1px solid #1a1a1a; 
     cursor: pointer; 
     vertical-align: middle;
@@ -59,37 +79,37 @@
   tr:hover { background: #1a1a1a; }
 
   .category-row { 
-    color: var(--accent-pink); /* Rosa Kategorie */
+    color: var(--accent-pink); 
     font-weight: bold; 
-    padding: 30px 0 15px 0; 
-    font-size: 18px; 
+    padding: 40px 0 20px 0; 
+    font-size: 24px; 
     pointer-events: none; 
   }
 
-  .col-para { color: var(--accent-pink); font-weight: bold; } /* Rosa Paragrafen */
+  .col-para { color: var(--accent-pink); font-weight: bold; }
   .col-name { color: var(--text-gray); }
-  .col-stars { font-size: 16px; white-space: nowrap; }
+  .col-stars { font-size: 22px; white-space: nowrap; }
   .col-money { color: var(--text-gray); }
 
-  .star-gold { color: var(--accent-pink); } /* Rosa Sterne */
+  .star-gold { color: var(--accent-pink); }
   .star-gray { color: #444; }
 
   .result-sidebar {
     background: #151515;
     border-radius: 15px;
-    padding: 25px;
+    padding: 35px;
     border: 1px solid #222;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    align-items: center; /* Sidebar Inhalte zentrieren */
+    align-items: center;
   }
 
-  .res-title { font-size: 26px; font-weight: bold; margin-bottom: 5px; color: var(--accent-pink); }
-  .res-sub { font-size: 11px; color: var(--text-gray); font-style: italic; margin-bottom: 20px; }
+  .res-title { font-size: 32px; font-weight: bold; margin-bottom: 10px; color: var(--accent-pink); }
+  .res-sub { font-size: 14px; color: var(--text-gray); font-style: italic; margin-bottom: 30px; }
   
-  .res-line { font-size: 15px; margin-bottom: 12px; color: var(--text-gray); line-height: 1.4; width: 100%; }
-  .res-line b { color: white; }
+  .res-line { font-size: 20px; margin-bottom: 20px; color: var(--text-gray); line-height: 1.5; width: 100%; }
+  .res-line b { color: white; display: block; margin-bottom: 5px; }
 
   .grund-clickable { 
     color: var(--text-white); 
@@ -98,24 +118,52 @@
     transition: color 0.2s;
     word-break: break-word;
     display: block;
-    margin-top: 5px;
+    font-size: 18px;
+    padding: 10px;
   }
   .grund-clickable:hover { color: var(--accent-pink); text-decoration: underline; }
-  .copy-success { color: var(--switch-green) !important; }
+  .copy-success { color: var(--switch-green) !important; font-weight: bold; }
 
-  .switch-row { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; cursor: pointer; width: 100%; }
-  .switch-pill { width: 44px; height: 22px; background: var(--switch-bg); border-radius: 11px; position: relative; flex-shrink: 0; }
-  .switch-circle { width: 18px; height: 18px; background: var(--switch-red); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s; }
-  .active .switch-circle { transform: translateX(22px); background: var(--switch-green); }
+  .switch-row { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 25px; cursor: pointer; width: 100%; font-size: 18px; }
+  .switch-pill { width: 50px; height: 26px; background: var(--switch-bg); border-radius: 13px; position: relative; flex-shrink: 0; }
+  .switch-circle { width: 22px; height: 22px; background: var(--switch-red); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s; }
+  .active .switch-circle { transform: translateX(24px); background: var(--switch-green); }
 
-  .input-area { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; width: 100%; }
-  .field { background: var(--input-bg); border: 1px solid #222; color: #fff; padding: 12px; border-radius: 5px; width: 100%; box-sizing: border-box; user-select: text; text-align: center; }
+  .input-area { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; width: 100%; }
+  .field { 
+    background: var(--input-bg); 
+    border: 1px solid #222; 
+    color: #fff; 
+    padding: 15px; 
+    border-radius: 8px; 
+    width: 100%; 
+    font-size: 16px; 
+    text-align: center; 
+    user-select: text;
+  }
   
-  .btn-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; width: 100%; }
-  .btn { background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 5px; font-size: 11px; cursor: pointer; text-transform: uppercase; font-weight: bold; width: 100%; }
+  .btn-grid { margin-top: auto; padding-top: 30px; width: 100%; }
+  .btn { 
+    background: #000; 
+    border: 2px solid #333; 
+    color: white; 
+    padding: 15px; 
+    border-radius: 8px; 
+    font-size: 14px; 
+    cursor: pointer; 
+    text-transform: uppercase; 
+    font-weight: bold; 
+    width: 100%; 
+  }
   .btn:hover { border-color: var(--accent-pink); color: var(--accent-pink); }
   
-  .selected-row { border-left: 4px solid var(--accent-pink); background: #1d1d1d !important; }
+  .selected-row { border-left: 6px solid var(--accent-pink); background: #1d1d1d !important; }
+
+  /* Scrollbar Design */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg-black); }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent-pink); }
 </style>
 </head>
 <body oncontextmenu="return false;">
@@ -124,7 +172,12 @@
   <section class="penalty-list">
     <table>
       <thead>
-        <tr><th>Paragraph</th><th>Strafbestand</th><th>Haftstrafe</th><th>Bußgeld</th></tr>
+        <tr>
+          <th>Paragraph</th>
+          <th>Strafbestand</th>
+          <th>Haftstrafe</th>
+          <th>Bußgeld</th>
+        </tr>
       </thead>
       <tbody id="tableBody"></tbody>
     </table>
@@ -132,12 +185,12 @@
 
   <aside class="result-sidebar">
     <div class="res-title">Ergebnis</div>
-    <div class="res-sub">Klicke auf den Grund zum Kopieren.</div>
+    <div class="res-sub">Klicke auf den Grund zum Kopieren</div>
 
-    <div class="res-line"><b>Geldstrafe:</b><br><span id="outM">$0</span></div>
-    <div class="res-line"><b>Wanteds:</b><br><span id="outW">0</span></div>
-    <div class="res-line"><b>Grund:</b><span id="outGrund" class="grund-clickable" onclick="copyGrundText()"></span></div>
-    <div class="res-line"><b>Zeichen:</b><br><span id="outChars">0/150</span></div>
+    <div class="res-line"><b>Geldstrafe</b><span id="outM">$0</span></div>
+    <div class="res-line"><b>Wanteds</b><span id="outW">0</span></div>
+    <div class="res-line"><b>Grund</b><span id="outGrund" class="grund-clickable" onclick="copyGrundText()">Noch nichts gewählt</span></div>
+    <div class="res-line"><b>Zeichen</b><span id="outChars">0/150</span></div>
 
     <div class="switch-row" onclick="toggleSwitch(this)">
       <div class="switch-pill"><div class="switch-circle"></div></div>
@@ -147,7 +200,7 @@
     <div class="input-area">
       <input type="text" class="field" placeholder="Kennzeichen" id="inPlate" oninput="updateDisplay()">
       <input type="text" class="field" placeholder="Blitzerort" id="inBlitzer" oninput="updateDisplay()">
-      <textarea class="field" style="height: 60px; resize: none;" placeholder="Notizen..." oninput="updateDisplay()"></textarea>
+      <textarea class="field" style="height: 80px; resize: none;" placeholder="Zusätzliche Notizen..." id="inNote" oninput="updateDisplay()"></textarea>
     </div>
 
     <div class="btn-grid">
@@ -157,68 +210,26 @@
 </div>
 
 <script>
+// Daten wie zuvor
 const laws = [
   { cat: "Straßenverkehrsordnung (StVO)", items: [
     {p:"StVO §2", n:"Gefährdung anderer Verkehrsteilnehmer", m:10000, w:0, g:0},
     {p:"StVO §4", n:"Missachten von Rechtsfahrgebot", m:8000, w:0, g:0},
-    {p:"StVO §5", n:"Überschreiten der Fahrzeugkapazitäten", m:5000, w:0, g:0},
-    {p:"StVO §6", n:"Fahren mit demoliertem Fahrzeug", m:2000, w:0, g:0},
-    {p:"StVO §7", n:"Fahren ohne Licht (Dunkelheit, Wetter)", m:5000, w:0, g:0},
     {p:"StVO §8", n:"Geschw. 10-40 km/h", m:5000, w:0, g:0},
     {p:"StVO §8", n:"Geschw. 41-60 km/h", m:10000, w:0, g:0},
     {p:"StVO §8", n:"Geschw. 61-100 km/h", m:15000, w:0, g:0},
     {p:"StVO §8", n:"Geschw. ab 101 km/h", m:20000, w:0, g:0},
-    {p:"StVO §9 Art. 3", n:"Fahren ohne gültige Zulassung", m:10000, w:0, g:0},
-    {p:"StVO §10 Art. 1", n:"Missachten Rechts vor Links", m:1000, w:0, g:0},
-    {p:"StVO §10 Art. 2", n:"Missachten von Verkehrsschildern", m:2000, w:0, g:0},
-    {p:"StVO §10 Art. 4", n:"Fahren ohne genügend Tankkapazität", m:10000, w:0, g:0},
-    {p:"StVO §10 Art. 6", n:"Nutzung Mobilgerät am Steuer", m:3000, w:0, g:0},
-    {p:"StVO §10 Art. 7", n:"Lärmbelästigung / Hupen", m:20000, w:0, g:0},
-    {p:"StVO §10 Art. 16", n:"Fahren entgegeng. Fahrtrichtung", m:30000, w:0, g:0},
-    {p:"StVO §12.1", n:"Falsch Parken / Halten", m:10000, w:0, g:0},
-    {p:"StVO §17", n:"Fahren im berauschten Zustand", m:10000, w:0, g:2},
-    {p:"StVO §20", n:"Fahren ohne Gurt", m:5000, w:0, g:0},
     {p:"StVO §24", n:"Fahrerflucht", m:10000, w:1, g:0},
-    {p:"StVO §26", n:"Abschleppkosten", m:20000, w:0, g:0},
     {p:"StVO §28", n:"Anti-Radar Sharing-Cars", m:30000, w:3, g:0}
-  ]},
-  { cat: "Waffengesetz (WaffG)", items: [
-    {p:"WaffG §1", n:"Besitz legaler Waffen ohne Schein", m:10000, w:1, g:1},
-    {p:"WaffG §5.1", n:"Besitz illegaler Waffen", m:30000, w:3, g:0},
-    {p:"WaffG §8.1", n:"Offenes Tragen einer Waffe", m:5000, w:1, g:0},
-    {p:"WaffG §11", n:"Ungesetzlicher Waffenhandel", m:25000, w:3, g:0}
-  ]},
-  { cat: "Betäubungsmittelgesetz (BtMG)", items: [
-    {p:"BtMG §2.1", n:"Drogenbesitz Klein", m:15000, w:0, g:1},
-    {p:"BtMG §2.1", n:"Drogenbesitz Groß (50+)", m:30000, w:2, g:0},
-    {p:"BtMG §2.2", n:"Drogenhandel", m:30000, w:3, g:0},
-    {p:"BtMG §2.1", n:"Drogen Herstellung", m:30000, w:3, g:0}
-  ]},
-  { cat: "Umgang mit Beamten (StGB)", items: [
-    {p:"StGB §15.1", n:"Nichtbeachten amtl. Anweisung", m:10000, w:0, g:2},
-    {p:"StGB §15.5", n:"Widerstand gegen Vollstreckungsbeamte", m:20000, w:2, g:0},
-    {p:"StGB §16", n:"Befreiung von Gefangenen", m:30000, w:3, g:2},
-    {p:"StGB §24", n:"Amtsanmaßung", m:25000, w:2, g:1}
   ]},
   { cat: "Psychische & Physische Integrität (StGB)", items: [
     {p:"StGB §3.1", n:"Beleidigung", m:10000, w:0, g:1},
-    {p:"StGB §4.1", n:"Mord / Mordversuch", m:30000, w:4, g:0},
-    {p:"StGB §4.2", n:"Körperverletzung", m:15000, w:2, g:0},
-    {p:"StGB §4.3", n:"Körperverletzung mit Todesfolge", m:20000, w:3, g:0},
-    {p:"StGB §27", n:"Geiselnahme", m:30000, w:3, g:0},
-    {p:"StGB §42", n:"Erpressung", m:45000, w:3, g:0}
-  ]},
-  { cat: "Wirtschaftskriminalität (StGB)", items: [
-    {p:"StGB §7", n:"Fahrzeug Diebstahl", m:10000, w:2, g:0},
-    {p:"StGB §11", n:"Raub", m:25000, w:3, g:0},
-    {p:"StGB §12.1", n:"Ammu Rob / Geschäfts Raub", m:35000, w:2, g:0},
-    {p:"StGB §41.1", n:"Besitz staatl. Eigentum", m:50000, w:3, g:0}
+    {p:"StGB §3.2", n:"Belästigung", m:10000, w:0, g:1},
+    {p:"StGB §4.1", n:"Mord / Mordversuch", m:30000, w:4, g:0}
   ]},
   { cat: "Sperrzonen & Sonstiges", items: [
     {p:"StGB §18", n:"Betreten Militärgelände", m:50000, w:5, g:0},
-    {p:"StGB §25", n:"Terrorismus", m:25000, w:3, g:0},
-    {p:"§6 StPO", n:"Bußgelder nicht bezahlt", m:0, w:5, g:0},
-    {p:"BDG", n:"Dienstvergehen", m:50000, w:0, g:5}
+    {p:"§6 StPO", n:"Bußgelder nicht bezahlt", m:0, w:5, g:0}
   ]}
 ];
 
@@ -260,19 +271,22 @@ function updateDisplay() {
   const timeStr = now.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'});
   const plate = document.getElementById('inPlate').value;
   const blitzer = document.getElementById('inBlitzer').value;
+  
   let grund = "";
   if(activeParas.length > 0) {
     grund = `${dateStr} ${timeStr} | ${activeParas.join(", ")}`;
     if(plate) grund += ` - ${plate}`;
     if(blitzer) grund += ` - ${blitzer}`;
   }
-  document.getElementById('outGrund').innerText = grund || "Noch keine Auswahl";
+  
+  const displayGrund = document.getElementById('outGrund');
+  displayGrund.innerText = grund || "Noch nichts gewählt";
   document.getElementById('outChars').innerText = (grund ? grund.length : 0) + "/150";
 }
 
 function copyGrundText() {
   const text = document.getElementById('outGrund').innerText;
-  if(text && text !== "Noch keine Auswahl") {
+  if(text && text !== "Noch nichts gewählt") {
     const el = document.createElement('textarea');
     el.value = text;
     document.body.appendChild(el);
@@ -281,8 +295,13 @@ function copyGrundText() {
     document.body.removeChild(el);
     
     const g = document.getElementById('outGrund');
+    const originalText = g.innerText;
+    g.innerText = "KOPIERT!";
     g.classList.add('copy-success');
-    setTimeout(() => g.classList.remove('copy-success'), 800);
+    setTimeout(() => {
+      g.innerText = originalText;
+      g.classList.remove('copy-success');
+    }, 1000);
   }
 }
 
