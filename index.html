@@ -7,7 +7,7 @@
   :root {
     --bg-black: #080808;
     --bg-card: #121212;
-    --accent-pink: #ff69b4; /* Das Rosa für die Schrift */
+    --accent-pink: #ff69b4;
     --text-white: #ffffff;
     --text-gray: #a0a0a0;
     --switch-bg: #2a2a2a;
@@ -16,7 +16,7 @@
     --input-bg: #0a0a0a;
   }
 
-  * { user-select: none; -webkit-user-select: none; text-align: center; } /* Alles mittig */
+  * { user-select: none; -webkit-user-select: none; text-align: center; }
 
   body { margin: 0; background: var(--bg-black); color: var(--text-white); font-family: 'Segoe UI', sans-serif; overflow: hidden; }
 
@@ -35,6 +35,28 @@
     border-radius: 10px;
     overflow-y: auto;
     border: 1px solid #222;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Suchfeld Style */
+  .search-container {
+    margin-bottom: 15px;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--bg-card);
+    padding-bottom: 10px;
+  }
+  .search-field {
+    width: 100%;
+    padding: 12px;
+    background: var(--input-bg);
+    border: 1px solid var(--accent-pink);
+    border-radius: 5px;
+    color: white;
+    box-sizing: border-box;
+    outline: none;
   }
 
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -57,21 +79,22 @@
   }
   
   tr:hover { background: #1a1a1a; }
+  .hidden { display: none; }
 
   .category-row { 
-    color: var(--accent-pink); /* Rosa Kategorie */
+    color: var(--accent-pink);
     font-weight: bold; 
     padding: 30px 0 15px 0; 
     font-size: 18px; 
     pointer-events: none; 
   }
 
-  .col-para { color: var(--accent-pink); font-weight: bold; } /* Rosa Paragrafen */
+  .col-para { color: var(--accent-pink); font-weight: bold; }
   .col-name { color: var(--text-gray); }
   .col-stars { font-size: 16px; white-space: nowrap; }
   .col-money { color: var(--text-gray); }
 
-  .star-gold { color: var(--accent-pink); } /* Rosa Sterne */
+  .star-gold { color: var(--accent-pink); }
   .star-gray { color: #444; }
 
   .result-sidebar {
@@ -82,7 +105,7 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    align-items: center; /* Sidebar Inhalte zentrieren */
+    align-items: center;
   }
 
   .res-title { font-size: 26px; font-weight: bold; margin-bottom: 5px; color: var(--accent-pink); }
@@ -103,10 +126,12 @@
   .grund-clickable:hover { color: var(--accent-pink); text-decoration: underline; }
   .copy-success { color: var(--switch-green) !important; }
 
-  .switch-row { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; cursor: pointer; width: 100%; }
-  .switch-pill { width: 44px; height: 22px; background: var(--switch-bg); border-radius: 11px; position: relative; flex-shrink: 0; }
-  .switch-circle { width: 18px; height: 18px; background: var(--switch-red); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s; }
-  .active .switch-circle { transform: translateX(22px); background: var(--switch-green); }
+  .switch-area { width: 100%; margin: 10px 0; }
+  .switch-row { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 8px; cursor: pointer; width: 100%; }
+  .switch-pill { width: 40px; height: 20px; background: var(--switch-bg); border-radius: 10px; position: relative; flex-shrink: 0; }
+  .switch-circle { width: 16px; height: 16px; background: var(--switch-red); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s; }
+  .active .switch-circle { transform: translateX(20px); background: var(--switch-green); }
+  .switch-text { font-size: 13px; }
 
   .input-area { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; width: 100%; }
   .field { background: var(--input-bg); border: 1px solid #222; color: #fff; padding: 12px; border-radius: 5px; width: 100%; box-sizing: border-box; user-select: text; text-align: center; }
@@ -122,6 +147,9 @@
 
 <div class="main-container">
   <section class="penalty-list">
+    <div class="search-container">
+      <input type="text" id="searchInput" class="search-field" placeholder="Suche nach Paragraf oder Name..." onkeyup="filterTable()">
+    </div>
     <table>
       <thead>
         <tr><th>Paragraph</th><th>Strafbestand</th><th>Haftstrafe</th><th>Bußgeld</th></tr>
@@ -134,20 +162,30 @@
     <div class="res-title">Ergebnis</div>
     <div class="res-sub">Klicke auf den Grund zum Kopieren.</div>
 
-    <div class="res-line"><b>Geldstrafe:</b><br><span id="outM">$0</span></div>
+    <div class="res-line"><b>Geldstrafe:</b><br><span id="outM">$0</span> <small id="reueNote" style="display:none; color:var(--switch-green)">(-20%)</small></div>
     <div class="res-line"><b>Wanteds:</b><br><span id="outW">0</span></div>
     <div class="res-line"><b>Grund:</b><span id="outGrund" class="grund-clickable" onclick="copyGrundText()"></span></div>
     <div class="res-line"><b>Zeichen:</b><br><span id="outChars">0/150</span></div>
 
-    <div class="switch-row" onclick="toggleSwitch(this)">
-      <div class="switch-pill"><div class="switch-circle"></div></div>
-      <div class="switch-text"><b>Rechte vorgelesen</b></div>
+    <div class="switch-area">
+      <div class="switch-row" id="swRights" onclick="toggleSwitch(this)">
+        <div class="switch-pill"><div class="switch-circle"></div></div>
+        <div class="switch-text"><b>Rechte vorgelesen</b></div>
+      </div>
+      <div class="switch-row" id="swReue" onclick="toggleSwitch(this)">
+        <div class="switch-pill"><div class="switch-circle"></div></div>
+        <div class="switch-text"><b>Zeigt Reue (-20%)</b></div>
+      </div>
+      <div class="switch-row" id="swHaft" onclick="toggleSwitch(this)">
+        <div class="switch-pill"><div class="switch-circle"></div></div>
+        <div class="switch-text"><b>Haftbefehl / Beschluss</b></div>
+      </div>
     </div>
 
     <div class="input-area">
       <input type="text" class="field" placeholder="Kennzeichen" id="inPlate" oninput="updateDisplay()">
       <input type="text" class="field" placeholder="Blitzerort" id="inBlitzer" oninput="updateDisplay()">
-      <textarea class="field" style="height: 60px; resize: none;" placeholder="Notizen..." oninput="updateDisplay()"></textarea>
+      <textarea class="field" id="inNotes" style="height: 60px; resize: none;" placeholder="Notizen..." oninput="updateDisplay()"></textarea>
     </div>
 
     <div class="btn-grid">
@@ -226,17 +264,40 @@ let curM = 0; let curW = 0; let activeParas = [];
 
 function render() {
   const b = document.getElementById('tableBody');
+  b.innerHTML = "";
   laws.forEach(c => {
-    b.innerHTML += `<tr><td colspan="4" class="category-row">${c.cat}</td></tr>`;
+    b.innerHTML += `<tr class="cat-header"><td colspan="4" class="category-row">${c.cat}</td></tr>`;
     c.items.forEach(i => {
       let s = '<span class="star-gold">'+'★'.repeat(i.w)+'</span>' + '<span class="star-gray">'+'★'.repeat(i.g)+'</span>';
-      b.innerHTML += `<tr onclick="calc(${i.m},${i.w},'${i.p}',this)">
+      b.innerHTML += `<tr class="law-row" data-search="${i.p.toLowerCase()} ${i.n.toLowerCase()}" onclick="calc(${i.m},${i.w},'${i.p}',this)">
         <td class="col-para">${i.p}</td>
         <td class="col-name">${i.n}</td>
         <td class="col-stars">${s}</td>
         <td class="col-money">$${i.m.toLocaleString()}</td>
       </tr>`;
     });
+  });
+}
+
+function filterTable() {
+  const input = document.getElementById('searchInput').value.toLowerCase();
+  const rows = document.querySelectorAll('.law-row');
+  const headers = document.querySelectorAll('.cat-header');
+
+  rows.forEach(row => {
+    const text = row.getAttribute('data-search');
+    row.style.display = text.includes(input) ? "" : "none";
+  });
+
+  // Header ausblenden wenn keine Items in der Kategorie sichtbar
+  headers.forEach(header => {
+    let next = header.nextElementSibling;
+    let hasVisible = false;
+    while(next && !next.classList.contains('cat-header')) {
+      if(next.style.display !== "none") hasVisible = true;
+      next = next.nextElementSibling;
+    }
+    header.style.display = hasVisible ? "" : "none";
   });
 }
 
@@ -253,19 +314,36 @@ function calc(m, w, p, e) {
 function toggleSwitch(el) { el.classList.toggle('active'); updateDisplay(); }
 
 function updateDisplay() {
-  document.getElementById('outM').innerText = '$' + curM.toLocaleString();
+  const isReue = document.getElementById('swReue').classList.contains('active');
+  const isHaft = document.getElementById('swHaft').classList.contains('active');
+  
+  let displayM = curM;
+  if(isReue) {
+    displayM = Math.round(curM * 0.8);
+    document.getElementById('reueNote').style.display = "inline";
+  } else {
+    document.getElementById('reueNote').style.display = "none";
+  }
+
+  document.getElementById('outM').innerText = '$' + displayM.toLocaleString();
   document.getElementById('outW').innerText = curW;
+  
   const now = new Date();
   const dateStr = now.toLocaleDateString('de-DE');
   const timeStr = now.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'});
   const plate = document.getElementById('inPlate').value;
   const blitzer = document.getElementById('inBlitzer').value;
+  
   let grund = "";
-  if(activeParas.length > 0) {
-    grund = `${dateStr} ${timeStr} | ${activeParas.join(", ")}`;
+  if(activeParas.length > 0 || isHaft) {
+    grund = `${dateStr} ${timeStr} | `;
+    if(isHaft) grund += "[HAFTBEFEHL/BESCHLUSS] ";
+    grund += activeParas.join(", ");
     if(plate) grund += ` - ${plate}`;
     if(blitzer) grund += ` - ${blitzer}`;
+    if(isReue) grund += " (inkl. Reue-Rabatt)";
   }
+  
   document.getElementById('outGrund').innerText = grund || "Noch keine Auswahl";
   document.getElementById('outChars').innerText = (grund ? grund.length : 0) + "/150";
 }
@@ -273,16 +351,11 @@ function updateDisplay() {
 function copyGrundText() {
   const text = document.getElementById('outGrund').innerText;
   if(text && text !== "Noch keine Auswahl") {
-    const el = document.createElement('textarea');
-    el.value = text;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-    
-    const g = document.getElementById('outGrund');
-    g.classList.add('copy-success');
-    setTimeout(() => g.classList.remove('copy-success'), 800);
+    navigator.clipboard.writeText(text).then(() => {
+        const g = document.getElementById('outGrund');
+        g.classList.add('copy-success');
+        setTimeout(() => g.classList.remove('copy-success'), 800);
+    });
   }
 }
 
