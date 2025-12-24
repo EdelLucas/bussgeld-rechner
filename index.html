@@ -5,168 +5,166 @@
 <title>LSPD Bußgeldrechner - Pink Edition</title>
 <style>
   :root {
-    --bg-black: #080808;
-    --bg-card: #121212;
+    --bg-black: #0d0d0d;
+    --bg-card: #151515;
     --accent-pink: #ff69b4;
     --text-white: #ffffff;
     --text-gray: #a0a0a0;
-    --switch-bg: #2a2a2a;
+    --input-bg: #080808;
     --switch-red: #e63946;
     --switch-green: #2ecc71;
-    --input-bg: #0a0a0a;
   }
 
-  * { user-select: none; -webkit-user-select: none; }
+  * { user-select: none; -webkit-user-select: none; box-sizing: border-box; }
 
-  body { margin: 0; background: var(--bg-black); color: var(--text-white); font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+  body { 
+    margin: 0; 
+    background: var(--bg-black); 
+    color: var(--text-white); 
+    font-family: 'Segoe UI', sans-serif; 
+    overflow: hidden; 
+    height: 100vh;
+  }
+
+  /* Header / Suche */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: #000;
+    border-bottom: 1px solid #222;
+  }
+  .search-field {
+    width: 300px;
+    padding: 8px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: white;
+    font-size: 12px;
+  }
 
   .main-container {
     display: grid;
-    grid-template-columns: 1fr 420px;
-    gap: 20px;
-    padding: 20px;
-    height: 100vh;
-    box-sizing: border-box;
+    grid-template-columns: 1fr 400px;
+    height: calc(100vh - 55px);
   }
 
+  /* Liste Links */
   .penalty-list {
-    background: var(--bg-card);
-    padding: 15px;
-    border-radius: 10px;
+    padding: 20px;
     overflow-y: auto;
-    border: 1px solid #222;
+    border-right: 1px solid #222;
   }
 
-  /* Suchfeld */
-  .search-container {
-    margin-bottom: 15px;
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    background: var(--bg-card);
-    padding-bottom: 10px;
-  }
-  .search-field {
-    width: 100%;
-    padding: 12px;
-    background: var(--input-bg);
-    border: 1px solid #333;
-    border-radius: 5px;
-    color: white;
-    box-sizing: border-box;
-  }
-
-  table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: center; }
-  th { padding: 15px; border-bottom: 2px solid #333; position: sticky; top: 0; background: var(--bg-card); z-index: 10; }
-  td { padding: 15px 10px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; }
+  th { color: white; padding: 10px; border-bottom: 2px solid #333; position: sticky; top: 0; background: var(--bg-black); }
+  td { padding: 12px 10px; border-bottom: 1px solid #1a1a1a; cursor: pointer; color: var(--text-gray); }
   tr:hover { background: #1a1a1a; }
 
-  .category-row { color: var(--accent-pink); font-weight: bold; padding: 25px 0 10px 0; font-size: 18px; pointer-events: none; }
-  .col-para { color: var(--accent-pink); font-weight: bold; }
-  .star-gold { color: var(--accent-pink); }
-  .star-gray { color: #444; }
+  .category-row { color: orange; font-weight: bold; padding: 25px 0 10px 0; font-size: 16px; pointer-events: none; text-align: center; }
+  .col-para { color: orange; font-weight: bold; text-align: left; padding-left: 20px; }
+  .col-name { text-align: center; color: var(--text-gray); }
+  .star-gold { color: orange; font-size: 16px; }
 
-  /* Sidebar wie im Screenshot */
+  /* Sidebar Rechts (1:1 Screenshot Layout) */
   .result-sidebar {
     background: #111;
-    border-radius: 15px;
-    padding: 20px;
-    border: 1px solid #222;
+    padding: 25px;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
   }
 
-  .res-title { font-size: 28px; font-weight: bold; text-align: center; color: white; margin-bottom: 5px; }
-  .res-sub { font-size: 12px; color: var(--text-gray); text-align: center; margin-bottom: 15px; line-height: 1.3; }
+  .sidebar-header { text-align: center; margin-bottom: 20px; }
+  .res-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+  .res-sub { font-size: 11px; color: var(--text-gray); font-style: italic; line-height: 1.4; }
 
-  .res-stats { font-size: 14px; margin-bottom: 15px; text-align: left; }
-  .res-stats b { color: var(--text-white); }
+  .stats-block { font-size: 14px; margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 15px; }
+  .stats-block div { margin-bottom: 5px; }
+  .stats-block b { color: var(--text-white); }
+  .grund-text { color: var(--text-gray); font-size: 13px; margin-top: 5px; word-break: break-all; }
 
-  .grund-box {
-    background: #000;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #222;
-    min-height: 40px;
-    margin-bottom: 15px;
-    cursor: copy;
-    word-break: break-all;
-    font-size: 13px;
+  .section-title { font-size: 14px; font-weight: bold; margin-bottom: 15px; }
+
+  /* Schalter */
+  .switch-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 15px; cursor: pointer; }
+  .dot { 
+    width: 16px; height: 16px; border-radius: 50%; background: var(--switch-red); 
+    margin-top: 2px; flex-shrink: 0; transition: 0.3s;
   }
+  .active .dot { background: var(--switch-green); box-shadow: 0 0 10px var(--switch-green); }
+  .label-container { display: flex; flex-direction: column; }
+  .label-main { font-size: 13px; font-weight: bold; color: white; }
+  .label-sub { font-size: 10px; color: var(--text-gray); margin-top: 2px; }
 
-  /* Schalter & Inputs */
-  .sidebar-section { margin-bottom: 15px; }
-  
-  .switch-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; cursor: pointer; }
-  .switch-dot { 
-    width: 18px; height: 18px; background: var(--switch-red); border-radius: 50%; 
-    flex-shrink: 0; margin-top: 3px; transition: 0.3s; 
-  }
-  .active .switch-dot { background: var(--switch-green); box-shadow: 0 0 8px var(--switch-green); }
-  
-  .switch-label { font-size: 14px; font-weight: bold; color: white; }
-  .switch-desc { font-size: 11px; color: var(--text-gray); display: block; margin-top: 2px; }
-
-  .field-group { display: flex; flex-direction: column; gap: 8px; }
+  /* Input Felder */
+  .input-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
   .field { 
-    background: #0d0d0d; border: 1px solid #222; color: #fff; padding: 10px; 
-    border-radius: 4px; font-size: 12px; width: 100%; box-sizing: border-box; 
+    background: #080808; border: 1px solid #222; color: white; padding: 10px; 
+    border-radius: 4px; font-size: 12px; width: 100%;
   }
   .field:focus { border-color: var(--accent-pink); outline: none; }
 
-  /* Button Grid 2x2 */
-  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+  /* Buttons unten */
+  .btn-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; }
   .btn { 
-    background: #111; border: 1px solid #222; color: white; padding: 10px 5px; 
-    border-radius: 4px; font-size: 10px; cursor: pointer; text-align: center; font-weight: bold;
+    background: #111; border: 1px solid #333; color: white; padding: 12px 5px; 
+    border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; text-align: center;
   }
   .btn:hover { border-color: var(--accent-pink); color: var(--accent-pink); }
 
-  .selected-row { border-left: 4px solid var(--accent-pink); background: #1d1d1d !important; }
+  .selected-row { border-left: 3px solid var(--accent-pink); background: #1d1d1d !important; }
 </style>
 </head>
 <body>
 
+<header>
+  <div style="font-size: 20px; font-weight: bold;">Bußgeldrechner</div>
+  <input type="text" id="searchInput" class="search-field" placeholder="Nach Straftat oder Paragraph suchen..." onkeyup="filterTable()">
+</header>
+
 <div class="main-container">
   <section class="penalty-list">
-    <div class="search-container">
-      <input type="text" id="searchInput" class="search-field" placeholder="Nach Straftat oder Paragraph suchen..." onkeyup="filterTable()">
-    </div>
-    <table id="lawTable">
+    <table>
       <thead>
-        <tr><th>Paragraph</th><th>Strafbestand</th><th>Haftstrafe</th><th>Bußgeld</th></tr>
+        <tr><th style="text-align:left; padding-left:20px;">Paragraph</th><th>Strafbestand</th><th>Haftstrafe</th><th>Bußgeld</th></tr>
       </thead>
       <tbody id="tableBody"></tbody>
     </table>
   </section>
 
   <aside class="result-sidebar">
-    <div class="res-title">Ergebnis</div>
-    <div class="res-sub">Indem man die grauen Wanteds anklickt kann man auswählen ob diese hinzugefügt werden.</div>
-
-    <div class="res-stats">
-      <b>Geldstrafe:</b> <span id="outM">$0</span><br>
-      <b>Wanteds:</b> <span id="outW">0</span><br>
-      <b>Grund:</b>
-      <div id="outGrund" class="grund-box" onclick="copyGrundText()">Noch keine Auswahl</div>
-      <b>Zeichen:</b> <span id="outChars">0/150</span>
+    <div class="sidebar-header">
+      <div class="res-title">Ergebnis</div>
+      <div class="res-sub">Indem man die grauen Wanteds anklickt kann man auswählen ob diese hinzugefügt werden.</div>
     </div>
 
-    <div class="sidebar-section">
-      <div class="switch-row" id="swRights" onclick="toggleSwitch(this)">
-        <div class="switch-dot"></div>
-        <div>
-          <span class="switch-label">Rechte und Tatvorwürfe vorgelesen</span>
-          <span class="switch-desc">(Bestätigt, dass die Rechte und Tatvorwürfe vorgelesen wurden. Notwendig zum Kopieren des Grundes)</span>
-        </div>
-      </div>
+    <div class="stats-block">
+      <div><b>Geldstrafe:</b> <span id="outM">$0</span></div>
+      <div><b>Wanteds:</b> <span id="outW">0</span></div>
+      <div><b>Grund:</b> <div id="outGrund" class="grund-text"></div></div>
+      <div><b>Zeichen:</b> <span id="outChars">0/150</span></div>
+      <div style="margin-top:10px;"><b>Information:</b></div>
+    </div>
 
-      <div class="switch-row" id="swHighest" onclick="toggleSwitch(this)">
-        <div class="switch-dot"></div>
-        <div><span class="switch-label">Nur höchstes Vergehen (Ein Grund)</span></div>
+    <div class="switch-row" id="swRights" onclick="toggleSwitch(this)">
+      <div class="dot"></div>
+      <div class="label-container">
+        <span class="label-main">Rechte und Tatvorwürfe vorgelesen</span>
+        <span class="label-sub">(Bestätigt, dass die Rechte und Tatvorwürfe vorgelesen wurden. Notwendig zum Kopieren des Grundes)</span>
       </div>
     </div>
 
-    <div class="field-group">
+    <div class="switch-row" id="swHighest" onclick="toggleSwitch(this)">
+      <div class="dot"></div>
+      <div class="label-container">
+        <span class="label-main">Nur höchstes Vergehen (Ein Grund)</span>
+      </div>
+    </div>
+
+    <div class="input-grid">
       <input type="text" class="field" placeholder="Kennzeichen" id="inPlate" oninput="updateDisplay()">
       <input type="text" class="field" placeholder="Blitzerort" id="inBlitzer" oninput="updateDisplay()">
       <input type="number" class="field" placeholder="Systemwanteds" id="inSysW" oninput="updateDisplay()">
@@ -175,29 +173,26 @@
         <option value="">TV-Abtransport auswählen</option>
         <option value="Streife">Streife</option>
         <option value="Gefangenentransporter">Gefangenentransporter</option>
-        <option value="Helikopter">Helikopter</option>
       </select>
       
       <input type="text" class="field" placeholder="TV Abtransport Beauftragter" id="inOfficer" oninput="updateDisplay()">
-      <textarea class="field" id="inNotes" style="height: 50px; resize: none;" placeholder="Schreibe deine Notizen hier rein..." oninput="updateDisplay()"></textarea>
+      <textarea class="field" id="inNotes" style="height: 60px; resize: none;" placeholder="Schreibe deine Notizen hier rein..." oninput="updateDisplay()"></textarea>
     </div>
 
-    <div class="sidebar-section" style="margin-top: 20px;">
-      <div class="switch-row" id="swReue" onclick="toggleSwitch(this)">
-        <div class="switch-dot"></div>
-        <div>
-          <span class="switch-label">Reue</span>
-          <span class="switch-desc">(Entfernt 2 Wanteds, 1 Wanted muss verbleiben gemäß StGB §35 - Reue)</span>
-        </div>
-      </div>
-
-      <div class="switch-row" id="swError" onclick="toggleSwitch(this)">
-        <div class="switch-dot"></div>
-        <div><span class="switch-label">Systemfehler</span></div>
+    <div class="switch-row" id="swReue" onclick="toggleSwitch(this)">
+      <div class="dot"></div>
+      <div class="label-container">
+        <span class="label-main">Reue</span>
+        <span class="label-sub">(Entfernt 2 Wanteds, 1 Wanted muss verbleiben gemäß StGB §35 - Reue)</span>
       </div>
     </div>
 
-    <div class="btn-grid">
+    <div class="switch-row" id="swError" onclick="toggleSwitch(this)">
+      <div class="dot"></div>
+      <div class="label-container"><span class="label-main">Systemfehler</span></div>
+    </div>
+
+    <div class="btn-container">
       <div class="btn">Rechte des Tatverdächtigen</div>
       <div class="btn">Bußgelder anzeigen</div>
       <div class="btn">Anwaltsregister anzeigen</div>
@@ -207,14 +202,21 @@
 </div>
 
 <script>
-// (Hier bleibt das Gesetze-Array identisch zu deinem vorherigen Code)
 const laws = [
   { cat: "Straßenverkehrsordnung (StVO)", items: [
     {p:"StVO §2", n:"Gefährdung anderer Verkehrsteilnehmer", m:10000, w:0},
     {p:"StVO §4", n:"Missachten von Rechtsfahrgebot", m:8000, w:0},
-    {p:"StVO §8", n:"Geschw. ab 101 km/h", m:20000, w:0},
+    {p:"StVO §5", n:"Überschreiten der Fahrzeugkapazitäten", m:5000, w:0},
+    {p:"StVO §6", n:"Fahren mit demoliertem Fahrzeug", m:2000, w:0},
+    {p:"StVO §7", n:"Fahren ohne Licht (Dunkelheit/Wetter)", m:5000, w:0},
+    {p:"StVO §8", n:"Geschwindigkeitsüberschreitung 10-40 km/h", m:5000, w:0},
+    {p:"StVO §8", n:"Geschwindigkeitsüberschreitung 41-60 km/h", m:10000, w:0},
+    {p:"StVO §8", n:"Geschwindigkeitsüberschreitung 61-100 km/h", m:15000, w:0},
+    {p:"StVO §8", n:"Geschwindigkeitsüberschreitung ab 101 km/h", m:20000, w:0},
+    {p:"StVO §9 Art. 3", n:"Fahren ohne gültige Zulassung", m:10000, w:0},
+    {p:"StVO §17 Art. 1+2", n:"Fahren im berauschten Zustand", m:10000, w:2},
     {p:"StVO §24", n:"Fahrerflucht", m:10000, w:1},
-    {p:"StVO §28", n:"Anti-Radar Sharing-Cars", m:30000, w:3}
+    {p:"StVO §28", n:"Sharing-Cars mit Anti-Radar nicht aus Verkehr gezogen", m:30000, w:3}
   ]},
   { cat: "Psychische & Physische Integrität (StGB)", items: [
     {p:"StGB §3.1", n:"Beleidigung", m:10000, w:1},
@@ -229,12 +231,12 @@ function render() {
   laws.forEach(c => {
     b.innerHTML += `<tr><td colspan="4" class="category-row">${c.cat}</td></tr>`;
     c.items.forEach(i => {
-      let s = '<span class="star-gold">'+'★'.repeat(i.w)+'</span>';
+      let s = '<span class="star-gold">'+'★'.repeat(i.w)+'</span>' + '<span style="color:#444">'+'★'.repeat(Math.max(0, 3-i.w))+'</span>';
       b.innerHTML += `<tr class="law-row" data-search="${i.p.toLowerCase()} ${i.n.toLowerCase()}" onclick="calc(${i.m},${i.w},'${i.p}',this)">
         <td class="col-para">${i.p}</td>
-        <td>${i.n}</td>
-        <td>${s}</td>
-        <td>$${i.m.toLocaleString()}</td>
+        <td class="col-name">${i.n}</td>
+        <td>${i.w > 0 ? s : ''}</td>
+        <td style="color:white">$${i.m.toLocaleString()}</td>
       </tr>`;
     });
   });
@@ -270,25 +272,11 @@ function updateDisplay() {
   document.getElementById('outW').innerText = finalW;
   
   const plate = document.getElementById('inPlate').value;
-  const transport = document.getElementById('inTransport').value;
-  
   let grund = activeParas.join(", ");
   if(plate) grund += ` | ${plate}`;
-  if(transport) grund += ` | Trp: ${transport}`;
   
-  document.getElementById('outGrund').innerText = grund || "Noch keine Auswahl";
-  document.getElementById('outChars').innerText = (grund ? grund.length : 0) + "/150";
-}
-
-function copyGrundText() {
-  if(!document.getElementById('swRights').classList.contains('active')) {
-    alert("Du musst erst die Rechte vorlesen!");
-    return;
-  }
-  const t = document.getElementById('outGrund').innerText;
-  navigator.clipboard.writeText(t);
-  document.getElementById('outGrund').style.color = "var(--switch-green)";
-  setTimeout(() => document.getElementById('outGrund').style.color = "white", 800);
+  document.getElementById('outGrund').innerText = grund;
+  document.getElementById('outChars').innerText = grund.length + "/150";
 }
 
 render();
