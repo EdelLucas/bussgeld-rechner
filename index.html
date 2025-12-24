@@ -96,7 +96,7 @@
 
         <div class="settings-card">
             <div class="switch-row" id="swRights" onclick="toggleSwitch(this)"><span>Rechte verlesen?</span><div class="toggle"></div></div>
-            <div class="switch-row" id="sw35" onclick="toggleSwitch(this)"><span>Reue zeigen (-20%)</span><div class="toggle"></div></div>
+            <div class="switch-row" id="sw35" onclick="toggleSwitch(this)"><span>Reue zeigen</span><div class="toggle"></div></div>
             <div class="switch-row" id="swHaft" onclick="toggleSwitch(this)"><span>Haftbefehl / Beschluss</span><div class="toggle"></div></div>
 
             <div class="btn-group">
@@ -131,8 +131,7 @@
     <div class="modal-content" onclick="event.stopPropagation()" style="height: auto;">
         <div class="modal-header"><b>Rechte</b><div class="close-icon" onclick="closeModal('modalRechte')">&times;</div></div>
         <div class="modal-body" style="text-align: center;">
-            <p><strong>Sie haben das Recht zu schweigen, alles was Sie sagen kann und wird gegen Sie verwendet werden.</strong></p>
-            <p>Ab 3 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt...</p>
+            <p><strong>Sie haben das Recht zu schweigen, alles was Sie sagen kann und wird gegen Sie verwendet werden. Ab 3 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt, den Sie selbst benennen müssen. Wenn kein Anwalt verfügbar ist, wird Ihnen keiner gestellt. Die Judikative übernimmt der Exekutivbeamte. Wenn ein Anwalt hinzugezogen wird, kann es länger als 25 Minuten dauern.6</p>
             <br><p style="color: var(--accent-pink); font-weight: bold;">Haben Sie ihre Rechte verstanden?</p>
         </div>
     </div>
@@ -142,9 +141,10 @@
     <div class="modal-content" onclick="event.stopPropagation()">
         <div class="modal-header"><b>Belehrungen</b><div class="close-icon" onclick="closeModal('modalBelehrung')">&times;</div></div>
         <div class="modal-body">
-            <p><strong>Haftbefehl:</strong> Die Justiz hat einen Haftbefehl gegen Sie erlassen...</p>
+            <p><strong>Haftbefehl:</strong>"Die Justiz hat einen Haftbefehl gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Haftbefehl vor Gericht zu ziehen, falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung gegen den Haftbefehl einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen Gerichtsprozess ablehnen, wird der Haftbefehl von den ausgewählten Beamten vollstreckt. Im weiteren Verlauf erhalten Sie eine staatliche Berufssperre von X Tagen nach §19 (4) Beamten Dienst Gesetzbuch. Während dieser Zeit dürfen Sie keinem Staatsdienst nachgehen. Wenn Sie flüchten haben Sie kein Recht mehr auf einen Rechtsanwalt.” </p>
         </div>
-    </div>
+            <p><strong>Beschluss:</strong>"Die Justiz hat einen Beschluss gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Beschluss vor Gericht zu ziehen, falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung gegen den Beschluss einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen Gerichtsprozess ablehnen, wird der Beschluss von den ausgewählten Beamten vollstreckt. Wenn Sie flüchten haben Sie kein Recht mehr auf einen Rechtsanwalt."</p>
+        </div>
 </div>
 
 <script>
@@ -276,3 +276,4 @@ render();
 </script>
 </body>
 </html>
+
