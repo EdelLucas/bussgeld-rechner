@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>LSPD Penal Code - V.12.0</title>
+    <title>LSPD Penal Code - V.13.1</title>
     <style>
         :root {
             --bg-main: #0b0e14;
@@ -79,7 +79,7 @@
 <div class="container">
     <div class="main-panel">
         <div class="header-area"><div class="logo-title">🛡️ LSPD <span class="pink">PENAL</span> CODE</div></div>
-        <input type="text" id="searchInput" class="search-field" placeholder="Suche..." onkeyup="filterTable()">
+        <input type="text" id="searchInput" class="search-field" placeholder="Suche nach § oder Tatbestand..." onkeyup="filterTable()">
         <div class="cards-scroll-area" id="cardsContainer"></div>
     </div>
 
@@ -96,7 +96,7 @@
 
         <div class="settings-card">
             <div class="switch-row" id="swRights" onclick="toggleSwitch(this)"><span>Rechte verlesen?</span><div class="toggle"></div></div>
-            <div class="switch-row" id="sw35" onclick="toggleSwitch(this)"><span>Reue zeigen</span><div class="toggle"></div></div>
+            <div class="switch-row" id="sw35" onclick="toggleSwitch(this)"><span>Reue zeigen (-20%)</span><div class="toggle"></div></div>
             <div class="switch-row" id="swHaft" onclick="toggleSwitch(this)"><span>Haftbefehl / Beschluss</span><div class="toggle"></div></div>
 
             <div class="btn-group">
@@ -131,7 +131,8 @@
     <div class="modal-content" onclick="event.stopPropagation()" style="height: auto;">
         <div class="modal-header"><b>Rechte</b><div class="close-icon" onclick="closeModal('modalRechte')">&times;</div></div>
         <div class="modal-body" style="text-align: center;">
-            <p><strong>Sie haben das Recht zu schweigen, alles was Sie sagen kann und wird gegen Sie verwendet werden. Ab 3 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt, den Sie selbst benennen müssen. Wenn kein Anwalt verfügbar ist, wird Ihnen keiner gestellt. Die Judikative übernimmt der Exekutivbeamte. Wenn ein Anwalt hinzugezogen wird, kann es länger als 25 Minuten dauern.6</p>
+            <p><strong>Sie haben das Recht zu schweigen, alles was Sie sagen kann und wird gegen Sie verwendet werden.</strong></p>
+            <p>Ab 3 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt...</p>
             <br><p style="color: var(--accent-pink); font-weight: bold;">Haben Sie ihre Rechte verstanden?</p>
         </div>
     </div>
@@ -141,48 +142,76 @@
     <div class="modal-content" onclick="event.stopPropagation()">
         <div class="modal-header"><b>Belehrungen</b><div class="close-icon" onclick="closeModal('modalBelehrung')">&times;</div></div>
         <div class="modal-body">
-            <p><strong>Haftbefehl:</strong>"Die Justiz hat einen Haftbefehl gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Haftbefehl vor Gericht zu ziehen, falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung gegen den Haftbefehl einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen Gerichtsprozess ablehnen, wird der Haftbefehl von den ausgewählten Beamten vollstreckt. Im weiteren Verlauf erhalten Sie eine staatliche Berufssperre von X Tagen nach §19 (4) Beamten Dienst Gesetzbuch. Während dieser Zeit dürfen Sie keinem Staatsdienst nachgehen. Wenn Sie flüchten haben Sie kein Recht mehr auf einen Rechtsanwalt.” </p>
+            <p><strong>Haftbefehl:</strong> Die Justiz hat einen Haftbefehl gegen Sie erlassen...</p>
+            <p><strong>Befragung:</strong> Sie haben das Recht zu schweigen...</p>
         </div>
-            <p><strong>Beschluss:</strong>"Die Justiz hat einen Beschluss gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Beschluss vor Gericht zu ziehen, falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung gegen den Beschluss einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen Gerichtsprozess ablehnen, wird der Beschluss von den ausgewählten Beamten vollstreckt. Wenn Sie flüchten haben Sie kein Recht mehr auf einen Rechtsanwalt."</p>
-        </div>
+    </div>
 </div>
 
 <script>
 const laws = [
-    { cat: "Psychische & Physische Integrität (StGB)", items: [
-        {p:"StGB §1", n:"Beleidigung", m:5000, w:1},
-        {p:"StGB §2", n:"Körperverletzung", m:10000, w:2},
-        {p:"StGB §2.1", n:"Schwere Körperverletzung", m:20000, w:3},
-        {p:"StGB §3", n:"Freiheitsberaubung", m:25000, w:3},
-        {p:"StGB §4", n:"Mord / Mordversuch", m:50000, w:5}
-    ]},
-    { cat: "Eigentumsdelikte & Vermögensdelikte (StGB)", items: [
-        {p:"StGB §5", n:"Diebstahl", m:7500, w:1},
-        {p:"StGB §6", n:"Raub", m:15000, w:2},
-        {p:"StGB §7", n:"Einbruch", m:20000, w:3},
-        {p:"StGB §8", n:"Erpressung", m:15000, w:2}
-    ]},
-    { cat: "Öffentliche Ordnung & Sicherheit (StGB)", items: [
-        {p:"StGB §15", n:"Widerstand gegen Staatsgewalt", m:15000, w:2},
-        {p:"StGB §16", n:"Gefangenenbefreiung", m:30000, w:4},
-        {p:"StGB §17", n:"Amtsanmaßung", m:10000, w:1},
-        {p:"StGB §18", n:"Betreten von Sperrgebieten", m:25000, w:3}
-    ]},
-    { cat: "Betäubungsmittelgesetz (BtMG)", items: [
-        {p:"BtMG §1", n:"Besitz von Betäubungsmitteln", m:10000, w:1},
-        {p:"BtMG §2", n:"Handel mit Betäubungsmitteln", m:30000, w:3},
-        {p:"BtMG §3", n:"Anbau von Betäubungsmitteln", m:20000, w:2}
-    ]},
-    { cat: "Waffengesetz (WaffG)", items: [
-        {p:"WaffG §1", n:"Besitz illegaler Waffen", m:25000, w:3},
-        {p:"WaffG §2", n:"Waffengebrauch (illegal)", m:35000, w:4},
-        {p:"WaffG §3", n:"Handel mit Waffen", m:50000, w:5}
-    ]},
-    { cat: "Straßenverkehrsordnung (StVO)", items: [
-        {p:"StVO §1", n:"Fahren ohne Führerschein", m:5000, w:0},
-        {p:"StVO §2", n:"Gefährlicher Eingriff", m:10000, w:1},
-        {p:"StVO §3", n:"Fahrerflucht", m:15000, w:2}
-    ]}
+  { cat: "Straßenverkehrsordnung (StVO)", items: [
+    {p:"StVO §2", n:"Gefährdung anderer Verkehrsteilnehmer", m:10000, w:0},
+    {p:"StVO §4", n:"Missachten von Rechtsfahrgebot", m:8000, w:0},
+    {p:"StVO §5", n:"Überschreiten der Fahrzeugkapazitäten", m:5000, w:0},
+    {p:"StVO §6", n:"Fahren mit demoliertem Fahrzeug", m:2000, w:0},
+    {p:"StVO §7", n:"Fahren ohne Licht (Dunkelheit, Wetter)", m:5000, w:0},
+    {p:"StVO §8", n:"Geschw. 10-40 km/h", m:5000, w:0},
+    {p:"StVO §8", n:"Geschw. 41-60 km/h", m:10000, w:0},
+    {p:"StVO §8", n:"Geschw. 61-100 km/h", m:15000, w:0},
+    {p:"StVO §8", n:"Geschw. ab 101 km/h", m:20000, w:0},
+    {p:"StVO §9 Art. 3", n:"Fahren ohne gültige Zulassung", m:10000, w:0},
+    {p:"StVO §10 Art. 1", n:"Missachten Rechts vor Links", m:1000, w:0},
+    {p:"StVO §10 Art. 2", n:"Missachten von Verkehrsschildern", m:2000, w:0},
+    {p:"StVO §10 Art. 4", n:"Fahren ohne genügend Tankkapazität", m:10000, w:0},
+    {p:"StVO §10 Art. 6", n:"Nutzung Mobilgerät am Steuer", m:3000, w:0},
+    {p:"StVO §10 Art. 7", n:"Lärmbelästigung / Hupen", m:20000, w:0},
+    {p:"StVO §10 Art. 16", n:"Fahren entgegeng. Fahrtrichtung", m:30000, w:0},
+    {p:"StVO §12.1", n:"Falsch Parken / Halten", m:10000, w:0},
+    {p:"StVO §17", n:"Fahren im berauschten Zustand", m:10000, w:0},
+    {p:"StVO §20", n:"Fahren ohne Gurt", m:5000, w:0},
+    {p:"StVO §24", n:"Fahrerflucht", m:10000, w:1},
+    {p:"StVO §26", n:"Abschleppkosten", m:20000, w:0},
+    {p:"StVO §28", n:"Anti-Radar Sharing-Cars", m:30000, w:3}
+  ]},
+  { cat: "Waffengesetz (WaffG)", items: [
+    {p:"WaffG §1", n:"Besitz legaler Waffen ohne Schein", m:10000, w:1},
+    {p:"WaffG §5.1", n:"Besitz illegaler Waffen", m:30000, w:3},
+    {p:"WaffG §8.1", n:"Offenes Tragen einer Waffe", m:5000, w:1},
+    {p:"WaffG §11", n:"Ungesetzlicher Waffenhandel", m:25000, w:3}
+  ]},
+  { cat: "Betäubungsmittelgesetz (BtMG)", items: [
+    {p:"BtMG §2.1", n:"Drogenbesitz Klein", m:15000, w:0},
+    {p:"BtMG §2.1", n:"Drogenbesitz Groß (50+)", m:30000, w:2},
+    {p:"BtMG §2.2", n:"Drogenhandel", m:30000, w:3},
+    {p:"BtMG §2.1", n:"Drogen Herstellung", m:30000, w:3}
+  ]},
+  { cat: "Umgang mit Beamten (StGB)", items: [
+    {p:"StGB §15.1", n:"Nichtbeachten amtl. Anweisung", m:10000, w:0},
+    {p:"StGB §15.5", n:"Widerstand gegen Vollstreckungsbeamte", m:20000, w:2},
+    {p:"StGB §16", n:"Befreiung von Gefangenen", m:30000, w:3},
+    {p:"StGB §24", n:"Amtsanmaßung", m:25000, w:2}
+  ]},
+  { cat: "Psychische & Physische Integrität (StGB)", items: [
+    {p:"StGB §3.1", n:"Beleidigung", m:10000, w:0},
+    {p:"StGB §4.1", n:"Mord / Mordversuch", m:30000, w:4},
+    {p:"StGB §4.2", n:"Körperverletzung", m:15000, w:2},
+    {p:"StGB §4.3", n:"Körperverletzung mit Todesfolge", m:20000, w:3},
+    {p:"StGB §27", n:"Geiselnahme", m:30000, w:3},
+    {p:"StGB §42", n:"Erpressung", m:45000, w:3}
+  ]},
+  { cat: "Wirtschaftskriminalität (StGB)", items: [
+    {p:"StGB §7", n:"Fahrzeug Diebstahl", m:10000, w:2},
+    {p:"StGB §11", n:"Raub", m:25000, w:3},
+    {p:"StGB §12.1", n:"Ammu Rob / Geschäfts Raub", m:35000, w:2},
+    {p:"StGB §41.1", n:"Besitz staatl. Eigentum", m:50000, w:3}
+  ]},
+  { cat: "Sperrzonen & Sonstiges", items: [
+    {p:"StGB §18", n:"Betreten Militärgelände", m:50000, w:5},
+    {p:"StGB §25", n:"Terrorismus", m:25000, w:3},
+    {p:"§6 StPO", n:"Bußgelder nicht bezahlt", m:0, w:5},
+    {p:"BDG", n:"Dienstvergehen", m:50000, w:0}
+  ]}
 ];
 
 let selectedItems = [];
@@ -212,7 +241,10 @@ function toggleLaw(el, obj) {
 
 function updateDisplay() {
     let maxM = 0; let maxW = 0;
-    selectedItems.forEach(l => { if(l.m > maxM) maxM = l.m; if(l.w > maxW) maxW = l.w; });
+    selectedItems.forEach(l => { 
+        if(l.m > maxM) maxM = l.m; 
+        if(l.w > maxW) maxW = l.w; 
+    });
     
     const reue = document.getElementById('sw35').classList.contains('active');
     const haft = document.getElementById('swHaft').classList.contains('active');
@@ -238,6 +270,9 @@ function updateDisplay() {
         text += selectedItems.map(l => l.p).join(", ");
         if(plate) text += ` | ${plate}`;
         if(reue) text += " | §35";
+        
+        // NEU: Wanteds im Text anzeigen
+        if(maxW > 0) text += ` | ${maxW}★`;
     }
 
     if (!rights && (selectedItems.length > 0 || haft)) {
@@ -276,4 +311,3 @@ render();
 </script>
 </body>
 </html>
-
