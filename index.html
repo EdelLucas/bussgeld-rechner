@@ -6,15 +6,16 @@
   :root {
     --bg-black: #080808;
     --bg-card: #121212;
-    --accent-pink: #ff69b4; /* Das gewünschte Rosa */
-    --selection-gray: #2a2a2a; /* Der graue Kasten bei Klick */
-    --text-white: #ffffff;
+    --accent-pink: #ff69b4;
+    --selection-gray: #333333; /* Etwas helleres Grau für die Markierung */
+    --line-color: #1a1a1a;
   }
 
   * { 
     user-select: none; 
     -webkit-user-select: none; 
     box-sizing: border-box;
+    text-align: center;
   }
 
   body { 
@@ -24,115 +25,115 @@
     padding: 20px;
   }
 
-  /* Nur die linke Seite (Strafenliste) */
-  .penalty-list {
+  /* Container für die linke Seite */
+  .penalty-container {
     background: var(--bg-card);
-    padding: 20px;
-    border-radius: 15px;
+    border-radius: 5px;
     border: 1px solid #222;
-    max-width: 900px;
-    margin: 0 auto; /* Zentriert die Liste auf dem Bildschirm */
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow: hidden;
   }
 
   table { 
     width: 100%; 
-    border-collapse: separate; 
-    border-spacing: 0 8px; /* Abstand für den Kasten-Effekt */
+    border-collapse: collapse; 
   }
-  
+
+  /* Header Design wie im Bild */
   th { 
-    padding: 15px; 
-    color: var(--text-white);
-    font-size: 18px;
+    padding: 12px; 
+    color: white;
+    font-size: 14px;
     border-bottom: 2px solid #333;
-    text-align: center;
+    background: #0f0f0f;
   }
 
-  /* Standard Zeile */
+  /* Zeilen-Design */
   tr.law-item { 
-    cursor: pointer; 
-    transition: 0.2s;
+    cursor: pointer;
+    border-bottom: 1px solid var(--line-color);
   }
 
-  /* Schriftfarben (Rosa) */
   td { 
-    padding: 15px; 
-    color: var(--accent-pink); 
-    font-size: 16px;
-    text-align: center;
-    border-top: 1px solid transparent;
-    border-bottom: 1px solid transparent;
+    padding: 12px; 
+    color: var(--accent-pink); /* Schrift Rosa */
+    font-size: 14px;
+    vertical-align: middle;
   }
 
-  /* Der graue Kasten, wenn angeklickt */
-  tr.selected-row td { 
-    background-color: var(--selection-gray); 
-    border-top: 1px solid #444;
-    border-bottom: 1px solid #444;
+  /* Spaltentrenner wie im Bild */
+  td:not(:last-child) {
+    border-right: 1px solid var(--line-color);
   }
-  
-  /* Ecken abrunden für den Kasten */
-  tr.selected-row td:first-child { border-left: 1px solid #444; border-radius: 10px 0 0 10px; }
-  tr.selected-row td:last-child { border-right: 1px solid #444; border-radius: 0 10px 10px 0; }
 
+  /* Kategorie-Zeile (Gelber Text / Rosa Schrift Wunsch) */
   .category-row td { 
     color: var(--accent-pink); 
     font-weight: bold; 
-    font-size: 22px; 
-    padding: 30px 0 10px 0; 
-    text-align: center;
-    pointer-events: none;
-    background: none !important;
-    border: none !important;
+    font-size: 16px; 
+    background: #0d0d0d;
+    padding: 15px;
+    border-bottom: 2px solid #222;
   }
 
+  /* Auswahl-Effekt: Grauer Kasten */
+  tr.law-item.selected-row {
+    background-color: var(--selection-gray) !important;
+  }
+  
+  tr.law-item.selected-row td {
+    color: var(--accent-pink); /* Bleibt Rosa */
+  }
+
+  /* Sterne Design */
   .star-gold { color: var(--accent-pink); }
-  .star-gray { color: #333; }
+  .star-gray { color: #444; }
+
+  /* Hover Effekt */
+  tr.law-item:hover {
+    background: #1a1a1a;
+  }
 </style>
 </head>
 <body>
 
-<div class="penalty-list">
+<div class="penalty-container">
   <table>
     <thead>
       <tr>
-        <th>Paragraph</th>
-        <th>Strafbestand</th>
-        <th>Haftstrafe</th>
-        <th>Bußgeld</th>
+        <th style="width: 15%;">Paragraph</th>
+        <th style="width: 55%;">Strafbestand</th>
+        <th style="width: 15%;">Haftstrafe</th>
+        <th style="width: 15%;">Bußgeld</th>
       </tr>
     </thead>
     <tbody id="tableBody">
-      <tr class="category-row"><td colspan="4">Straßenverkehrsordnung (StVO)</td></tr>
+      <tr class="category-row">
+        <td colspan="4">Straßenverkehrsordnung (StVO)</td>
+      </tr>
+      
       <tr class="law-item" onclick="toggleRow(this)">
         <td>StVO §2</td>
         <td>Gefährdung anderer Verkehrsteilnehmer</td>
         <td></td>
         <td>$10.000</td>
       </tr>
-      <tr class="law-item" onclick="toggleRow(this)">
-        <td>StVO §4</td>
-        <td>Missachten von Rechtsfahrgebot</td>
-        <td></td>
-        <td>$8.000</td>
-      </tr>
-      <tr class="law-item" onclick="toggleRow(this)">
-        <td>StVO §8</td>
-        <td>Geschwindigkeitsüberschreitung ab 101 km/h</td>
-        <td></td>
-        <td>$20.000</td>
-      </tr>
       
-      <tr class="category-row"><td colspan="4">Psychische & Physische Integrität (StGB)</td></tr>
       <tr class="law-item" onclick="toggleRow(this)">
-        <td>StGB §3.1</td>
-        <td>Beleidigung</td>
-        <td class="star-gray">★</td>
+        <td>StVO §24</td>
+        <td>Fahrerflucht</td>
+        <td class="star-gold">★</td>
         <td>$10.000</td>
       </tr>
+
+      <tr class="category-row">
+        <td colspan="4">Psychische & Physische Integrität (StGB)</td>
+      </tr>
+
       <tr class="law-item" onclick="toggleRow(this)">
         <td>StGB §4.1</td>
-        <td>Mord / Mordversuch</td>
+        <td>Versuchter Mord / Mord</td>
         <td class="star-gold">★★★★</td>
         <td>$30.000</td>
       </tr>
