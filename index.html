@@ -1,729 +1,465 @@
 <!DOCTYPE html>
-
 <html lang="de">
-
 <head>
-
-<meta charset="UTF-8">
-
-<title>LSPD Bußgeldrechner - Pink Edition</title>
-
-<style>
-
-  :root {
-
-    --bg-black: #080808;
-
-    --bg-card: #121212;
-
-    --accent-pink: #ff69b4;
-
-    --text-white: #ffffff;
-
-    --text-gray: #a0a0a0;
-
-    --switch-bg: #2a2a2a;
-
-    --switch-red: #e63946;
-
-    --switch-green: #2ecc71;
-
-    --input-bg: #0a0a0a;
-
-  }
-
-
-
-  * { user-select: none; -webkit-user-select: none; text-align: center; }
-
-
-
-  body { margin: 0; background: var(--bg-black); color: var(--text-white); font-family: 'Segoe UI', sans-serif; overflow: hidden; }
-
-
-
-  .main-container {
-
-    display: grid;
-
-    grid-template-columns: 1fr 420px;
-
-    gap: 20px;
-
-    padding: 20px;
-
-    height: 100vh;
-
-    box-sizing: border-box;
-
-  }
-
-
-
-  .penalty-list {
-
-    background: var(--bg-card);
-
-    padding: 15px;
-
-    border-radius: 10px;
-
-    overflow-y: auto;
-
-    border: 1px solid #222;
-
-    display: flex;
-
-    flex-direction: column;
-
-  }
-
-
-
-  /* Suchfeld Style */
-
-  .search-container {
-
-    margin-bottom: 15px;
-
-    position: sticky;
-
-    top: 0;
-
-    z-index: 20;
-
-    background: var(--bg-card);
-
-    padding-bottom: 10px;
-
-  }
-
-  .search-field {
-
-    width: 100%;
-
-    padding: 12px;
-
-    background: var(--input-bg);
-
-    border: 1px solid var(--accent-pink);
-
-    border-radius: 5px;
-
-    color: white;
-
-    box-sizing: border-box;
-
-    outline: none;
-
-  }
-
-
-
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-
-  
-
-  th { 
-
-    padding: 15px; 
-
-    border-bottom: 2px solid #333; 
-
-    position: sticky; 
-
-    top: 0; 
-
-    background: var(--bg-card); 
-
-    z-index: 10; 
-
-    color: var(--text-white);
-
-  }
-
-
-
-  td { 
-
-    padding: 18px 10px; 
-
-    border-bottom: 1px solid #1a1a1a; 
-
-    cursor: pointer; 
-
-    vertical-align: middle;
-
-  }
-
-  
-
-  tr:hover { background: #1a1a1a; }
-
-  .hidden { display: none; }
-
-
-
-  .category-row { 
-
-    color: var(--accent-pink);
-
-    font-weight: bold; 
-
-    padding: 30px 0 15px 0; 
-
-    font-size: 18px; 
-
-    pointer-events: none; 
-
-  }
-
-
-
-  .col-para { color: var(--accent-pink); font-weight: bold; }
-
-  .col-name { color: var(--text-gray); }
-
-  .col-stars { font-size: 16px; white-space: nowrap; }
-
-  .col-money { color: var(--text-gray); }
-
-
-
-  .star-gold { color: var(--accent-pink); }
-
-  .star-gray { color: #444; }
-
-
-
-  .result-sidebar {
-
-    background: #151515;
-
-    border-radius: 15px;
-
-    padding: 25px;
-
-    border: 1px solid #222;
-
-    overflow-y: auto;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-
-  }
-
-
-
-  .res-title { font-size: 26px; font-weight: bold; margin-bottom: 5px; color: var(--accent-pink); }
-
-  .res-sub { font-size: 11px; color: var(--text-gray); font-style: italic; margin-bottom: 20px; }
-
-  
-
-  .res-line { font-size: 15px; margin-bottom: 12px; color: var(--text-gray); line-height: 1.4; width: 100%; }
-
-  .res-line b { color: white; }
-
-
-
-  .grund-clickable { 
-
-    color: var(--text-white); 
-
-    font-weight: normal; 
-
-    cursor: copy;
-
-    transition: color 0.2s;
-
-    word-break: break-word;
-
-    display: block;
-
-    margin-top: 5px;
-
-  }
-
-  .grund-clickable:hover { color: var(--accent-pink); text-decoration: underline; }
-
-  .copy-success { color: var(--switch-green) !important; }
-
-
-
-  .switch-area { width: 100%; margin: 10px 0; }
-
-  .switch-row { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 8px; cursor: pointer; width: 100%; }
-
-  .switch-pill { width: 40px; height: 20px; background: var(--switch-bg); border-radius: 10px; position: relative; flex-shrink: 0; }
-
-  .switch-circle { width: 16px; height: 16px; background: var(--switch-red); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s; }
-
-  .active .switch-circle { transform: translateX(20px); background: var(--switch-green); }
-
-  .switch-text { font-size: 13px; }
-
-
-
-  .input-area { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; width: 100%; }
-
-  .field { background: var(--input-bg); border: 1px solid #222; color: #fff; padding: 12px; border-radius: 5px; width: 100%; box-sizing: border-box; user-select: text; text-align: center; }
-
-  
-
-  .btn-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; width: 100%; }
-
-  .btn { background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 5px; font-size: 11px; cursor: pointer; text-transform: uppercase; font-weight: bold; width: 100%; }
-
-  .btn:hover { border-color: var(--accent-pink); color: var(--accent-pink); }
-
-  
-
-  .selected-row { border-left: 4px solid var(--accent-pink); background: #1d1d1d !important; }
-
-</style>
-
+    <meta charset="UTF-8">
+    <title>LSPD Penal Code - Pink Edition</title>
+    <style>
+        :root {
+            --bg-main: #0b0e14;
+            --bg-card: #151921;
+            --bg-input: #0d1117;
+            --accent-pink: #ff2e7e;
+            --text-main: #ffffff;
+            --text-muted: #8b949e;
+            --border-color: #21262d;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            width: 100%;
+            height: 100vh;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* --- LINKE SEITE: LISTE --- */
+        .main-panel {
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header-area {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .logo-title span.pink { color: var(--accent-pink); }
+        .version-badge {
+            font-size: 10px;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .search-container {
+            padding: 0 20px 15px 20px;
+        }
+
+        .search-field {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            padding: 12px 15px;
+            border-radius: 8px;
+            color: white;
+            outline: none;
+        }
+
+        .table-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            color: var(--text-muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            padding: 10px 5px;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            background: var(--bg-card);
+        }
+
+        .category-row td {
+            color: var(--accent-pink);
+            font-weight: bold;
+            padding: 25px 0 10px 0;
+            font-size: 16px;
+        }
+
+        .law-row {
+            border-bottom: 1px solid #1a1e26;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .law-row:hover { background: #1c222d; }
+        .law-row.selected { background: #262c36; border-left: 3px solid var(--accent-pink); }
+
+        .law-row td { padding: 15px 5px; font-size: 14px; }
+        .col-para { color: var(--accent-pink); font-weight: 600; width: 120px; }
+        .col-name { color: #d1d5da; }
+        .col-money { text-align: right; color: var(--text-muted); }
+        .col-haft { text-align: center; color: var(--text-muted); }
+
+        /* --- RECHTE SEITE: DASHBOARD --- */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .stat-label { font-size: 10px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; margin-bottom: 10px; display: block;}
+        .stat-value { font-size: 28px; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .stat-icon { position: absolute; top: 15px; right: 15px; opacity: 0.2; font-size: 20px; }
+
+        .settings-card {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .switch-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            cursor: pointer;
+        }
+
+        .switch-label { font-size: 13px; }
+        .reue-text { color: #2ecc71; font-size: 11px; margin-left: 5px; }
+
+        .toggle {
+            width: 34px;
+            height: 18px;
+            background: #30363d;
+            border-radius: 10px;
+            position: relative;
+            transition: 0.3s;
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: 0.3s;
+        }
+
+        .active .toggle { background: var(--accent-pink); }
+        .active .toggle::after { transform: translateX(16px); }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .input-group label {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .small-input {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            color: white;
+            font-size: 12px;
+        }
+
+        .notes-area {
+            margin-top: 15px;
+        }
+
+        .output-card {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        #generatedEntry {
+            background: #0a0c10;
+            border-left: 3px solid var(--accent-pink);
+            padding: 12px;
+            font-size: 12px;
+            color: #8b949e;
+            font-style: italic;
+            flex: 1;
+            cursor: pointer;
+            word-break: break-all;
+        }
+
+        .btn-reset {
+            margin-top: 10px;
+            background: transparent;
+            border: 1px solid #30363d;
+            color: var(--text-muted);
+            padding: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+        .btn-reset:hover { border-color: var(--accent-pink); color: white; }
+
+        /* Scrollbar Style */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 10px; }
+    </style>
 </head>
+<body>
 
-<body oncontextmenu="return false;">
+<div class="container">
+    <div class="main-panel">
+        <div class="header-area">
+            <div class="logo-title">🛡️ LSPD <span class="pink">PENAL</span> CODE</div>
+            <div class="version-badge">V.2.0 PINK</div>
+        </div>
 
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-field" placeholder="Suche nach Paragraph, Delikt..." onkeyup="filterTable()">
+        </div>
 
-
-<div class="main-container">
-
-  <section class="penalty-list">
-
-    <div class="search-container">
-
-      <input type="text" id="searchInput" class="search-field" placeholder="Suche nach Paragraf oder Name..." onkeyup="filterTable()">
-
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>§ Paragraph</th>
+                        <th>Tatbestand</th>
+                        <th style="text-align:center">Haft</th>
+                        <th style="text-align:right">Bussgeld</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
     </div>
 
-    <table>
+    <div class="sidebar">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">Bussgeld Gesamt</span>
+                <div class="stat-value" id="outM">$0</div>
+                <div class="stat-icon">💵</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Haftzeit / Wanteds</span>
+                <div class="stat-value" id="outW">0 ★</div>
+                <div class="stat-icon">⚖️</div>
+            </div>
+        </div>
 
-      <thead>
+        <div class="settings-card">
+            <div class="switch-row" id="swRights" onclick="toggleSwitch(this)">
+                <span class="switch-label">Rechte vorgelesen</span>
+                <div class="toggle"></div>
+            </div>
+            <div class="switch-row" id="swReue" onclick="toggleSwitch(this)">
+                <span class="switch-label">Zeigt Reue <span class="reue-text">(-20%)</span></span>
+                <div class="toggle"></div>
+            </div>
+            <div class="switch-row" id="swHaft" onclick="toggleSwitch(this)">
+                <span class="switch-label">Haftbefehl / Beschluss</span>
+                <div class="toggle"></div>
+            </div>
 
-        <tr><th>Paragraph</th><th>Strafbestand</th><th>Haftstrafe</th><th>Bußgeld</th></tr>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>Kennzeichen</label>
+                    <input type="text" id="inPlate" class="small-input" placeholder="LS-XXXX" oninput="updateDisplay()">
+                </div>
+                <div class="input-group">
+                    <label>Ort / Blitzer</label>
+                    <input type="text" id="inBlitzer" class="small-input" placeholder="Ort eingeben" oninput="updateDisplay()">
+                </div>
+            </div>
 
-      </thead>
+            <div class="notes-area">
+                <label style="font-size: 10px; color: var(--text-muted); font-weight: bold;">INTERNE NOTIZEN</label>
+                <textarea id="inNotes" class="small-input" style="height: 60px; resize: none; margin-top:5px" placeholder="Zusätzliche Infos..." oninput="updateDisplay()"></textarea>
+            </div>
+        </div>
 
-      <tbody id="tableBody"></tbody>
-
-    </table>
-
-  </section>
-
-
-
-  <aside class="result-sidebar">
-
-    <div class="res-title">Ergebnis</div>
-
-    <div class="res-sub">Klicke auf den Grund zum Kopieren.</div>
-
-
-
-    <div class="res-line"><b>Geldstrafe:</b><br><span id="outM">$0</span> <small id="reueNote" style="display:none; color:var(--switch-green)">(-20%)</small></div>
-
-    <div class="res-line"><b>Wanteds:</b><br><span id="outW">0</span></div>
-
-    <div class="res-line"><b>Grund:</b><span id="outGrund" class="grund-clickable" onclick="copyGrundText()"></span></div>
-
-    <div class="res-line"><b>Zeichen:</b><br><span id="outChars">0/150</span></div>
-
-
-
-    <div class="switch-area">
-
-      <div class="switch-row" id="swRights" onclick="toggleSwitch(this)">
-
-        <div class="switch-pill"><div class="switch-circle"></div></div>
-
-        <div class="switch-text"><b>Rechte vorgelesen</b></div>
-
-      </div>
-
-      <div class="switch-row" id="swReue" onclick="toggleSwitch(this)">
-
-        <div class="switch-pill"><div class="switch-circle"></div></div>
-
-        <div class="switch-text"><b>Zeigt Reue (-20%)</b></div>
-
-      </div>
-
-      <div class="switch-row" id="swHaft" onclick="toggleSwitch(this)">
-
-        <div class="switch-pill"><div class="switch-circle"></div></div>
-
-        <div class="switch-text"><b>Haftbefehl / Beschluss</b></div>
-
-      </div>
-
+        <div class="output-card">
+            <div class="output-header">
+                <span>GENERIERTER AKTENEINTRAG</span>
+                <span id="charCount">0 ZEICHEN</span>
+            </div>
+            <div id="generatedEntry" onclick="copyText()">Wähle Tatbestände aus...</div>
+            <button class="btn-reset" onclick="location.reload()">Rechner zurücksetzen</button>
+        </div>
     </div>
-
-
-
-    <div class="input-area">
-
-      <input type="text" class="field" placeholder="Kennzeichen" id="inPlate" oninput="updateDisplay()">
-
-      <input type="text" class="field" placeholder="Blitzerort" id="inBlitzer" oninput="updateDisplay()">
-
-      <textarea class="field" id="inNotes" style="height: 60px; resize: none;" placeholder="Notizen..." oninput="updateDisplay()"></textarea>
-
-    </div>
-
-
-
-    <div class="btn-grid">
-
-      <div class="btn" onclick="location.reload()">Rechner zurücksetzen</div>
-
-    </div>
-
-  </aside>
-
 </div>
 
-
-
 <script>
-
 const laws = [
-
-  { cat: "Straßenverkehrsordnung (StVO)", items: [
-
-    {p:"StVO §2", n:"Gefährdung anderer Verkehrsteilnehmer", m:10000, w:0, g:0},
-
-    {p:"StVO §4", n:"Missachten von Rechtsfahrgebot", m:8000, w:0, g:0},
-
-    {p:"StVO §5", n:"Überschreiten der Fahrzeugkapazitäten", m:5000, w:0, g:0},
-
-    {p:"StVO §6", n:"Fahren mit demoliertem Fahrzeug", m:2000, w:0, g:0},
-
-    {p:"StVO §7", n:"Fahren ohne Licht (Dunkelheit, Wetter)", m:5000, w:0, g:0},
-
-    {p:"StVO §8", n:"Geschw. 10-40 km/h", m:5000, w:0, g:0},
-
-    {p:"StVO §8", n:"Geschw. 41-60 km/h", m:10000, w:0, g:0},
-
-    {p:"StVO §8", n:"Geschw. 61-100 km/h", m:15000, w:0, g:0},
-
-    {p:"StVO §8", n:"Geschw. ab 101 km/h", m:20000, w:0, g:0},
-
-    {p:"StVO §9 Art. 3", n:"Fahren ohne gültige Zulassung", m:10000, w:0, g:0},
-
-    {p:"StVO §10 Art. 1", n:"Missachten Rechts vor Links", m:1000, w:0, g:0},
-
-    {p:"StVO §10 Art. 2", n:"Missachten von Verkehrsschildern", m:2000, w:0, g:0},
-
-    {p:"StVO §10 Art. 4", n:"Fahren ohne genügend Tankkapazität", m:10000, w:0, g:0},
-
-    {p:"StVO §10 Art. 6", n:"Nutzung Mobilgerät am Steuer", m:3000, w:0, g:0},
-
-    {p:"StVO §10 Art. 7", n:"Lärmbelästigung / Hupen", m:20000, w:0, g:0},
-
-    {p:"StVO §10 Art. 16", n:"Fahren entgegeng. Fahrtrichtung", m:30000, w:0, g:0},
-
-    {p:"StVO §12.1", n:"Falsch Parken / Halten", m:10000, w:0, g:0},
-
-    {p:"StVO §17", n:"Fahren im berauschten Zustand", m:10000, w:0, g:2},
-
-    {p:"StVO §20", n:"Fahren ohne Gurt", m:5000, w:0, g:0},
-
-    {p:"StVO §24", n:"Fahrerflucht", m:10000, w:1, g:0},
-
-    {p:"StVO §26", n:"Abschleppkosten", m:20000, w:0, g:0},
-
-    {p:"StVO §28", n:"Anti-Radar Sharing-Cars", m:30000, w:3, g:0}
-
-  ]},
-
-  { cat: "Waffengesetz (WaffG)", items: [
-
-    {p:"WaffG §1", n:"Besitz legaler Waffen ohne Schein", m:10000, w:1, g:1},
-
-    {p:"WaffG §5.1", n:"Besitz illegaler Waffen", m:30000, w:3, g:0},
-
-    {p:"WaffG §8.1", n:"Offenes Tragen einer Waffe", m:5000, w:1, g:0},
-
-    {p:"WaffG §11", n:"Ungesetzlicher Waffenhandel", m:25000, w:3, g:0}
-
-  ]},
-
-  { cat: "Betäubungsmittelgesetz (BtMG)", items: [
-
-    {p:"BtMG §2.1", n:"Drogenbesitz Klein", m:15000, w:0, g:1},
-
-    {p:"BtMG §2.1", n:"Drogenbesitz Groß (50+)", m:30000, w:2, g:0},
-
-    {p:"BtMG §2.2", n:"Drogenhandel", m:30000, w:3, g:0},
-
-    {p:"BtMG §2.1", n:"Drogen Herstellung", m:30000, w:3, g:0}
-
-  ]},
-
-  { cat: "Umgang mit Beamten (StGB)", items: [
-
-    {p:"StGB §15.1", n:"Nichtbeachten amtl. Anweisung", m:10000, w:0, g:2},
-
-    {p:"StGB §15.5", n:"Widerstand gegen Vollstreckungsbeamte", m:20000, w:2, g:0},
-
-    {p:"StGB §16", n:"Befreiung von Gefangenen", m:30000, w:3, g:2},
-
-    {p:"StGB §24", n:"Amtsanmaßung", m:25000, w:2, g:1}
-
-  ]},
-
-  { cat: "Psychische & Physische Integrität (StGB)", items: [
-
-    {p:"StGB §3.1", n:"Beleidigung", m:10000, w:0, g:1},
-
-    {p:"StGB §4.1", n:"Mord / Mordversuch", m:30000, w:4, g:0},
-
-    {p:"StGB §4.2", n:"Körperverletzung", m:15000, w:2, g:0},
-
-    {p:"StGB §4.3", n:"Körperverletzung mit Todesfolge", m:20000, w:3, g:0},
-
-    {p:"StGB §27", n:"Geiselnahme", m:30000, w:3, g:0},
-
-    {p:"StGB §42", n:"Erpressung", m:45000, w:3, g:0}
-
-  ]},
-
-  { cat: "Wirtschaftskriminalität (StGB)", items: [
-
-    {p:"StGB §7", n:"Fahrzeug Diebstahl", m:10000, w:2, g:0},
-
-    {p:"StGB §11", n:"Raub", m:25000, w:3, g:0},
-
-    {p:"StGB §12.1", n:"Ammu Rob / Geschäfts Raub", m:35000, w:2, g:0},
-
-    {p:"StGB §41.1", n:"Besitz staatl. Eigentum", m:50000, w:3, g:0}
-
-  ]},
-
-  { cat: "Sperrzonen & Sonstiges", items: [
-
-    {p:"StGB §18", n:"Betreten Militärgelände", m:50000, w:5, g:0},
-
-    {p:"StGB §25", n:"Terrorismus", m:25000, w:3, g:0},
-
-    {p:"§6 StPO", n:"Bußgelder nicht bezahlt", m:0, w:5, g:0},
-
-    {p:"BDG", n:"Dienstvergehen", m:50000, w:0, g:5}
-
-  ]}
-
+    { cat: "Straßenverkehrsordnung (StVO)", items: [
+        {p:"StVO §2", n:"Gefährdung anderer Verkehrsteilnehmer", m:10000, w:0},
+        {p:"StVO §4", n:"Missachten von Rechtsfahrgebot", m:8000, w:0},
+        {p:"StVO §5", n:"Überschreiten der Fahrzeugkapazitäten", m:5000, w:0},
+        {p:"StVO §6", n:"Fahren mit demoliertem Fahrzeug", m:2000, w:0},
+        {p:"StVO §7", n:"Fahren ohne Licht (Dunkelheit, Wetter)", m:5000, w:0},
+        {p:"StVO §8", n:"Geschw. 10-40 km/h", m:5000, w:0},
+        {p:"StVO §8", n:"Geschw. 41-60 km/h", m:10000, w:0},
+        {p:"StVO §24", n:"Fahrerflucht", m:10000, w:1}
+    ]},
+    { cat: "Waffengesetz (WaffG)", items: [
+        {p:"WaffG §1", n:"Besitz legaler Waffen ohne Schein", m:10000, w:1},
+        {p:"WaffG §5.1", n:"Besitz illegaler Waffen", m:30000, w:3},
+        {p:"WaffG §11", n:"Ungesetzlicher Waffenhandel", m:25000, w:3}
+    ]},
+    { cat: "Strafgesetzbuch (StGB)", items: [
+        {p:"StGB §3.1", n:"Beleidigung", m:10000, w:1},
+        {p:"StGB §4.1", n:"Mord / Mordversuch", m:30000, w:4},
+        {p:"StGB §15.5", n:"Widerstand gegen Beamte", m:20000, w:2}
+    ]}
 ];
-
-
 
 let curM = 0; let curW = 0; let activeParas = [];
 
-
-
 function render() {
-
-  const b = document.getElementById('tableBody');
-
-  b.innerHTML = "";
-
-  laws.forEach(c => {
-
-    b.innerHTML += `<tr class="cat-header"><td colspan="4" class="category-row">${c.cat}</td></tr>`;
-
-    c.items.forEach(i => {
-
-      let s = '<span class="star-gold">'+'★'.repeat(i.w)+'</span>' + '<span class="star-gray">'+'★'.repeat(i.g)+'</span>';
-
-      b.innerHTML += `<tr class="law-row" data-search="${i.p.toLowerCase()} ${i.n.toLowerCase()}" onclick="calc(${i.m},${i.w},'${i.p}',this)">
-
-        <td class="col-para">${i.p}</td>
-
-        <td class="col-name">${i.n}</td>
-
-        <td class="col-stars">${s}</td>
-
-        <td class="col-money">$${i.m.toLocaleString()}</td>
-
-      </tr>`;
-
+    const b = document.getElementById('tableBody');
+    b.innerHTML = "";
+    laws.forEach(c => {
+        b.innerHTML += `<tr class="cat-header"><td colspan="4" class="category-row">⚖️ ${c.cat}</td></tr>`;
+        c.items.forEach(i => {
+            b.innerHTML += `
+                <tr class="law-row" data-search="${i.p.toLowerCase()} ${i.n.toLowerCase()}" onclick="calc(${i.m},${i.w},'${i.p}',this)">
+                    <td class="col-para">${i.p}</td>
+                    <td class="col-name">${i.n}</td>
+                    <td class="col-haft">${i.w > 0 ? i.w + ' ★' : '-'}</td>
+                    <td class="col-money">$${i.m.toLocaleString()}</td>
+                </tr>`;
+        });
     });
-
-  });
-
 }
-
-
 
 function filterTable() {
-
-  const input = document.getElementById('searchInput').value.toLowerCase();
-
-  const rows = document.querySelectorAll('.law-row');
-
-  const headers = document.querySelectorAll('.cat-header');
-
-
-
-  rows.forEach(row => {
-
-    const text = row.getAttribute('data-search');
-
-    row.style.display = text.includes(input) ? "" : "none";
-
-  });
-
-
-
-  // Header ausblenden wenn keine Items in der Kategorie sichtbar
-
-  headers.forEach(header => {
-
-    let next = header.nextElementSibling;
-
-    let hasVisible = false;
-
-    while(next && !next.classList.contains('cat-header')) {
-
-      if(next.style.display !== "none") hasVisible = true;
-
-      next = next.nextElementSibling;
-
-    }
-
-    header.style.display = hasVisible ? "" : "none";
-
-  });
-
+    const val = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('.law-row').forEach(r => {
+        r.style.display = r.getAttribute('data-search').includes(val) ? "" : "none";
+    });
 }
-
-
 
 function calc(m, w, p, e) {
-
-  e.classList.toggle('selected-row');
-
-  if (e.classList.contains('selected-row')) {
-
-    curM += m; curW += w; activeParas.push(p);
-
-  } else {
-
-    curM -= m; curW -= w; activeParas = activeParas.filter(x => x !== p);
-
-  }
-
-  updateDisplay();
-
+    e.classList.toggle('selected');
+    if (e.classList.contains('selected')) {
+        curM += m; curW += w; activeParas.push(p);
+    } else {
+        curM -= m; curW -= w; activeParas = activeParas.filter(x => x !== p);
+    }
+    updateDisplay();
 }
-
-
 
 function toggleSwitch(el) { el.classList.toggle('active'); updateDisplay(); }
 
-
-
 function updateDisplay() {
+    const isReue = document.getElementById('swReue').classList.contains('active');
+    const isHaft = document.getElementById('swHaft').classList.contains('active');
+    let finalM = isReue ? Math.round(curM * 0.8) : curM;
 
-  const isReue = document.getElementById('swReue').classList.contains('active');
+    document.getElementById('outM').innerText = '$' + finalM.toLocaleString();
+    document.getElementById('outW').innerText = curW + ' ★';
 
-  const isHaft = document.getElementById('swHaft').classList.contains('active');
+    const plate = document.getElementById('inPlate').value;
+    const blitzer = document.getElementById('inBlitzer').value;
+    
+    let text = "";
+    if(activeParas.length > 0 || isHaft) {
+        text = `${new Date().toLocaleDateString('de-DE')} | `;
+        if(isHaft) text += "[HAFTBEFEHL] ";
+        text += activeParas.join(", ");
+        if(plate) text += ` | Kennz: ${plate}`;
+        if(blitzer) text += ` | Ort: ${blitzer}`;
+        if(isReue) text += " (Reue)";
+    }
 
-  
-
-  let displayM = curM;
-
-  if(isReue) {
-
-    displayM = Math.round(curM * 0.8);
-
-    document.getElementById('reueNote').style.display = "inline";
-
-  } else {
-
-    document.getElementById('reueNote').style.display = "none";
-
-  }
-
-
-
-  document.getElementById('outM').innerText = '$' + displayM.toLocaleString();
-
-  document.getElementById('outW').innerText = curW;
-
-  
-
-  const now = new Date();
-
-  const dateStr = now.toLocaleDateString('de-DE');
-
-  const timeStr = now.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'});
-
-  const plate = document.getElementById('inPlate').value;
-
-  const blitzer = document.getElementById('inBlitzer').value;
-
-  
-
-  let grund = "";
-
-  if(activeParas.length > 0 || isHaft) {
-
-    grund = `${dateStr} ${timeStr} | `;
-
-    if(isHaft) grund += "[HAFTBEFEHL/BESCHLUSS] ";
-
-    grund += activeParas.join(", ");
-
-    if(plate) grund += ` - ${plate}`;
-
-    if(blitzer) grund += ` - ${blitzer}`;
-
-    if(isReue) grund += " (inkl. Reue-Rabatt)";
-
-  }
-
-  
-
-  document.getElementById('outGrund').innerText = grund || "Noch keine Auswahl";
-
-  document.getElementById('outChars').innerText = (grund ? grund.length : 0) + "/150";
-
+    const out = document.getElementById('generatedEntry');
+    out.innerText = text || "Wähle Tatbestände aus...";
+    document.getElementById('charCount').innerText = (text.length) + " ZEICHEN";
 }
 
-
-
-function copyGrundText() {
-
-  const text = document.getElementById('outGrund').innerText;
-
-  if(text && text !== "Noch keine Auswahl") {
-
-    navigator.clipboard.writeText(text).then(() => {
-
-        const g = document.getElementById('outGrund');
-
-        g.classList.add('copy-success');
-
-        setTimeout(() => g.classList.remove('copy-success'), 800);
-
-    });
-
-  }
-
+function copyText() {
+    const t = document.getElementById('generatedEntry').innerText;
+    if(t.includes('|')) {
+        navigator.clipboard.writeText(t);
+        alert("In die Zwischenablage kopiert!");
+    }
 }
-
-
 
 render();
-
 </script>
 
 </body>
-
 </html>
