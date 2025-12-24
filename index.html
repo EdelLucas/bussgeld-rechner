@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>LSPD Penal Code - V.4.5 Professional</title>
+    <title>LSPD Penal Code - V.5.0 Box Edition</title>
     <style>
         :root {
             --bg-main: #0b0e14;
@@ -20,41 +20,55 @@
         .container { display: grid; grid-template-columns: 1fr 420px; width: 100%; height: 100vh; padding: 20px; gap: 20px; }
 
         /* --- LISTE --- */
-        .main-panel { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; overflow: hidden; }
-        .header-area { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .main-panel { background: transparent; display: flex; flex-direction: column; overflow: hidden; }
+        .header-area { padding: 10px 0 20px 0; display: flex; justify-content: space-between; align-items: center; }
         .logo-title { display: flex; align-items: center; gap: 15px; font-size: 24px; font-weight: bold; }
         .pink { color: var(--accent-pink); }
         
-        .search-container { padding: 0 20px 15px 20px; }
-        .search-field { width: 100%; background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; color: white; outline: none; }
+        .search-container { margin-bottom: 20px; }
+        .search-field { width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; color: white; outline: none; transition: 0.3s; }
+        .search-field:focus { border-color: var(--accent-pink); box-shadow: 0 0 10px rgba(255, 46, 126, 0.2); }
 
-        .table-container { flex: 1; overflow-y: auto; padding: 0 20px; }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: center; color: var(--text-muted); font-size: 11px; text-transform: uppercase; padding: 10px 5px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; background: var(--bg-card); z-index: 10; }
-        th:nth-child(2) { text-align: left; }
-        
-        /* --- KATEGORIEN STYLING (NEU) --- */
-        .category-row td { 
-            color: var(--accent-pink); 
-            font-weight: 900; 
-            font-style: italic; 
+        /* SCROLL AREA FÜR KARTEN */
+        .cards-scroll-area { flex: 1; overflow-y: auto; padding-right: 10px; }
+
+        /* EINZELNE GESETZES-KASTEN */
+        .law-category-card { 
+            background: var(--bg-card); 
+            border: 1px solid var(--border-color); 
+            border-radius: 12px; 
+            margin-bottom: 25px; 
+            overflow: hidden;
+            transition: 0.3s;
+        }
+        .law-category-card:hover { border-color: rgba(255, 46, 126, 0.5); }
+
+        .card-header { 
+            background: rgba(255, 46, 126, 0.05);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--accent-pink);
+            font-weight: 900;
+            font-style: italic;
             text-transform: uppercase;
             letter-spacing: 2px;
-            padding: 45px 0 10px 0; 
-            font-size: 18px; 
-            border-bottom: 1px solid var(--accent-pink);
-            text-shadow: 0 0 10px rgba(255, 46, 126, 0.4);
-            text-align: left !important;
+            font-size: 16px;
+            text-shadow: 0 0 8px rgba(255, 46, 126, 0.4);
         }
 
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: center; color: var(--text-muted); font-size: 10px; text-transform: uppercase; padding: 12px 5px; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.1); }
+        th:nth-child(2) { text-align: left; }
+        
         .law-row { border-bottom: 1px solid #1a1e26; cursor: pointer; transition: 0.2s; }
+        .law-row:last-child { border-bottom: none; }
         .law-row:hover { background: #1c222d; }
         .law-row.selected { background: #262c36; border-left: 3px solid var(--accent-pink); }
-        .law-row td { padding: 14px 5px; font-size: 13px; text-align: center; }
-        .law-row td.col-name { text-align: left; color: #d1d5da; }
+        .law-row td { padding: 12px 5px; font-size: 13px; text-align: center; }
+        .law-row td.col-name { text-align: left; color: #d1d5da; padding-left: 20px; }
         
-        .col-para { color: var(--accent-pink); font-weight: 600; }
-        .col-money { text-align: right !important; color: var(--text-muted); }
+        .col-para { color: var(--accent-pink); font-weight: 600; width: 120px; }
+        .col-money { text-align: right !important; color: var(--text-muted); padding-right: 20px !important; width: 100px; }
         .star-gold { color: var(--accent-pink); }
         .star-gray { color: #555; }
 
@@ -84,7 +98,7 @@
         #generatedEntry { background: #0a0c10; border-left: 3px solid var(--accent-pink); padding: 12px; font-size: 12px; color: #8b949e; flex: 1; cursor: pointer; font-style: italic; overflow-y: auto; word-break: break-all; }
 
         .btn-reset { margin-top: 10px; background: transparent; border: 1px solid #30363d; color: var(--text-muted); padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 11px; text-transform: uppercase; font-weight: bold; }
-        .btn-reset:hover { border-color: var(--accent-pink); color: white; }
+        .btn-reset:hover { border-color: var(--accent-pink); color: white; background: rgba(255, 46, 126, 0.05); }
 
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 10px; }
@@ -96,34 +110,25 @@
     <div class="main-panel">
         <div class="header-area">
             <div class="logo-title">🛡️ LSPD <span class="pink">PENAL</span> CODE</div>
-            <div style="font-size: 10px; color: var(--text-muted); letter-spacing: 1px;">V.4.5 PINK</div>
+            <div style="font-size: 10px; color: var(--text-muted); letter-spacing: 1px;">V.5.0 PINK BOX</div>
         </div>
+        
         <div class="search-container">
-            <input type="text" id="searchInput" class="search-field" placeholder="Suche..." onkeyup="filterTable()">
+            <input type="text" id="searchInput" class="search-field" placeholder="Suche nach Gesetz oder Paragraph..." onkeyup="filterTable()">
         </div>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 120px;">§ Paragraph</th>
-                        <th>Tatbestand</th>
-                        <th style="width: 100px;">Haftzeit</th>
-                        <th style="width: 120px; text-align: right;">Bußgeld</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-        </div>
+
+        <div class="cards-scroll-area" id="cardsContainer">
+            </div>
     </div>
 
     <div class="sidebar">
         <div class="stats-grid">
             <div class="stat-card">
-                <span class="stat-label">Bußgeld (Meistwert)</span>
+                <span class="stat-label">Bußgeld (Max)</span>
                 <div class="stat-value" id="outM">$0</div>
             </div>
             <div class="stat-card">
-                <span class="stat-label">Haftzeit (Meistwert)</span>
+                <span class="stat-label">Haftzeit (Max)</span>
                 <div class="stat-value" id="outW">0 ★</div>
             </div>
         </div>
@@ -143,7 +148,7 @@
 
             <div class="input-grid">
                 <input type="text" id="inPlate" class="small-input" placeholder="Kennzeichen" oninput="updateDisplay()">
-                <input type="number" id="manualStars" class="small-input" placeholder="Graue ★ wählen" min="0" max="10" oninput="updateDisplay()">
+                <input type="number" id="manualStars" class="small-input" placeholder="Graue ★ wählen" min="0" oninput="updateDisplay()">
             </div>
             <div class="input-grid" style="margin-top: 10px;">
                 <input type="text" id="inBlitzer" class="small-input" placeholder="Ort / Blitzer" oninput="updateDisplay()">
@@ -226,13 +231,24 @@ const laws = [
 let selectedItems = [];
 
 function render() {
-    const b = document.getElementById('tableBody');
-    b.innerHTML = "";
+    const container = document.getElementById('cardsContainer');
+    container.innerHTML = "";
+    
     laws.forEach(c => {
-        b.innerHTML += `<tr><td colspan="4" class="category-row">${c.cat}</td></tr>`;
+        let card = document.createElement('div');
+        card.className = "law-category-card";
+        
+        let header = `<div class="card-header">${c.cat}</div>`;
+        let table = `<table><thead><tr>
+            <th style="width:110px">Paragraph</th>
+            <th>Tatbestand</th>
+            <th style="width:90px">Haft</th>
+            <th style="width:110px; text-align:right">Bußgeld</th>
+        </tr></thead><tbody>`;
+        
         c.items.forEach(i => {
             let stars = '<span class="star-gold">'+'★'.repeat(i.w)+'</span>' + '<span class="star-gray">'+'★'.repeat(i.g)+'</span>';
-            b.innerHTML += `
+            table += `
                 <tr class="law-row" data-search="${i.p.toLowerCase()} ${i.n.toLowerCase()}" onclick="toggleLaw(this, ${JSON.stringify(i).replace(/"/g, '&quot;')})">
                     <td class="col-para">${i.p}</td>
                     <td class="col-name">${i.n}</td>
@@ -240,15 +256,22 @@ function render() {
                     <td class="col-money">$${i.m.toLocaleString()}</td>
                 </tr>`;
         });
+        
+        table += `</tbody></table>`;
+        card.innerHTML = header + table;
+        container.appendChild(card);
     });
 }
 
 function filterTable() {
     const val = document.getElementById('searchInput').value.toLowerCase();
     document.querySelectorAll('.law-row').forEach(r => {
-        if(!r.classList.contains('category-row')) {
-            r.style.display = r.getAttribute('data-search').includes(val) ? "" : "none";
-        }
+        r.style.display = r.getAttribute('data-search').includes(val) ? "" : "none";
+    });
+    // Verstecke leere Kategorien
+    document.querySelectorAll('.law-category-card').forEach(card => {
+        const hasVisible = Array.from(card.querySelectorAll('.law-row')).some(r => r.style.display !== "none");
+        card.style.display = hasVisible ? "" : "none";
     });
 }
 
@@ -296,9 +319,7 @@ function updateDisplay() {
     let text = "";
     if(paras.length > 0 || isHaft) {
         text = `${new Date().toLocaleDateString('de-DE')} | `;
-        if(isHaft) {
-            text += `[HAFTBEFEHL${haftNote ? ': ' + haftNote : ''}] `;
-        }
+        if(isHaft) text += `[HAFTBEFEHL${haftNote ? ': ' + haftNote : ''}] `;
         if(paras.length > 0) text += paras.join(", ");
         if(plate) text += ` | ${plate}`;
         if(blitzer) text += ` | ${blitzer}`;
