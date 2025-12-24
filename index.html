@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>LSPD Penal Code - V.5.0 Box Edition</title>
+    <title>LSPD Penal Code - V.6.0 Pro Edition</title>
     <style>
         :root {
             --bg-main: #0b0e14;
@@ -12,6 +12,7 @@
             --text-main: #ffffff;
             --text-muted: #8b949e;
             --border-color: #21262d;
+            --bg-modal: rgba(0, 0, 0, 0.85);
         }
 
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; user-select: none; }
@@ -29,19 +30,15 @@
         .search-field { width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; color: white; outline: none; transition: 0.3s; }
         .search-field:focus { border-color: var(--accent-pink); box-shadow: 0 0 10px rgba(255, 46, 126, 0.2); }
 
-        /* SCROLL AREA FÜR KARTEN */
         .cards-scroll-area { flex: 1; overflow-y: auto; padding-right: 10px; }
 
-        /* EINZELNE GESETZES-KASTEN */
         .law-category-card { 
             background: var(--bg-card); 
             border: 1px solid var(--border-color); 
             border-radius: 12px; 
             margin-bottom: 25px; 
             overflow: hidden;
-            transition: 0.3s;
         }
-        .law-category-card:hover { border-color: rgba(255, 46, 126, 0.5); }
 
         .card-header { 
             background: rgba(255, 46, 126, 0.05);
@@ -53,7 +50,6 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             font-size: 16px;
-            text-shadow: 0 0 8px rgba(255, 46, 126, 0.4);
         }
 
         table { width: 100%; border-collapse: collapse; }
@@ -92,13 +88,29 @@
         .small-input { width: 100%; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; color: white; font-size: 12px; outline: none; }
         .small-input:focus { border-color: var(--accent-pink); }
 
-        #haftInputContainer { display: none; margin-top: 5px; padding-bottom: 10px; }
+        /* Verkleinerter Grund */
+        #inHaftNote { font-size: 10px; padding: 5px 8px; margin-top: 5px; height: 26px; }
+
+        /* --- BUTTON GROUP --- */
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 5px; }
+        .action-btn { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--accent-pink); padding: 8px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
+        .action-btn:hover { background: var(--accent-pink); color: white; border-color: var(--accent-pink); }
 
         .output-card { background: var(--bg-card); border-radius: 10px; padding: 15px; border: 1px solid var(--border-color); flex: 1; display: flex; flex-direction: column; }
         #generatedEntry { background: #0a0c10; border-left: 3px solid var(--accent-pink); padding: 12px; font-size: 12px; color: #8b949e; flex: 1; cursor: pointer; font-style: italic; overflow-y: auto; word-break: break-all; }
 
         .btn-reset { margin-top: 10px; background: transparent; border: 1px solid #30363d; color: var(--text-muted); padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 11px; text-transform: uppercase; font-weight: bold; }
-        .btn-reset:hover { border-color: var(--accent-pink); color: white; background: rgba(255, 46, 126, 0.05); }
+        .btn-reset:hover { border-color: var(--accent-pink); color: white; }
+
+        /* --- MODALS --- */
+        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg-modal); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-content { background: #1c1c1c; width: 600px; border-radius: 12px; border: 1px solid var(--accent-pink); padding: 30px; position: relative; max-height: 85vh; overflow-y: auto; }
+        .modal-title { color: white; font-size: 22px; font-weight: bold; margin-bottom: 20px; border-bottom: 2px solid var(--accent-pink); padding-bottom: 10px; text-align: center; }
+        .modal-body { color: #e0e0e0; line-height: 1.6; font-size: 14px; }
+        .modal-close { background: var(--accent-pink); border: none; color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; display: block; margin: 25px auto 0 auto; }
+        
+        .belehrung-box { margin-bottom: 25px; }
+        .belehrung-header { color: var(--accent-pink); font-size: 18px; font-weight: bold; margin-bottom: 10px; }
 
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 10px; }
@@ -110,25 +122,22 @@
     <div class="main-panel">
         <div class="header-area">
             <div class="logo-title">🛡️ LSPD <span class="pink">PENAL</span> CODE</div>
-            <div style="font-size: 10px; color: var(--text-muted); letter-spacing: 1px;">V.5.0 PINK BOX</div>
+            <div style="font-size: 10px; color: var(--text-muted); letter-spacing: 1px;">V.6.0 PINK</div>
         </div>
-        
         <div class="search-container">
             <input type="text" id="searchInput" class="search-field" placeholder="Suche nach Gesetz oder Paragraph..." onkeyup="filterTable()">
         </div>
-
-        <div class="cards-scroll-area" id="cardsContainer">
-            </div>
+        <div class="cards-scroll-area" id="cardsContainer"></div>
     </div>
 
     <div class="sidebar">
         <div class="stats-grid">
             <div class="stat-card">
-                <span class="stat-label">Bußgeld (Max)</span>
+                <span class="stat-label">Bußgeld (Meistwert)</span>
                 <div class="stat-value" id="outM">$0</div>
             </div>
             <div class="stat-card">
-                <span class="stat-label">Haftzeit (Max)</span>
+                <span class="stat-label">Haftzeit (Meistwert)</span>
                 <div class="stat-value" id="outW">0 ★</div>
             </div>
         </div>
@@ -142,15 +151,22 @@
                 <span style="font-size: 13px;">Haftbefehl / Beschluss</span>
                 <div class="toggle"></div>
             </div>
-            <div id="haftInputContainer">
+            <div id="haftInputContainer" style="display:none;">
                 <input type="text" id="inHaftNote" class="small-input" placeholder="Grund / Aktenzeichen..." oninput="updateDisplay()">
             </div>
 
             <div class="input-grid">
                 <input type="text" id="inPlate" class="small-input" placeholder="Kennzeichen" oninput="updateDisplay()">
-                <input type="number" id="manualStars" class="small-input" placeholder="Graue ★ wählen" min="0" oninput="updateDisplay()">
+                <input type="number" id="manualStars" class="small-input" placeholder="Graue ★" min="0" oninput="updateDisplay()">
             </div>
-            <div class="input-grid" style="margin-top: 10px;">
+            
+            <div class="btn-group">
+                <button class="action-btn" onclick="window.open('https://docs.google.com/spreadsheets/d/1DufMS-4hxX75e9bJk_z3jSHqCcO6JmimoqYh6M94zP0/edit?gid=690010630#gid=690010630', '_blank')">Anwälte</button>
+                <button class="action-btn" onclick="openModal('modalRechte')">Rechte</button>
+                <button class="action-btn" onclick="openModal('modalBelehrung')">Belehrung</button>
+            </div>
+
+            <div class="input-grid">
                 <input type="text" id="inBlitzer" class="small-input" placeholder="Ort / Blitzer" oninput="updateDisplay()">
                 <textarea id="inNotes" class="small-input" style="height: 40px; resize: none;" placeholder="Interne Notizen..." oninput="updateDisplay()"></textarea>
             </div>
@@ -166,184 +182,28 @@
     </div>
 </div>
 
-<script>
-const laws = [
-  { cat: "Straßenverkehrsordnung (StVO)", items: [
-    {p:"StVO §2", n:"Gefährdung anderer Verkehrsteilnehmer", m:10000, w:0, g:0},
-    {p:"StVO §4", n:"Missachten von Rechtsfahrgebot", m:8000, w:0, g:0},
-    {p:"StVO §5", n:"Überschreiten der Fahrzeugkapazitäten", m:5000, w:0, g:0},
-    {p:"StVO §6", n:"Fahren mit demoliertem Fahrzeug", m:2000, w:0, g:0},
-    {p:"StVO §7", n:"Fahren ohne Licht (Dunkelheit, Wetter)", m:5000, w:0, g:0},
-    {p:"StVO §8", n:"Geschw. 10-40 km/h", m:5000, w:0, g:0},
-    {p:"StVO §8", n:"Geschw. 41-60 km/h", m:10000, w:0, g:0},
-    {p:"StVO §8", n:"Geschw. 61-100 km/h", m:15000, w:0, g:0},
-    {p:"StVO §8", n:"Geschw. ab 101 km/h", m:20000, w:0, g:0},
-    {p:"StVO §9 Art. 3", n:"Fahren ohne gültige Zulassung", m:10000, w:0, g:0},
-    {p:"StVO §10 Art. 1", n:"Missachten Rechts vor Links", m:1000, w:0, g:0},
-    {p:"StVO §10 Art. 2", n:"Missachten von Verkehrsschildern", m:2000, w:0, g:0},
-    {p:"StVO §10 Art. 4", n:"Fahren ohne genügend Tankkapazität", m:10000, w:0, g:0},
-    {p:"StVO §10 Art. 6", n:"Nutzung Mobilgerät am Steuer", m:3000, w:0, g:0},
-    {p:"StVO §10 Art. 7", n:"Lärmbelästigung / Hupen", m:20000, w:0, g:0},
-    {p:"StVO §10 Art. 16", n:"Fahren entgegeng. Fahrtrichtung", m:30000, w:0, g:0},
-    {p:"StVO §12.1", n:"Falsch Parken / Halten", m:10000, w:0, g:0},
-    {p:"StVO §17", n:"Fahren im berauschten Zustand", m:10000, w:0, g:2},
-    {p:"StVO §20", n:"Fahren ohne Gurt", m:5000, w:0, g:0},
-    {p:"StVO §24", n:"Fahrerflucht", m:10000, w:1, g:0},
-    {p:"StVO §26", n:"Abschleppkosten", m:20000, w:0, g:0},
-    {p:"StVO §28", n:"Anti-Radar Sharing-Cars", m:30000, w:3, g:0}
-  ]},
-  { cat: "Waffengesetz (WaffG)", items: [
-    {p:"WaffG §1", n:"Besitz legaler Waffen ohne Schein", m:10000, w:1, g:1},
-    {p:"WaffG §5.1", n:"Besitz illegaler Waffen", m:30000, w:3, g:0},
-    {p:"WaffG §8.1", n:"Offenes Tragen einer Waffe", m:5000, w:1, g:0},
-    {p:"WaffG §11", n:"Ungesetzlicher Waffenhandel", m:25000, w:3, g:0}
-  ]},
-  { cat: "Betäubungsmittelgesetz (BtMG)", items: [
-    {p:"BtMG §2.1", n:"Drogenbesitz Klein", m:15000, w:0, g:1},
-    {p:"BtMG §2.1", n:"Drogenbesitz Groß (50+)", m:30000, w:2, g:0},
-    {p:"BtMG §2.2", n:"Drogenhandel", m:30000, w:3, g:0},
-    {p:"BtMG §2.1", n:"Drogen Herstellung", m:30000, w:3, g:0}
-  ]},
-  { cat: "Strafgesetzbuch (StGB)", items: [
-    {p:"StGB §15.1", n:"Nichtbeachten amtl. Anweisung", m:10000, w:0, g:2},
-    {p:"StGB §15.5", n:"Widerstand gegen Beamte", m:20000, w:2, g:0},
-    {p:"StGB §16", n:"Befreiung von Gefangenen", m:30000, w:3, g:2},
-    {p:"StGB §24", n:"Amtsanmaßung", m:25000, w:2, g:1},
-    {p:"StGB §3.1", n:"Beleidigung", m:10000, w:0, g:1},
-    {p:"StGB §4.1", n:"Mord / Mordversuch", m:30000, w:4, g:0},
-    {p:"StGB §4.2", n:"Körperverletzung", m:15000, w:2, g:0},
-    {p:"StGB §4.3", n:"Körperverletzung mit Todesfolge", m:20000, w:3, g:0},
-    {p:"StGB §27", n:"Geiselnahme", m:30000, w:3, g:0},
-    {p:"StGB §42", n:"Erpressung", m:45000, w:3, g:0},
-    {p:"StGB §7", n:"Fahrzeug Diebstahl", m:10000, w:2, g:0},
-    {p:"StGB §11", n:"Raub", m:25000, w:3, g:0},
-    {p:"StGB §12.1", n:"Ammu Rob / Geschäfts Raub", m:35000, w:2, g:0},
-    {p:"StGB §41.1", n:"Besitz staatl. Eigentum", m:50000, w:3, g:0},
-    {p:"StGB §18", n:"Betreten Militärgelände", m:50000, w:5, g:0},
-    {p:"StGB §25", n:"Terrorismus", m:25000, w:3, g:0},
-    {p:"§6 StPO", n:"Bußgelder nicht bezahlt", m:0, w:5, g:0}
-  ]},
-  { cat: "Dienstvergehen (BDG)", items: [
-    {p:"BDG", n:"Dienstvergehen", m:50000, w:0, g:5}
-  ]}
-];
+<div id="modalRechte" class="modal-overlay" onclick="closeModal('modalRechte')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-title">Rechte des Tatverdächtigen</div>
+        <div class="modal-body" style="text-align: center;">
+            <p><strong>Sie haben das Recht zu schweigen, alles was Sie sagen kann und wird gegen Sie verwendet werden.</strong></p>
+            <p>Ab 3 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt, den Sie selbst benennen müssen. Wenn kein Anwalt verfügbar ist, wird Ihnen keiner gestellt.</p>
+            <p>Die Judikative übernimmt der Exekutivbeamte. Wenn ein Anwalt hinzugezogen wird, kann es länger als 25 Minuten dauern.</p>
+            <br>
+            <p style="font-weight: bold; color: var(--accent-pink);">Haben Sie ihre Rechte verstanden?</p>
+        </div>
+        <button class="modal-close" onclick="closeModal('modalRechte')">Schließen</button>
+    </div>
+</div>
 
-let selectedItems = [];
-
-function render() {
-    const container = document.getElementById('cardsContainer');
-    container.innerHTML = "";
-    
-    laws.forEach(c => {
-        let card = document.createElement('div');
-        card.className = "law-category-card";
-        
-        let header = `<div class="card-header">${c.cat}</div>`;
-        let table = `<table><thead><tr>
-            <th style="width:110px">Paragraph</th>
-            <th>Tatbestand</th>
-            <th style="width:90px">Haft</th>
-            <th style="width:110px; text-align:right">Bußgeld</th>
-        </tr></thead><tbody>`;
-        
-        c.items.forEach(i => {
-            let stars = '<span class="star-gold">'+'★'.repeat(i.w)+'</span>' + '<span class="star-gray">'+'★'.repeat(i.g)+'</span>';
-            table += `
-                <tr class="law-row" data-search="${i.p.toLowerCase()} ${i.n.toLowerCase()}" onclick="toggleLaw(this, ${JSON.stringify(i).replace(/"/g, '&quot;')})">
-                    <td class="col-para">${i.p}</td>
-                    <td class="col-name">${i.n}</td>
-                    <td>${(i.w+i.g)>0 ? stars : '-'}</td>
-                    <td class="col-money">$${i.m.toLocaleString()}</td>
-                </tr>`;
-        });
-        
-        table += `</tbody></table>`;
-        card.innerHTML = header + table;
-        container.appendChild(card);
-    });
-}
-
-function filterTable() {
-    const val = document.getElementById('searchInput').value.toLowerCase();
-    document.querySelectorAll('.law-row').forEach(r => {
-        r.style.display = r.getAttribute('data-search').includes(val) ? "" : "none";
-    });
-    // Verstecke leere Kategorien
-    document.querySelectorAll('.law-category-card').forEach(card => {
-        const hasVisible = Array.from(card.querySelectorAll('.law-row')).some(r => r.style.display !== "none");
-        card.style.display = hasVisible ? "" : "none";
-    });
-}
-
-function toggleLaw(element, lawObj) {
-    element.classList.toggle('selected');
-    if (element.classList.contains('selected')) {
-        selectedItems.push(lawObj);
-    } else {
-        selectedItems = selectedItems.filter(l => l.p !== lawObj.p || l.n !== lawObj.n);
-    }
-    updateDisplay();
-}
-
-function toggleSwitch(el) { el.classList.toggle('active'); updateDisplay(); }
-
-function toggleHaft(el) {
-    el.classList.toggle('active');
-    document.getElementById('haftInputContainer').style.display = el.classList.contains('active') ? "block" : "none";
-    updateDisplay();
-}
-
-function updateDisplay() {
-    let maxM = 0; 
-    let manualG = parseInt(document.getElementById('manualStars').value) || 0;
-    let maxW = manualG;
-
-    selectedItems.forEach(l => {
-        if(l.m > maxM) maxM = l.m;
-        let totalW = l.w + l.g;
-        if(totalW > maxW) maxW = totalW;
-    });
-
-    const is35 = document.getElementById('sw35').classList.contains('active');
-    const isHaft = document.getElementById('swHaft').classList.contains('active');
-    const haftNote = document.getElementById('inHaftNote').value;
-    
-    document.getElementById('outM').innerText = '$' + maxM.toLocaleString();
-    document.getElementById('outW').innerText = maxW + ' ★';
-
-    const plate = document.getElementById('inPlate').value;
-    const blitzer = document.getElementById('inBlitzer').value;
-    const notes = document.getElementById('inNotes').value;
-    const paras = selectedItems.map(l => l.p);
-    
-    let text = "";
-    if(paras.length > 0 || isHaft) {
-        text = `${new Date().toLocaleDateString('de-DE')} | `;
-        if(isHaft) text += `[HAFTBEFEHL${haftNote ? ': ' + haftNote : ''}] `;
-        if(paras.length > 0) text += paras.join(", ");
-        if(plate) text += ` | ${plate}`;
-        if(blitzer) text += ` | ${blitzer}`;
-        if(notes) text += ` | Notiz: ${notes}`;
-        if(is35) text += " | §35";
-    }
-
-    const out = document.getElementById('generatedEntry');
-    out.innerText = text || "Wähle Tatbestände aus der Liste links...";
-    document.getElementById('charCount').innerText = text.length + "/150";
-}
-
-function copyText() {
-    const t = document.getElementById('generatedEntry').innerText;
-    if(t.includes('|')) {
-        navigator.clipboard.writeText(t);
-        const out = document.getElementById('generatedEntry');
-        out.style.color = "#2ecc71";
-        setTimeout(() => out.style.color = "#8b949e", 800);
-    }
-}
-
-render();
-</script>
-
-</body>
-</html>
+<div id="modalBelehrung" class="modal-overlay" onclick="closeModal('modalBelehrung')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-title">Belehrungen</div>
+        <div class="modal-body">
+            <div class="belehrung-box">
+                <div class="belehrung-header">Belehrung Haftbefehl</div>
+                <p>"Die Justiz hat einen Haftbefehl gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Haftbefehl vor Gericht zu ziehen, falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung gegen den Haftbefehl einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen Gerichtsprozess ablehnen, wird der Haftbefehl von den ausgewählten Beamten vollstreckt. Im weiteren Verlauf erhalten Sie eine staatliche Berufssperre von X Tagen nach §19 (4) Beamten Dienst Gesetzbuch. Während dieser Zeit dürfen Sie keinem Staatsdienst nachgehen. Wenn Sie flüchten haben Sie kein Recht mehr auf einen Rechtsanwalt."</p>
+            </div>
+            <div class="belehrung-box">
+                <div class="belehrung-header">Belehrung Beschluss</div>
+                <p>"Die Justiz hat einen Beschluss gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Beschluss vor Gericht zu ziehen, falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung gegen den Beschluss einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen Gerichtsprozess ablehnen, wird der Beschluss von den ausgew
