@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>LSPD Penal Code - V.4.0</title>
+    <title>LSPD Penal Code - V.4.5 Professional</title>
     <style>
         :root {
             --bg-main: #0b0e14;
@@ -31,9 +31,22 @@
         .table-container { flex: 1; overflow-y: auto; padding: 0 20px; }
         table { width: 100%; border-collapse: collapse; }
         th { text-align: center; color: var(--text-muted); font-size: 11px; text-transform: uppercase; padding: 10px 5px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; background: var(--bg-card); z-index: 10; }
-        th:nth-child(2) { text-align: left; } /* Tatbestand linksbündig lassen */
+        th:nth-child(2) { text-align: left; }
         
-        .category-row td { color: var(--accent-pink); font-weight: bold; padding: 30px 0 10px 0; font-size: 16px; border-bottom: 1px solid #30363d; text-align: left !important; }
+        /* --- KATEGORIEN STYLING (NEU) --- */
+        .category-row td { 
+            color: var(--accent-pink); 
+            font-weight: 900; 
+            font-style: italic; 
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 45px 0 10px 0; 
+            font-size: 18px; 
+            border-bottom: 1px solid var(--accent-pink);
+            text-shadow: 0 0 10px rgba(255, 46, 126, 0.4);
+            text-align: left !important;
+        }
+
         .law-row { border-bottom: 1px solid #1a1e26; cursor: pointer; transition: 0.2s; }
         .law-row:hover { background: #1c222d; }
         .law-row.selected { background: #262c36; border-left: 3px solid var(--accent-pink); }
@@ -53,7 +66,9 @@
         .stat-value { font-size: 26px; font-weight: bold; margin-top: 5px; }
         
         .settings-card { background: var(--bg-card); border-radius: 10px; padding: 15px; border: 1px solid var(--border-color); }
-        .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; cursor: pointer; }
+        .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; cursor: pointer; border-bottom: 1px solid #1a1e26; }
+        .switch-row:last-child { border: none; }
+        
         .toggle { width: 34px; height: 18px; background: #30363d; border-radius: 10px; position: relative; transition: 0.3s; }
         .toggle::after { content: ''; position: absolute; width: 14px; height: 14px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.3s; }
         .active .toggle { background: var(--accent-pink); }
@@ -66,7 +81,7 @@
         #haftInputContainer { display: none; margin-top: 5px; padding-bottom: 10px; }
 
         .output-card { background: var(--bg-card); border-radius: 10px; padding: 15px; border: 1px solid var(--border-color); flex: 1; display: flex; flex-direction: column; }
-        #generatedEntry { background: #0a0c10; border-left: 3px solid var(--accent-pink); padding: 12px; font-size: 12px; color: #8b949e; flex: 1; cursor: pointer; font-style: italic; overflow-y: auto; }
+        #generatedEntry { background: #0a0c10; border-left: 3px solid var(--accent-pink); padding: 12px; font-size: 12px; color: #8b949e; flex: 1; cursor: pointer; font-style: italic; overflow-y: auto; word-break: break-all; }
 
         .btn-reset { margin-top: 10px; background: transparent; border: 1px solid #30363d; color: var(--text-muted); padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 11px; text-transform: uppercase; font-weight: bold; }
         .btn-reset:hover { border-color: var(--accent-pink); color: white; }
@@ -81,7 +96,7 @@
     <div class="main-panel">
         <div class="header-area">
             <div class="logo-title">🛡️ LSPD <span class="pink">PENAL</span> CODE</div>
-            <div style="font-size: 10px; color: var(--text-muted);">V.4.0 PINK</div>
+            <div style="font-size: 10px; color: var(--text-muted); letter-spacing: 1px;">V.4.5 PINK</div>
         </div>
         <div class="search-container">
             <input type="text" id="searchInput" class="search-field" placeholder="Suche..." onkeyup="filterTable()">
@@ -104,11 +119,11 @@
     <div class="sidebar">
         <div class="stats-grid">
             <div class="stat-card">
-                <span class="stat-label">Bußgeld (Max)</span>
+                <span class="stat-label">Bußgeld (Meistwert)</span>
                 <div class="stat-value" id="outM">$0</div>
             </div>
             <div class="stat-card">
-                <span class="stat-label">Haftzeit (Max)</span>
+                <span class="stat-label">Haftzeit (Meistwert)</span>
                 <div class="stat-value" id="outW">0 ★</div>
             </div>
         </div>
@@ -128,11 +143,11 @@
 
             <div class="input-grid">
                 <input type="text" id="inPlate" class="small-input" placeholder="Kennzeichen" oninput="updateDisplay()">
-                <input type="number" id="manualStars" class="small-input" placeholder="Zusätzliche ★" oninput="updateDisplay()">
+                <input type="number" id="manualStars" class="small-input" placeholder="Graue ★ wählen" min="0" max="10" oninput="updateDisplay()">
             </div>
             <div class="input-grid" style="margin-top: 10px;">
                 <input type="text" id="inBlitzer" class="small-input" placeholder="Ort / Blitzer" oninput="updateDisplay()">
-                <textarea id="inNotes" class="small-input" style="height: 40px; resize: none;" placeholder="Notizen..." oninput="updateDisplay()"></textarea>
+                <textarea id="inNotes" class="small-input" style="height: 40px; resize: none;" placeholder="Interne Notizen..." oninput="updateDisplay()"></textarea>
             </div>
         </div>
 
@@ -203,7 +218,7 @@ const laws = [
     {p:"StGB §25", n:"Terrorismus", m:25000, w:3, g:0},
     {p:"§6 StPO", n:"Bußgelder nicht bezahlt", m:0, w:5, g:0}
   ]},
-  { cat: "Dienstvergehen", items: [
+  { cat: "Dienstvergehen (BDG)", items: [
     {p:"BDG", n:"Dienstvergehen", m:50000, w:0, g:5}
   ]}
 ];
@@ -257,7 +272,8 @@ function toggleHaft(el) {
 
 function updateDisplay() {
     let maxM = 0; 
-    let maxW = parseInt(document.getElementById('manualStars').value) || 0;
+    let manualG = parseInt(document.getElementById('manualStars').value) || 0;
+    let maxW = manualG;
 
     selectedItems.forEach(l => {
         if(l.m > maxM) maxM = l.m;
@@ -291,7 +307,7 @@ function updateDisplay() {
     }
 
     const out = document.getElementById('generatedEntry');
-    out.innerText = text || "Wähle Tatbestände aus...";
+    out.innerText = text || "Wähle Tatbestände aus der Liste links...";
     document.getElementById('charCount').innerText = text.length + "/150";
 }
 
