@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>LSPD Penal Code - Pink Edition V3</title>
+    <title>LSPD Penal Code - V.4.0</title>
     <style>
         :root {
             --bg-main: #0b0e14;
@@ -26,23 +26,24 @@
         .pink { color: var(--accent-pink); }
         
         .search-container { padding: 0 20px 15px 20px; }
-        .search-field { width: 100%; background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; color: white; outline: none; transition: 0.3s; }
-        .search-field:focus { border-color: var(--accent-pink); }
+        .search-field { width: 100%; background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; color: white; outline: none; }
 
         .table-container { flex: 1; overflow-y: auto; padding: 0 20px; }
         table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; color: var(--text-muted); font-size: 11px; text-transform: uppercase; padding: 10px 5px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; background: var(--bg-card); z-index: 10; }
+        th { text-align: center; color: var(--text-muted); font-size: 11px; text-transform: uppercase; padding: 10px 5px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; background: var(--bg-card); z-index: 10; }
+        th:nth-child(2) { text-align: left; } /* Tatbestand linksbündig lassen */
         
-        .category-row td { color: var(--accent-pink); font-weight: bold; padding: 30px 0 10px 0; font-size: 16px; border-bottom: 1px solid #30363d; }
+        .category-row td { color: var(--accent-pink); font-weight: bold; padding: 30px 0 10px 0; font-size: 16px; border-bottom: 1px solid #30363d; text-align: left !important; }
         .law-row { border-bottom: 1px solid #1a1e26; cursor: pointer; transition: 0.2s; }
         .law-row:hover { background: #1c222d; }
         .law-row.selected { background: #262c36; border-left: 3px solid var(--accent-pink); }
-        .law-row td { padding: 14px 5px; font-size: 13px; }
+        .law-row td { padding: 14px 5px; font-size: 13px; text-align: center; }
+        .law-row td.col-name { text-align: left; color: #d1d5da; }
         
-        .col-para { color: var(--accent-pink); font-weight: 600; width: 110px; }
-        .col-money { text-align: right; color: var(--text-muted); }
+        .col-para { color: var(--accent-pink); font-weight: 600; }
+        .col-money { text-align: right !important; color: var(--text-muted); }
         .star-gold { color: var(--accent-pink); }
-        .star-gray { color: #444; }
+        .star-gray { color: #555; }
 
         /* --- SIDEBAR --- */
         .sidebar { display: flex; flex-direction: column; gap: 15px; }
@@ -62,7 +63,7 @@
         .small-input { width: 100%; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; color: white; font-size: 12px; outline: none; }
         .small-input:focus { border-color: var(--accent-pink); }
 
-        #haftInputContainer { display: none; margin-top: 5px; padding-bottom: 10px; border-bottom: 1px solid #1a1e26; }
+        #haftInputContainer { display: none; margin-top: 5px; padding-bottom: 10px; }
 
         .output-card { background: var(--bg-card); border-radius: 10px; padding: 15px; border: 1px solid var(--border-color); flex: 1; display: flex; flex-direction: column; }
         #generatedEntry { background: #0a0c10; border-left: 3px solid var(--accent-pink); padding: 12px; font-size: 12px; color: #8b949e; flex: 1; cursor: pointer; font-style: italic; overflow-y: auto; }
@@ -80,7 +81,7 @@
     <div class="main-panel">
         <div class="header-area">
             <div class="logo-title">🛡️ LSPD <span class="pink">PENAL</span> CODE</div>
-            <div style="font-size: 10px; color: var(--text-muted);">V.3.1 PINK</div>
+            <div style="font-size: 10px; color: var(--text-muted);">V.4.0 PINK</div>
         </div>
         <div class="search-container">
             <input type="text" id="searchInput" class="search-field" placeholder="Suche..." onkeyup="filterTable()">
@@ -88,7 +89,12 @@
         <div class="table-container">
             <table>
                 <thead>
-                    <tr><th>§ Paragraph</th><th>Tatbestand</th><th style="text-align:center">Haft</th><th style="text-align:right">Bußgeld</th></tr>
+                    <tr>
+                        <th style="width: 120px;">§ Paragraph</th>
+                        <th>Tatbestand</th>
+                        <th style="width: 100px;">Haftzeit</th>
+                        <th style="width: 120px; text-align: right;">Bußgeld</th>
+                    </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
             </table>
@@ -98,18 +104,18 @@
     <div class="sidebar">
         <div class="stats-grid">
             <div class="stat-card">
-                <span class="stat-label">Bußgeld (Meistwert)</span>
+                <span class="stat-label">Bußgeld (Max)</span>
                 <div class="stat-value" id="outM">$0</div>
             </div>
             <div class="stat-card">
-                <span class="stat-label">Haft (Meistwert)</span>
+                <span class="stat-label">Haftzeit (Max)</span>
                 <div class="stat-value" id="outW">0 ★</div>
             </div>
         </div>
 
         <div class="settings-card">
-            <div class="switch-row" id="swReue" onclick="toggleSwitch(this)">
-                <span style="font-size: 13px;">Zeigt Reue <span style="color:#2ecc71">(-20%)</span></span>
+            <div class="switch-row" id="sw35" onclick="toggleSwitch(this)">
+                <span style="font-size: 13px;">Milderung (<span class="pink">§35</span>)</span>
                 <div class="toggle"></div>
             </div>
             <div class="switch-row" id="swHaft" onclick="toggleHaft(this)">
@@ -122,9 +128,12 @@
 
             <div class="input-grid">
                 <input type="text" id="inPlate" class="small-input" placeholder="Kennzeichen" oninput="updateDisplay()">
-                <input type="text" id="inBlitzer" class="small-input" placeholder="Ort / Blitzer" oninput="updateDisplay()">
+                <input type="number" id="manualStars" class="small-input" placeholder="Zusätzliche ★" oninput="updateDisplay()">
             </div>
-            <textarea id="inNotes" class="small-input" style="height: 50px; resize: none; margin-top:10px" placeholder="Notizen..." oninput="updateDisplay()"></textarea>
+            <div class="input-grid" style="margin-top: 10px;">
+                <input type="text" id="inBlitzer" class="small-input" placeholder="Ort / Blitzer" oninput="updateDisplay()">
+                <textarea id="inNotes" class="small-input" style="height: 40px; resize: none;" placeholder="Notizen..." oninput="updateDisplay()"></textarea>
+            </div>
         </div>
 
         <div class="output-card">
@@ -132,7 +141,7 @@
                 <span>GENERIERTER AKTENEINTRAG</span><span id="charCount">0/150</span>
             </div>
             <div id="generatedEntry" onclick="copyText()">Wähle Tatbestände aus...</div>
-            <button class="btn-reset" onclick="location.reload()">Zurücksetzen</button>
+            <button class="btn-reset" onclick="location.reload()">Rechner zurücksetzen</button>
         </div>
     </div>
 </div>
@@ -205,14 +214,14 @@ function render() {
     const b = document.getElementById('tableBody');
     b.innerHTML = "";
     laws.forEach(c => {
-        b.innerHTML += `<tr class="cat-header"><td colspan="4" class="category-row">${c.cat}</td></tr>`;
+        b.innerHTML += `<tr><td colspan="4" class="category-row">${c.cat}</td></tr>`;
         c.items.forEach(i => {
             let stars = '<span class="star-gold">'+'★'.repeat(i.w)+'</span>' + '<span class="star-gray">'+'★'.repeat(i.g)+'</span>';
             b.innerHTML += `
                 <tr class="law-row" data-search="${i.p.toLowerCase()} ${i.n.toLowerCase()}" onclick="toggleLaw(this, ${JSON.stringify(i).replace(/"/g, '&quot;')})">
                     <td class="col-para">${i.p}</td>
                     <td class="col-name">${i.n}</td>
-                    <td style="text-align:center">${(i.w+i.g)>0 ? stars : '-'}</td>
+                    <td>${(i.w+i.g)>0 ? stars : '-'}</td>
                     <td class="col-money">$${i.m.toLocaleString()}</td>
                 </tr>`;
         });
@@ -222,7 +231,9 @@ function render() {
 function filterTable() {
     const val = document.getElementById('searchInput').value.toLowerCase();
     document.querySelectorAll('.law-row').forEach(r => {
-        r.style.display = r.getAttribute('data-search').includes(val) ? "" : "none";
+        if(!r.classList.contains('category-row')) {
+            r.style.display = r.getAttribute('data-search').includes(val) ? "" : "none";
+        }
     });
 }
 
@@ -245,20 +256,20 @@ function toggleHaft(el) {
 }
 
 function updateDisplay() {
-    let maxM = 0; let maxW = 0;
+    let maxM = 0; 
+    let maxW = parseInt(document.getElementById('manualStars').value) || 0;
+
     selectedItems.forEach(l => {
         if(l.m > maxM) maxM = l.m;
         let totalW = l.w + l.g;
         if(totalW > maxW) maxW = totalW;
     });
 
-    const isReue = document.getElementById('swReue').classList.contains('active');
+    const is35 = document.getElementById('sw35').classList.contains('active');
     const isHaft = document.getElementById('swHaft').classList.contains('active');
     const haftNote = document.getElementById('inHaftNote').value;
     
-    let finalM = isReue ? Math.round(maxM * 0.8) : maxM;
-
-    document.getElementById('outM').innerText = '$' + finalM.toLocaleString();
+    document.getElementById('outM').innerText = '$' + maxM.toLocaleString();
     document.getElementById('outW').innerText = maxW + ' ★';
 
     const plate = document.getElementById('inPlate').value;
@@ -275,8 +286,8 @@ function updateDisplay() {
         if(paras.length > 0) text += paras.join(", ");
         if(plate) text += ` | ${plate}`;
         if(blitzer) text += ` | ${blitzer}`;
-        if(isReue) text += " (Reue)";
         if(notes) text += ` | Notiz: ${notes}`;
+        if(is35) text += " | §35";
     }
 
     const out = document.getElementById('generatedEntry');
