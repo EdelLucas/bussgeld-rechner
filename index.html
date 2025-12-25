@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>MDT Leitstelle</title>
+<title>Grand - Leitstelle</title>
 
 <style>
 :root{
@@ -13,146 +13,185 @@
 body{margin:0;background:var(--bg);color:var(--text);height:100vh}
 
 /* LOGIN */
-#login{position:fixed;inset:0;display:flex;justify-content:center;align-items:center;
-background:rgba(10,12,18,.75);backdrop-filter:blur(20px)}
-.login-box{background:var(--card);border:1px solid var(--border);
-border-radius:18px;padding:30px;width:320px}
-.login-box input,button{width:100%;margin:6px 0;padding:10px;border-radius:6px}
-input{background:#0a0c10;border:1px solid #333;color:#fff}
-button{background:var(--accent);border:none;font-weight:600;cursor:pointer}
+#loginScreen{
+position:fixed;inset:0;
+display:flex;justify-content:center;align-items:center;
+background:rgba(10,12,18,.85);backdrop-filter:blur(20px);z-index:1000
+}
+.login-box{
+background:var(--card);border:1px solid var(--border);
+border-radius:18px;padding:30px;width:320px
+}
+.login-box input,.login-box button{
+width:100%;margin-top:8px;padding:10px;border-radius:6px
+}
+.login-box input{
+background:#0a0c10;border:1px solid #333;color:#fff
+}
+.login-box button{
+background:var(--accent);border:none;font-weight:600;cursor:pointer
+}
 
 /* APP */
 #app{display:none;height:100vh}
-.topbar{display:flex;gap:6px;background:var(--card);border-bottom:1px solid var(--border);padding:10px}
-.tab{padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;color:var(--muted)}
+.topbar{
+display:flex;gap:6px;background:var(--card);
+border-bottom:1px solid var(--border);padding:10px
+}
+.tab{
+padding:6px 12px;border-radius:6px;
+cursor:pointer;font-size:12px;color:var(--muted)
+}
 .tab.active{background:rgba(255,46,126,.2);color:var(--accent)}
+.hidden{display:none}
 
 .content{padding:15px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:15px;margin-bottom:15px}
-.hidden{display:none}
+.card{
+background:var(--card);border:1px solid var(--border);
+border-radius:14px;padding:15px;margin-bottom:15px
+}
 </style>
 </head>
 
 <body>
 
-<div id="login">
+<!-- LOGIN -->
+<div id="loginScreen">
 <div class="login-box">
 <h3>MDT Login</h3>
-<input id="user" placeholder="Benutzer">
-<input id="pin" type="password" placeholder="PIN">
-<button onclick="login()">Login</button>
+<input id="loginUser" placeholder="Benutzer">
+<input id="loginPin" type="password" placeholder="PIN">
+<button id="loginBtn">Login</button>
 </div>
 </div>
 
+<!-- APP -->
 <div id="app">
 <div class="topbar">
-<div class="tab active" onclick="show('dashboard',this)">Leitstelle</div>
-<div class="tab" onclick="show('rechner',this)">Strafrechner</div>
-<div class="tab hidden" id="adminTab" onclick="show('admin',this)">Einstellungen</div>
-<div class="tab" onclick="logout()">Logout</div>
+<div class="tab active" data-view="dashboard">Leitstelle</div>
+<div class="tab" data-view="rechner">Strafrechner</div>
+<div class="tab hidden" id="adminTab" data-view="admin">Admin</div>
+<div class="tab hidden" id="accessTab" data-view="access">Zugriffe</div>
+<div class="tab" id="logoutBtn">Logout</div>
 </div>
 
 <div class="content">
-
-<div id="dashboard">
+<div id="dashboard" class="view">
 <div class="card">Leitstellen Übersicht</div>
 </div>
 
-<div id="rechner" class="hidden">
-<div class="card">
-<b>Gesetze</b>
-<div id="lawList"></div>
-</div>
+<div id="rechner" class="view hidden">
+<div class="card">Strafrechner (Platzhalter)</div>
 </div>
 
-<div id="admin" class="hidden">
+<div id="admin" class="view hidden">
 <div class="card">
-<h4>Benutzer</h4>
-<input id="newUser" placeholder="User">
+<h4>User Verwaltung</h4>
+<input id="newUser" placeholder="Benutzer">
 <input id="newPin" placeholder="PIN">
+<select id="newRole">
+<option value="user">User</option>
+<option value="admin">Admin</option>
+</select>
 <button onclick="addUser()">Hinzufügen</button>
 <div id="userList"></div>
 </div>
+</div>
 
+<div id="access" class="view hidden">
 <div class="card">
-<h4>Gesetze bearbeiten</h4>
-<input id="lawName" placeholder="Paragraph">
-<input id="lawDesc" placeholder="Beschreibung">
-<input id="lawWanted" placeholder="Wanteds">
-<input id="lawFine" placeholder="Geld">
-<button onclick="addLaw()">Gesetz hinzufügen</button>
+<h4>Zugriffsrechte</h4>
+<div id="accessList"></div>
 </div>
 </div>
-
 </div>
 </div>
 
 <script>
-/* STORAGE INIT */
+document.addEventListener("DOMContentLoaded",()=>{
+
+/* INIT STORAGE */
 if(!localStorage.users){
 localStorage.users=JSON.stringify([
-{u:"ADMIN",p:"9999",r:"admin"},
-{u:"LSPD",p:"1234",r:"user"}
-])
-}
-if(!localStorage.laws){
-localStorage.laws=JSON.stringify([
-{name:"BtMG §2.1",desc:"Drogenbesitz Klein",w:1,f:15000}
+{u:"ADMIN",p:"9999",r:"admin",active:true},
+{u:"LSPD",p:"1234",r:"user",active:true}
 ])
 }
 
-let currentRole="user";
+let currentUser=null;
 
 /* LOGIN */
-function login(){
-let users=JSON.parse(localStorage.users);
-let found=users.find(x=>x.u===user.value && x.p===pin.value);
-if(!found)return alert("Falsch");
-currentRole=found.r;
-login.style.display="none";
-app.style.display="block";
-if(currentRole==="admin") adminTab.classList.remove("hidden");
-render();
+document.getElementById("loginBtn").onclick=()=>{
+const u=document.getElementById("loginUser").value;
+const p=document.getElementById("loginPin").value;
+const users=JSON.parse(localStorage.users);
+
+const found=users.find(x=>x.u===u && x.p===p && x.active);
+if(!found){alert("Login fehlgeschlagen");return;}
+
+currentUser=found;
+document.getElementById("loginScreen").style.display="none";
+document.getElementById("app").style.display="block";
+
+if(found.r==="admin"){
+document.getElementById("adminTab").classList.remove("hidden");
+document.getElementById("accessTab").classList.remove("hidden");
 }
+
+renderUsers();
+renderAccess();
+};
 
 /* NAV */
-function show(id,el){
-document.querySelectorAll(".content>div").forEach(d=>d.classList.add("hidden"));
-document.getElementById(id).classList.remove("hidden");
-document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-el.classList.add("active");
+document.querySelectorAll(".tab").forEach(t=>{
+t.onclick=()=>{
+if(t.id==="logoutBtn"){location.reload();return;}
+document.querySelectorAll(".view").forEach(v=>v.classList.add("hidden"));
+document.getElementById(t.dataset.view)?.classList.remove("hidden");
+document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+t.classList.add("active");
 }
-function logout(){location.reload()}
+});
 
 /* USERS */
-function addUser(){
-let u=JSON.parse(localStorage.users);
-u.push({u:newUser.value,p:newPin.value,r:"user"});
-localStorage.users=JSON.stringify(u);
-render();
-}
+window.addUser=()=>{
+const users=JSON.parse(localStorage.users);
+users.push({
+u:newUser.value,
+p:newPin.value,
+r:newRole.value,
+active:true
+});
+localStorage.users=JSON.stringify(users);
+renderUsers();renderAccess();
+};
+
 function renderUsers(){
-let u=JSON.parse(localStorage.users);
-userList.innerHTML=u.map(x=>`${x.u} (${x.r})`).join("<br>");
+const users=JSON.parse(localStorage.users);
+userList.innerHTML=users.map(x=>
+`${x.u} | ${x.r} | ${x.active?"aktiv":"gesperrt"}`
+).join("<br>");
 }
 
-/* LAWS */
-function addLaw(){
-let l=JSON.parse(localStorage.laws);
-l.push({name:lawName.value,desc:lawDesc.value,w:lawWanted.value,f:lawFine.value});
-localStorage.laws=JSON.stringify(l);
-render();
-}
-function renderLaws(){
-let l=JSON.parse(localStorage.laws);
-lawList.innerHTML=l.map(x=>`${x.name} – ${x.desc} (${x.w}W / $${x.f})`).join("<br>");
+/* ACCESS */
+function renderAccess(){
+const users=JSON.parse(localStorage.users);
+accessList.innerHTML=users.map((x,i)=>`
+${x.u} 
+<button onclick="toggleAccess(${i})">
+${x.active?"Sperren":"Freigeben"}
+</button>`
+).join("<br>");
 }
 
-/* RENDER */
-function render(){
-renderUsers();
-renderLaws();
-}
+window.toggleAccess=(i)=>{
+const users=JSON.parse(localStorage.users);
+users[i].active=!users[i].active;
+localStorage.users=JSON.stringify(users);
+renderUsers();renderAccess();
+};
+
+});
 </script>
 
 </body>
