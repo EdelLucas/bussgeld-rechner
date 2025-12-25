@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>LSPD Penal Code - V.23.0</title>
+    <title>LSPD Penal Code - V.24.0</title>
     <style>
         :root {
             --bg-main: #0b0e14;
@@ -81,7 +81,7 @@
 
     <div class="sidebar">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <div class="stat-card"><span class="stat-label">Gesamt-Bussgeld</span><div class="stat-value" id="outM" style="color:var(--gold)">$0</div></div>
+            <div class="stat-card"><span class="stat-label">Höchste Geldstrafe</span><div class="stat-value" id="outM" style="color:var(--gold)">$0</div></div>
             <div class="stat-card"><span class="stat-label">Wanteds (Info)</span><div class="stat-value" id="outW" style="color:#f1fa8c">0 ★</div></div>
         </div>
 
@@ -118,9 +118,9 @@
     <div class="modal-content" onclick="event.stopPropagation()">
         <span class="close-btn" onclick="closeModal('modalRechte')">&times;</span>
         <div class="modal-body" style="text-align:center;">
-            <h2>RECHTE</h2>
+            <h2 style="color:var(--accent-pink)">RECHTE</h2>
             <p>Sie haben das Recht zu schweigen, alles was Sie sagen kann und wird gegen Sie verwendet werden. Ab 3 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt, den Sie selbst benennen müssen. Wenn kein Anwalt verfügbar ist, wird Ihnen keiner gestellt. Die Judikative übernimmt der Exekutivbeamte. Wenn ein Anwalt hinzugezogen wird, kann es länger als 25 Minuten dauern.</p>
-            <p style="color:var(--accent-pink); font-weight:bold;">Haben Sie ihre Rechte verstanden?</p>
+            <p style="color:var(--accent-pink); font-weight:bold; font-size:1.2em; margin-top:20px;">Haben Sie ihre Rechte verstanden?</p>
         </div>
     </div>
 </div>
@@ -129,11 +129,11 @@
     <div class="modal-content" onclick="event.stopPropagation()">
         <span class="close-btn" onclick="closeModal('modalBelehrung')">&times;</span>
         <div class="modal-body">
-            <h2>BELEHRUNGEN</h2>
+            <h2 style="color:var(--accent-pink)">BELEHRUNGEN</h2>
             <b style="color:var(--gold)">Haftbefehl</b>
-            <p>"Die Justiz hat einen Haftbefehl gegen Sie erlassen, Sie haben das Recht zu schweigen..." [Vollständiger Text wie oben]</p>
-            <b style="color:var(--gold)">Befragung</b>
-            <p>„Sie haben das Recht zu schweigen... Haben Sie das verstanden?“</p>
+            <p>"Die Justiz hat einen Haftbefehl gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Haftbefehl vor Gericht zu ziehen..."</p>
+            <b style="color:var(--gold); display:block; margin-top:15px;">Befragung</b>
+            <p>„Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird vor Gericht gegen Sie verwendet werden. Sie haben das Recht, zu jeder Vernehmung einen Rechtsanwalt hinzuzuziehen.“</p>
         </div>
     </div>
 </div>
@@ -144,26 +144,30 @@
 
 <script>
 const laws = [
-    { cat: "Körper (StGB)", items: [
+    { cat: "Strafgesetzbuch (StGB)", items: [
         {p:"StGB §3.1", n:"Beleidigung", m:10000, w:0, gs:1},
         {p:"StGB §4.1", n:"Mord / Mordversuch", m:30000, w:4, gs:0, info:"Waffenschein entziehen"},
         {p:"StGB §4.2", n:"Körperverletzung", m:15000, w:2, gs:0},
-        {p:"StGB §27", n:"Geiselnahme", m:30000, w:3, gs:0}
+        {p:"StGB §11", n:"Raub", m:25000, w:3, gs:0},
+        {p:"StGB §27", n:"Geiselnahme", m:30000, w:3, gs:0},
+        {p:"StGB §30", n:"Hausfriedensbruch", m:25000, w:3, gs:0}
     ]},
-    { cat: "Verkehr (StVO)", items: [
+    { cat: "Straßenverkehrsordnung (StVO)", items: [
         {p:"StVO §17", n:"Berauschtes Fahren", m:10000, w:0, gs:2, info:"Führerschein entziehen"},
         {p:"StVO §24", n:"Fahrerflucht", m:10000, w:1, gs:0, info:"Führerschein entziehen"},
         {p:"StVO §28", n:"Anti-Radar", m:30000, w:3, gs:0}
     ]},
-    { cat: "Waffen (WaffG)", items: [
-        {p:"WaffG §1", n:"Waffe ohne Schein", m:10000, w:1, gs:1, info:"Waffensperre prüfen"},
-        {p:"WaffG §5.1", n:"Illegale Waffen", m:10000, w:2, gs:1, info:"Waffenschein entziehen + Sperre"}
+    { cat: "Waffengesetz (WaffG)", items: [
+        {p:"WaffG §1", n:"Waffe ohne Schein", m:10000, w:1, gs:1},
+        {p:"WaffG §5.1", n:"Illegale Waffen", m:10000, w:2, gs:1, info:"Waffenschein entziehen"}
     ]},
-    { cat: "Drogen (BtMG)", items: [
+    { cat: "Betäubungsmittelgesetz (BtMG)", items: [
         {p:"BtMG §2.1", n:"Drogenbesitz (Groß)", m:30000, w:2, gs:0},
         {p:"BtMG §2.2", n:"Drogenhandel", m:30000, w:3, gs:0}
+    ]},
+    { cat: "Strafprozessordnung (StPO)", items: [
+        {p:"StPO §1", n:"Flucht vor Kontrolle", m:5000, w:1, gs:0}
     ]}
-    // Hier können alle weiteren Paragraphen nach gleichem Schema eingefügt werden
 ];
 
 let selectedItems = [];
@@ -213,23 +217,22 @@ function handleRowClick(el, obj, id, event) {
 }
 
 function updateDisplay() {
-    let totalM = 0; let totalW = 0;
+    let maxM = 0; let maxW = 0;
     let extraInfos = [];
     
     selectedItems.forEach(l => {
-        totalM += l.m;
+        if(l.m > maxM) maxM = l.m; // Höchste Geldstrafe statt Summe
         let itemW = l.w + (extraStars[l.uniqueId] || 0);
-        if(itemW > totalW) totalW = itemW;
+        if(itemW > maxW) maxW = itemW;
         if(l.info) extraInfos.push(l.info);
     });
 
     const reue = document.getElementById('sw35').classList.contains('active');
-    if(reue && totalW > 0) totalW = Math.max(1, totalW - 2);
+    if(reue && maxW > 0) maxW = Math.max(1, maxW - 2);
 
-    document.getElementById('outM').innerText = '$' + totalM.toLocaleString();
-    document.getElementById('outW').innerText = totalW + ' ★';
+    document.getElementById('outM').innerText = '$' + maxM.toLocaleString();
+    document.getElementById('outW').innerText = maxW + ' ★';
 
-    // Info Box Logik
     const infoBox = document.getElementById('infoBox');
     const infoContent = document.getElementById('infoContent');
     if(extraInfos.length > 0) {
