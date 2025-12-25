@@ -1,139 +1,77 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <title>State Department Portal</title>
-    <style>
-        :root { --bg: #0a0a0a; --card: #141414; --border: #333; --text: #eee; --accent: #fff; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { margin: 0; background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; }
-
-        /* SCREENS */
-        .screen { display: none; height: 100vh; width: 100vw; justify-content: center; align-items: center; }
-        .active-screen { display: flex; flex-direction: column; }
-
-        /* UI ELEMENTS */
-        .box { background: var(--card); border: 1px solid var(--border); padding: 30px; border-radius: 4px; width: 400px; }
-        input, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 12px; margin: 8px 0; outline: none; }
-        .btn { width: 100%; padding: 12px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
-        .btn-primary { background: #fff; color: #000; }
-        .btn-secondary { background: transparent; color: #888; border: 1px solid #333; }
-
-        /* DASHBOARD LAYOUT */
-        #main-dashboard { display: none; grid-template-rows: 60px 1fr; height: 100vh; }
-        header { border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; background: var(--card); }
-        .nav-link { padding: 10px 20px; cursor: pointer; color: #888; font-size: 14px; font-weight: bold; border: 1px solid transparent; }
-        .nav-link.active { color: #fff; border: 1px solid var(--border); background: #000; }
-
-        .content-grid { display: grid; grid-template-columns: 250px 1fr; height: 100%; }
-        aside { border-right: 1px solid var(--border); padding: 20px; }
-        main { padding: 30px; overflow-y: auto; background: #050505; }
-
-        .orga-tag { font-weight: 900; letter-spacing: 2px; border-left: 4px solid #fff; padding-left: 10px; }
-        .badge-pending { color: #ffa500; font-size: 10px; border: 1px solid #ffa500; padding: 2px 5px; }
-    </style>
-</head>
-<body>
-
-<div id="screen-login" class="screen active-screen">
-    <div class="box">
-        <h2 style="text-align:center; letter-spacing:3px;">PORTAL LOGIN</h2>
-        <input type="text" id="log-user" placeholder="Dienstname / Benutzer">
-        <input type="password" id="log-pass" placeholder="Passwort">
-        <button class="btn btn-primary" onclick="attemptLogin()">Einloggen</button>
-        <button class="btn btn-secondary" onclick="showScreen('screen-register')">Neuen Account anlegen</button>
+<div id="view-admin-master" class="admin-only">
+    <div class="stats-row" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px;">
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 10px; color: #888;">TOTAL USERS</div>
+            <div style="font-size: 24px; font-weight: 900;" id="stat-users">0</div>
+        </div>
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 10px; color: #888;">ACTIVE DISPATCHES</div>
+            <div style="font-size: 24px; font-weight: 900; color: #00ff00;" id="stat-calls">0</div>
+        </div>
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 10px; color: #888;">PENDING APPROVALS</div>
+            <div style="font-size: 24px; font-weight: 900; color: #ffa500;" id="stat-pending">0</div>
+        </div>
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 10px; color: #888;">SYSTEM STATUS</div>
+            <div style="font-size: 12px; font-weight: 900; color: #00ff00;">ONLINE / SECURE</div>
+        </div>
     </div>
-</div>
 
-<div id="screen-register" class="screen">
-    <div class="box">
-        <h2 style="text-align:center;">REGISTRIERUNG</h2>
-        <p style="font-size:12px; color:#888;">Hinweis: Ein HR-Mitarbeiter muss Ihren Account erst freischalten.</p>
-        <input type="text" id="reg-user" placeholder="Gewünschter Benutzername">
-        <input type="password" id="reg-pass" placeholder="Passwort wählen">
-        <input type="text" id="reg-tel" placeholder="IC-Telefonnummer (z.B. 555-1234)">
-        <button class="btn btn-primary" onclick="register()">Registrierung absenden</button>
-        <button class="btn btn-secondary" onclick="showScreen('screen-login')">Zurück zum Login</button>
-    </div>
-</div>
+    <div class="grid-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="card">
+            <h3>Organisations-Monitor</h3>
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #333; text-align: left;">
+                        <th>ORG</th>
+                        <th>MEMBER</th>
+                        <th>AKTEN</th>
+                        <th>STATUS</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-orga-list">
+                    </tbody>
+            </table>
+        </div>
 
-<div id="main-dashboard">
-    <header>
-        <div class="orga-tag" id="display-orga">LSPD</div>
-        <div id="display-user" style="font-size: 14px;">Officer Name | Rang</div>
-        <button class="btn-secondary" style="width:auto; padding:5px 15px;" onclick="location.reload()">Abmelden</button>
-    </header>
-    <div class="content-grid">
-        <aside>
-            <div class="nav-link active" onclick="showView('overview')">Übersicht</div>
-            <div class="nav-link" onclick="showView('files')">Akten / Datenbank</div>
-            <div class="nav-link" onclick="showView('dispatch')">Leitstelle / Funk</div>
-            <div id="hr-tab" class="nav-link" style="color: #fff; border-top: 1px solid #333; margin-top:20px;" onclick="showView('hr')">HR-Verwaltung</div>
-        </aside>
-        <main id="view-port">
-            <h1>Willkommen im System</h1>
-            <p>Wählen Sie ein Modul aus der linken Navigation.</p>
-        </main>
+        <div class="card">
+            <h3>Globale System-Logs</h3>
+            <div id="global-logs" style="font-family: monospace; font-size: 11px; height: 300px; overflow-y: auto; background: #000; padding: 10px; border: 1px solid #222;">
+                <div style="color: #444;">[12:40:01] System initialisiert...</div>
+                <div style="color: #fff;">[12:40:05] Admin-Einstieg in Master-Konsole</div>
+                <div style="color: #888;">[12:38:12] LSPD: Neuer Akteneintrag #9921</div>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-    // SIMULIERTE DATENBANK (Im echten Fall kommt das vom Server)
-    let currentUser = null;
+// Diese Daten kommen normalerweise vom Server via WebSocket (Live-Sync)
+const masterOrgaData = [
+    { id: "FIB", members: 12, files: 450, status: "Einsatzbereit" },
+    { id: "LSPD", members: 28, files: 1200, status: "Einsatzbereit" },
+    { id: "SAHP", members: 15, files: 320, status: "Einsatzbereit" },
+    { id: "EMS", members: 20, files: 890, status: "Einsatzbereit" },
+    { id: "NG", members: 40, files: 150, status: "Bereitschaft" },
+    { id: "LIFEINVADER", members: 8, files: 45, status: "Aktiv" },
+    { id: "GOV", members: 5, files: 12, status: "Verwaltung" }
+];
 
-    const ORGAS = ["FIB", "LSPD", "SAHP", "EMS", "NG", "LIFEINVADER", "GOV"];
+function renderAdminMaster() {
+    const table = document.getElementById('admin-orga-list');
+    table.innerHTML = masterOrgaData.map(o => `
+        <tr style="border-bottom: 1px solid #222;">
+            <td style="padding: 10px; font-weight: bold;">${o.id}</td>
+            <td style="padding: 10px;">${o.members}</td>
+            <td style="padding: 10px;">${o.files}</td>
+            <td style="padding: 10px; color: #00ff00; font-size: 10px;">● ${o.status.toUpperCase()}</td>
+        </tr>
+    `).join('');
+    
+    document.getElementById('stat-users').innerText = masterOrgaData.reduce((a, b) => a + b.members, 0);
+}
 
-    function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-        document.getElementById(id).classList.add('active-screen');
-    }
-
-    function register() {
-        alert("Registrierung erfolgreich! Bitte warten Sie auf die Freischaltung durch Ihre HR-Abteilung.");
-        showScreen('screen-login');
-    }
-
-    function attemptLogin() {
-        const user = document.getElementById('log-user').value;
-        // TEST-LOGIK:
-        if(user.toLowerCase() === "admin") {
-            loadDashboard("GOV", "Administrator", "Staat");
-        } else {
-            alert("Account noch nicht freigeschaltet oder falsche Daten.");
-        }
-    }
-
-    function loadDashboard(orga, name, rank) {
-        document.getElementById('screen-login').style.display = 'none';
-        document.getElementById('main-dashboard').style.display = 'grid';
-        document.getElementById('display-orga').innerText = orga;
-        document.getElementById('display-user').innerText = `${rank} | ${name}`;
-        
-        // HR-Tab nur für hohe Ränge zeigen
-        if(rank !== "Staat") document.getElementById('hr-tab').style.display = 'none';
-    }
-
-    function showView(view) {
-        const port = document.getElementById('view-port');
-        if(view === 'hr') {
-            port.innerHTML = `
-                <h2>Personalverwaltung</h2>
-                <table style="width:100%; border:1px solid #333; border-collapse:collapse;">
-                    <tr style="background:#111;"><th>Name</th><th>Tel</th><th>Status</th><th>Aktion</th></tr>
-                    <tr>
-                        <td>Frank_Castle</td>
-                        <td>555-9988</td>
-                        <td><span class="badge-pending">WARTEND</span></td>
-                        <td>
-                            <select style="width:100px; padding:2px;"><option>FIB</option><option>LSPD</option></select>
-                            <button onclick="alert('User freigeschaltet')">Aktivieren</button>
-                        </td>
-                    </tr>
-                </table>`;
-        } else if(view === 'files') {
-            port.innerHTML = `<h2>Datenbank: ${document.getElementById('display-orga').innerText}</h2><p>Hier sind nur die Akten Ihrer Orga sichtbar.</p>`;
-        }
-    }
+// Aufruf beim Laden wenn Admin eingeloggt ist
+renderAdminMaster();
 </script>
-</body>
-</html>
