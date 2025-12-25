@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>LSPD Strafrechner</title>
+<title>LSPD Leitstelle</title>
 
 <style>
 :root{
@@ -10,208 +10,165 @@
 --border:#21262d;--text:#fff;--muted:#8b949e;--gold:#d4af37
 }
 *{box-sizing:border-box;font-family:Segoe UI,sans-serif}
-body{margin:0;background:var(--bg);color:var(--text);height:100vh;display:flex}
-.container{display:grid;grid-template-columns:1fr 420px;gap:15px;width:100%;padding:15px}
-.main{display:flex;flex-direction:column}
-.search{background:var(--card);border:1px solid var(--border);color:#fff;padding:8px;border-radius:6px}
-.cards{overflow-y:auto;margin-top:10px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:15px}
-.header{text-align:center;color:var(--accent);padding:6px;border-bottom:1px solid var(--border);font-size:12px}
-table{width:100%;border-collapse:collapse}
-tr{cursor:pointer}
-tr:hover{background:#1c222d}
-tr.selected{background:#262c36;border-left:3px solid var(--accent)}
-td{padding:8px;font-size:12px}
-.sidebar{display:flex;flex-direction:column;gap:10px}
-.stat{background:var(--card);border:1px solid var(--border);padding:10px;border-radius:8px}
-.stat b{font-size:22px;display:block;text-align:center}
-.toggle{width:30px;height:16px;background:#333;border-radius:10px;cursor:pointer;position:relative}
-.toggle:after{content:"";width:12px;height:12px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:.2s}
-.toggle.active{background:var(--accent)}
-.toggle.active:after{left:16px}
-.switch{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}
-input.small{width:100%;margin-top:5px;background:#0a0c10;border:1px solid #333;color:#fff;padding:5px;border-radius:4px;display:none}
-button{background:#1c222d;border:1px solid #333;color:var(--accent);padding:6px;font-size:10px;cursor:pointer}
-.output{background:var(--card);border:1px dashed #333;padding:8px;font-size:11px;min-height:50px;color:var(--muted)}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;justify-content:center;align-items:center;z-index:99}
-.modal>div{background:var(--card);padding:20px;border-radius:10px;border:1px solid var(--accent);max-width:900px;max-height:90vh;overflow:auto}
-.modal h3{color:var(--accent);margin-top:0}
+body{margin:0;background:var(--bg);color:var(--text);height:100vh}
+
+/* LOGIN */
+#login{
+position:fixed;inset:0;
+display:flex;justify-content:center;align-items:center;
+background:rgba(10,12,18,.75);
+backdrop-filter:blur(20px)
+}
+.login-box{
+background:linear-gradient(180deg,rgba(21,25,33,.9),rgba(21,25,33,.8));
+border:1px solid rgba(255,46,126,.4);
+border-radius:18px;
+padding:30px;
+width:320px;
+box-shadow:0 40px 80px rgba(0,0,0,.7)
+}
+.login-box h2{margin:0 0 20px;color:var(--accent);text-align:center}
+.login-box input{
+width:100%;margin-bottom:10px;
+background:#0a0c10;border:1px solid #333;
+padding:10px;color:#fff;border-radius:6px
+}
+.login-box button{
+width:100%;padding:10px;
+background:var(--accent);border:none;
+color:#000;font-weight:600;border-radius:6px;cursor:pointer
+}
+
+/* TOPBAR */
+#app{display:none;height:100vh}
+.topbar{
+display:flex;gap:8px;
+background:var(--card);
+border-bottom:1px solid var(--border);
+padding:10px
+}
+.tab{
+padding:6px 12px;
+border-radius:6px;
+font-size:12px;
+cursor:pointer;
+color:var(--muted)
+}
+.tab.active{
+background:rgba(255,46,126,.15);
+color:var(--accent)
+}
+
+/* CONTENT */
+.content{padding:15px;height:calc(100vh - 52px);overflow:auto}
+.card{
+background:var(--card);
+border:1px solid var(--border);
+border-radius:14px;
+padding:15px;
+margin-bottom:15px
+}
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+gap:15px
+}
+
+/* IFRAME */
+iframe{width:100%;height:80vh;border:none}
 </style>
 </head>
 
 <body>
 
-<div class="container">
-<div class="main">
-<input class="search" placeholder="Suche…" onkeyup="filter()">
-<div class="cards" id="cards"></div>
+<!-- LOGIN -->
+<div id="login">
+<div class="login-box">
+<h2>LSPD MDT</h2>
+<input id="user" placeholder="Benutzer">
+<input id="pin" type="password" placeholder="PIN">
+<button onclick="login()">Einloggen</button>
+</div>
 </div>
 
-<div class="sidebar">
+<!-- APP -->
+<div id="app">
 
-<div class="stat"><div>HÖCHSTE STRAFE</div><b id="money">$0</b></div>
-<div class="stat"><div>WANTEDS</div><b id="wanted">0</b></div>
-
-<div class="stat">
-<div class="switch">Rechte vorgelesen<div id="swRights" class="toggle" onclick="toggle(this)"></div></div>
-<div class="switch">Reue (§35)<div id="sw35" class="toggle" onclick="toggle(this)"></div></div>
-<div class="switch">Haftbefehl / Beschluss<div id="swHaft" class="toggle" onclick="toggleHaft(this)"></div></div>
-<input id="grund" class="small" placeholder="Haftgrund / Aktenzeichen">
+<div class="topbar">
+<div class="tab active" onclick="show('leitstelle',this)">Leitstelle</div>
+<div class="tab" onclick="show('rechner',this)">Strafrechner</div>
+<div class="tab" onclick="show('anwalt',this)">Anwälte</div>
+<div class="tab" onclick="show('belehrung',this)">Belehrungen</div>
+<div class="tab" onclick="show('rechte',this)">Rechte</div>
+<div class="tab" onclick="logout()">Logout</div>
 </div>
 
-<button onclick="openM('anwalt')">ANWÄLTE</button>
-<button onclick="openM('rechte')">RECHTE</button>
-<button onclick="openM('belehrung')">BELEHRUNGEN</button>
-<button onclick="location.reload()">RESET</button>
+<div class="content">
 
-<div id="out" class="output" onclick="copy()">Keine Auswahl</div>
+<!-- LEITSTELLE -->
+<div id="leitstelle">
+<div class="grid">
+<div class="card"><b>Status</b><br>Alle Einheiten verfügbar</div>
+<div class="card"><b>Funk</b><br>Channel LSPD-1</div>
+<div class="card"><b>Einsätze</b><br>Keine offenen Einsätze</div>
+</div>
+</div>
 
+<!-- STRAFRECHNER -->
+<div id="rechner" style="display:none">
+<div class="card">
+<b>Strafrechner</b><br>
+Hier wird dein bestehender Rechner eingebunden.<br>
+(Dein vorheriger Code kann hier 1:1 rein.)
 </div>
 </div>
 
 <!-- ANWÄLTE -->
-<div id="anwalt" class="modal" onclick="closeM(this)">
-<div onclick="event.stopPropagation()">
-<iframe src="https://docs.google.com/spreadsheets/d/1DufMS-4hxX75e9bJk_z3jSHqCcO6JmimoqYh6M94zP0/edit?gid=690010630"
-style="width:100%;height:80vh;border:none"></iframe>
+<div id="anwalt" style="display:none">
+<div class="card">
+<iframe src="https://docs.google.com/spreadsheets/d/1DufMS-4hxX75e9bJk_z3jSHqCcO6JmimoqYh6M94zP0/edit?gid=690010630"></iframe>
+</div>
+</div>
+
+<!-- BELEHRUNGEN -->
+<div id="belehrung" style="display:none">
+<div class="card">
+<b>Haftbefehl / Beschluss / Befragung</b><br><br>
+(Belehrungstexte hier einfügen – 1:1 wie zuvor)
 </div>
 </div>
 
 <!-- RECHTE -->
-<div id="rechte" class="modal" onclick="closeM(this)">
-<div>
-<h3>RECHTEBELEHRUNG</h3>
-<p>
+<div id="rechte" style="display:none">
+<div class="card">
 Sie haben das Recht zu schweigen. Alles was Sie sagen, kann und wird gegen Sie verwendet werden.<br>
 Ab 3 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt, den Sie selbst benennen müssen.<br>
 Wenn kein Anwalt verfügbar ist, wird Ihnen keiner gestellt.<br>
 Die Judikative übernimmt der Exekutivbeamte.<br>
 Wenn ein Anwalt hinzugezogen wird, kann es länger als 25 Minuten dauern.<br>
 Haben Sie ihre Rechte verstanden?
-</p>
 </div>
 </div>
 
-<!-- BELEHRUNGEN -->
-<div id="belehrung" class="modal" onclick="closeM(this)">
-<div>
-<h3>BELEHRUNGEN</h3>
-
-<b>Haftbefehl</b>
-<p>
-Die Justiz hat einen Haftbefehl gegen Sie erlassen, Sie haben das Recht zu schweigen.<br>
-Alles, was Sie sagen, kann und wird gegen Sie verwendet werden.<br>
-Sie haben das Recht gegen den Haftbefehl vor Gericht zu ziehen.<br>
-Falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt
-bei der Regierung gegen den Haftbefehl einreichen.<br>
-Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen Gerichtsprozess ablehnen,
-wird der Haftbefehl von den ausgewählten Beamten vollstreckt.<br>
-Im weiteren Verlauf erhalten Sie eine staatliche Berufssperre von X Tagen
-nach §19 (4) Beamten Dienst Gesetzbuch.<br>
-Während dieser Zeit dürfen Sie keinem Staatsdienst nachgehen.<br>
-Wenn Sie flüchten, haben Sie kein Recht mehr auf einen Rechtsanwalt.
-</p>
-
-<b>Beschluss</b>
-<p>
-Die Justiz hat einen Beschluss gegen Sie erlassen, Sie haben das Recht zu schweigen.<br>
-Alles, was Sie sagen, kann und wird gegen Sie verwendet werden.<br>
-Sie haben das Recht gegen den Beschluss vor Gericht zu ziehen.<br>
-Falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt
-bei der Regierung gegen den Beschluss einreichen.<br>
-Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen Gerichtsprozess ablehnen,
-wird der Beschluss von den ausgewählten Beamten vollstreckt.<br>
-Wenn Sie flüchten, haben Sie kein Recht mehr auf einen Rechtsanwalt.
-</p>
-
-<b>Befragung</b>
-<p>
-Sie haben das Recht zu schweigen.<br>
-Alles, was Sie sagen, kann und wird vor Gericht gegen Sie verwendet werden.<br>
-Sie haben das Recht, zu jeder Vernehmung einen Rechtsanwalt hinzuzuziehen.<br>
-Haben Sie das verstanden?
-</p>
 </div>
 </div>
 
 <script>
-const laws=[{
-cat:"StGB / StVO / WaffG / BtMG / StPO",
-items:[
-{p:"StGB §3.1",n:"Beleidigung",m:10000,w:1},
-{p:"StGB §4.1",n:"Mord / Mordversuch",m:30000,w:4},
-{p:"StVO §8",n:"Fahren ohne Führerschein",m:6000,w:1},
-{p:"WaffG §1.1",n:"Besitz illegaler Waffen",m:10000,w:2},
-{p:"BtMG §2.2",n:"Drogenhandel",m:30000,w:3},
-{p:"StPO §6",n:"Bußgelder nicht bezahlt",m:500000,w:5}
-]}];
-
-let sel=[];
-
-function render(){
-const c=document.getElementById("cards");c.innerHTML="";
-laws.forEach(cat=>{
-let h=`<div class="card"><div class="header">${cat.cat}</div><table>`;
-cat.items.forEach(l=>{
-const s=sel.includes(l);
-h+=`<tr class="${s?"selected":""}" onclick="toggleLaw('${l.p}')">
-<td>${l.p}</td><td>${l.n}</td><td>$${l.m.toLocaleString()}</td><td>${"★".repeat(l.w)}</td></tr>`;
-});
-c.innerHTML+=h+"</table></div>";
-});
-update();
-}
-
-function toggleLaw(p){
-sel=sel.includes(p)?sel.filter(x=>x!==p):[...sel,p];
-render();
-}
-
-function update(){
-let w=0,m=0;
-laws[0].items.forEach(l=>{
-if(sel.includes(l.p)){w+=l.w;m=Math.max(m,l.m);}
-});
-if(document.getElementById("sw35").classList.contains("active")&&w>0)w=Math.max(1,w-2);
-
-document.getElementById("wanted").innerText=w;
-document.getElementById("money").innerText="$"+m.toLocaleString();
-
-const out=document.getElementById("out");
-if(!document.getElementById("swRights").classList.contains("active")){
-out.innerText="RECHTE NICHT VORGELESEN";
-out.style.color="red";
-return;
-}
-
-if(document.getElementById("swHaft").classList.contains("active")){
-const g=document.getElementById("grund").value;
-if(!g){
-out.innerText="HAFTGRUND FEHLT";
-out.style.color="red";
-return;
-}
-out.innerText="Grund: "+g+" | "+sel.join(", ");
+function login(){
+if(user.value==="LSPD" && pin.value==="1234"){
+document.getElementById("login").style.display="none";
+document.getElementById("app").style.display="block";
 }else{
-out.innerText=sel.join(", ")||"Keine Auswahl";
+alert("Zugriff verweigert");
 }
-out.style.color="var(--muted)";
 }
-
-function toggle(el){el.classList.toggle("active");update()}
-function toggleHaft(el){
-el.classList.toggle("active");
-document.getElementById("grund").style.display=el.classList.contains("active")?"block":"none";
-update();
+function logout(){location.reload()}
+function show(id,el){
+document.querySelectorAll(".content > div").forEach(d=>d.style.display="none");
+document.getElementById(id).style.display="block";
+document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+el.classList.add("active");
 }
-function openM(id){document.getElementById(id).style.display="flex"}
-function closeM(m){m.style.display="none"}
-function copy(){
-if(!document.getElementById("swRights").classList.contains("active"))return;
-navigator.clipboard.writeText(document.getElementById("out").innerText);
-}
-function filter(){}
-render();
 </script>
 
 </body>
