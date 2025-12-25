@@ -6,90 +6,103 @@
     <style>
         :root {
             --police-blue: #1a2a44;
-            --police-light: #f4f7f9;
+            --bg-page: #d1d5db;
+            --bg-card: #ffffff;
+            --bg-list: #f4f7f9;
+            --text-main: #222222;
+            --border: #cccccc;
             --accent-red: #b32d2d;
             --gold: #c5a021;
-            --text: #222;
-            --border: #ccc;
         }
+
+        /* Dark Mode Farben */
+        body.dark-mode {
+            --police-blue: #3b82f6;
+            --bg-page: #0f172a;
+            --bg-card: #1e293b;
+            --bg-list: #1e293b;
+            --text-main: #f8fafc;
+            --border: #334155;
+        }
+
         * { box-sizing: border-box; font-family: 'Arial', sans-serif; user-select: none; }
-        body { margin: 0; background-color: #d1d5db; color: var(--text); height: 100vh; display: flex; }
+        body { margin: 0; background-color: var(--bg-page); color: var(--text-main); height: 100vh; display: flex; transition: background 0.3s; }
 
         .container { display: grid; grid-template-columns: 1fr 480px; width: 100%; height: 100vh; padding: 20px; gap: 20px; }
         
-        /* LINKE SEITE: PARAGRAPHEN */
-        .main-panel { display: flex; flex-direction: column; background: white; border-radius: 8px; border: 2px solid var(--police-blue); overflow: hidden; }
-        .header-bar { background: var(--police-blue); color: white; padding: 15px; font-weight: bold; font-size: 20px; display: flex; align-items: center; justify-content: space-between; }
+        .main-panel { display: flex; flex-direction: column; background: var(--bg-card); border-radius: 8px; border: 2px solid var(--police-blue); overflow: hidden; }
         
-        .search-field { 
-            width: 100%; padding: 15px; border: none; border-bottom: 2px solid var(--police-blue); 
-            font-size: 18px; outline: none; background: #fff;
+        .header-bar { 
+            background: #1a2a44; color: white; padding: 15px; font-weight: bold; font-size: 20px; 
+            display: flex; align-items: center; justify-content: space-between; 
         }
 
-        .scroll-area { flex: 1; overflow-y: auto; background: var(--police-light); }
-        .category-title { background: #e2e8f0; padding: 10px 15px; font-weight: bold; font-size: 16px; border-bottom: 1px solid var(--border); color: var(--police-blue); }
+        /* Darkmode Button */
+        .dm-btn {
+            background: rgba(255,255,255,0.1); border: 1px solid white; color: white;
+            padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;
+        }
+        .dm-btn:hover { background: white; color: #1a2a44; }
+
+        .search-field { 
+            width: 100%; padding: 15px; border: none; border-bottom: 2px solid var(--police-blue); 
+            font-size: 18px; outline: none; background: var(--bg-card); color: var(--text-main);
+        }
+
+        .scroll-area { flex: 1; overflow-y: auto; background: var(--bg-list); }
+        .category-title { background: rgba(0,0,0,0.05); padding: 10px 15px; font-weight: bold; font-size: 16px; border-bottom: 1px solid var(--border); color: var(--police-blue); }
         
         table { width: 100%; border-collapse: collapse; }
-        .law-row { border-bottom: 1px solid var(--border); background: white; cursor: pointer; }
-        .law-row:hover { background: #f0f4f8; }
-        .law-row.selected { background: #e0e7ff; border-left: 8px solid var(--police-blue); }
-        .law-row td { padding: 16px; font-size: 18px; font-weight: 500; border-right: 1px solid #eee; }
+        .law-row { border-bottom: 1px solid var(--border); background: var(--bg-card); cursor: pointer; }
+        .law-row:hover { background: rgba(0,0,0,0.05); }
+        .law-row.selected { background: rgba(59, 130, 246, 0.2); border-left: 8px solid var(--police-blue); }
+        .law-row td { padding: 16px; font-size: 18px; font-weight: 500; border-right: 1px solid var(--border); }
 
         .col-stars { color: var(--gold); font-size: 26px; white-space: nowrap; }
-        .clickable-star { color: #ddd; cursor: pointer; }
+        .clickable-star { color: #555; cursor: pointer; }
         .clickable-star.active { color: var(--gold); }
 
-        /* RECHTE SEITE: SIDEBAR */
         .sidebar { display: flex; flex-direction: column; gap: 15px; }
-        .card { background: white; border-radius: 8px; padding: 20px; border: 2px solid var(--police-blue); box-shadow: 2px 2px 10px rgba(0,0,0,0.1); }
+        .card { background: var(--bg-card); border-radius: 8px; padding: 20px; border: 2px solid var(--police-blue); }
         
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .stat-box { text-align: center; background: #f8fafc; border: 1px solid var(--border); padding: 10px; border-radius: 6px; }
-        .stat-box label { font-size: 12px; font-weight: bold; color: #666; display: block; }
+        .stat-box { text-align: center; background: rgba(0,0,0,0.03); border: 1px solid var(--border); padding: 10px; border-radius: 6px; }
+        .stat-box label { font-size: 12px; font-weight: bold; color: var(--police-blue); display: block; }
         .stat-box span { font-size: 38px; font-weight: 900; }
 
         .btn { 
-            background: white; border: 2px solid var(--police-blue); color: var(--police-blue); 
-            padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; 
-            text-transform: uppercase; transition: 0.2s;
+            background: var(--bg-card); border: 2px solid var(--police-blue); color: var(--police-blue); 
+            padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; transition: 0.2s;
         }
         .btn:hover { background: var(--police-blue); color: white; }
 
-        /* OUTPUT BOX */
-        .output-label { font-weight: bold; font-size: 13px; margin-bottom: 5px; display: block; color: var(--police-blue); }
         #generatedEntry { 
-            background: #f1f5f9; border: 2px dashed var(--police-blue); padding: 15px; 
-            font-size: 18px; font-family: 'Courier New', monospace; color: #1a202c;
+            background: rgba(0,0,0,0.05); border: 2px dashed var(--police-blue); padding: 15px; 
+            font-size: 18px; font-family: 'Courier New', monospace; color: var(--text-main);
             min-height: 80px; cursor: copy; border-radius: 6px; font-weight: bold;
         }
-        #generatedEntry:active { background: #e2e8f0; }
 
-        /* TOGGLES */
-        .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; font-weight: bold; }
-        .toggle { 
-            width: 50px; height: 26px; background: #ccc; border-radius: 13px; position: relative; cursor: pointer; transition: 0.3s;
-        }
+        .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); font-weight: bold; }
+        .toggle { width: 50px; height: 26px; background: #666; border-radius: 13px; position: relative; cursor: pointer; transition: 0.3s; }
         .toggle::after { content: ''; position: absolute; width: 22px; height: 22px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.3s; }
         .active.toggle { background: #22c55e; }
         .active.toggle::after { transform: translateX(24px); }
 
-        .grund-input { 
-            width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 6px; margin-top: 10px; font-size: 16px; display: none;
-        }
-
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 30px; border-radius: 8px; border: 4px solid var(--police-blue); width: 80%; max-width: 800px; font-size: 20px; }
+        .grund-input { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 6px; margin-top: 10px; font-size: 16px; background: var(--bg-card); color: var(--text-main); display: none; }
+        
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; }
+        .modal-content { background: var(--bg-card); padding: 30px; border-radius: 8px; border: 4px solid var(--police-blue); width: 85%; max-width: 800px; color: var(--text-main); }
     </style>
 </head>
-<body>
+<body id="mainBody">
 
 <div class="container">
     <div class="main-panel">
         <div class="header-bar">
             <span>LSPD - STRAFKATALOG</span>
-            <span style="font-size: 12px; opacity: 0.8;">OFFICER TERMINAL v4.0</span>
+            <button class="dm-btn" onclick="toggleDarkMode()">DARK MODE AN/AUS</button>
         </div>
-        <input type="text" id="searchInput" class="search-field" placeholder="Suche nach Paragraphen oder Tatbestand..." onkeyup="filterTable()">
+        <input type="text" id="searchInput" class="search-field" placeholder="Suche..." onkeyup="filterTable()">
         <div class="scroll-area" id="cardsContainer"></div>
     </div>
 
@@ -97,11 +110,11 @@
         <div class="stat-grid">
             <div class="stat-box">
                 <label>GELDSTRAFE</label>
-                <span id="outM" style="color: #166534;">$0</span>
+                <span id="outM" style="color: #22c55e;">$0</span>
             </div>
             <div class="stat-box">
                 <label>WANTEDS</label>
-                <span id="outW" style="color: var(--accent-red);">0</span>
+                <span id="outW" style="color: #ef4444;">0</span>
             </div>
         </div>
 
@@ -119,7 +132,7 @@
         </div>
 
         <div class="card">
-            <label class="output-label">AKTEN-EINTRAG (KLICKEN ZUM KOPIEREN)</label>
+            <label style="font-weight: bold; font-size: 12px; color: var(--police-blue);">AKTEN-EINTRAG (KLICKEN)</label>
             <div id="generatedEntry" onclick="copyText()">Wähle Strafen aus...</div>
         </div>
     </div>
@@ -141,6 +154,7 @@
 </div>
 
 <script>
+// Daten und Logik bleiben erhalten
 const laws = [
     { cat: "StGB - Physische Integrität", items: [
         {p:"StGB §3.1", n:"Beleidigung", m:10000, w:0, gs:1},
@@ -148,11 +162,10 @@ const laws = [
         {p:"StGB §4.2", n:"Körperverletzung", m:15000, w:2, gs:0},
         {p:"StGB §5", n:"Sexuelle Belästigung", m:30000, w:1, gs:2}
     ]},
-    { cat: "StGB - Eigentum & Staat", items: [
+    { cat: "StGB - Wirtschaft & Staat", items: [
         {p:"StGB §11", n:"Raub", m:25000, w:3, gs:0},
-        {p:"StGB §12.1", n:"Geschäftsraub", m:35000, w:2, gs:0},
         {p:"StGB §14", n:"Steuerhinterziehung", m:50000, w:3, gs:0},
-        {p:"StGB §41.1", n:"Besitz staatl. Waffen", m:50000, w:3, gs:0}
+        {p:"StGB §18", n:"Militärgelände", m:50000, w:5, gs:0}
     ]},
     { cat: "StVO / WaffG / BtMG", items: [
         {p:"StVO §17", n:"Berauschtes Fahren", m:10000, w:0, gs:2},
@@ -162,6 +175,8 @@ const laws = [
 ];
 
 let selectedItems = []; let activeGs = {};
+
+function toggleDarkMode() { document.getElementById('mainBody').classList.toggle('dark-mode'); }
 
 function render() {
     const container = document.getElementById('cardsContainer');
@@ -222,7 +237,7 @@ function updateDisplay() {
         if(selectedItems.length) parts.push(selectedItems.map(l => l.p).join(", "));
         if(document.getElementById('sw35').classList.contains('active') && selectedItems.length) parts.push("§35");
         entry.innerText = parts.length ? `${timeStr} ${parts.join(" | ")}` : "Wähle Strafen aus...";
-        entry.style.color = "black";
+        entry.style.color = "var(--text-main)";
     }
 }
 
