@@ -122,7 +122,7 @@ let currentUser=null;
 
 /* LOGIN */
 document.getElementById("loginBtn").onclick=()=>{
-const u=document.getElementById("loginUser").value;
+const u=document.getElementById("loginUser").value.trim().toUpperCase();
 const p=document.getElementById("loginPin").value;
 const users=JSON.parse(localStorage.users);
 
@@ -196,3 +196,4 @@ renderUsers();renderAccess();
 
 </body>
 </html>
+
