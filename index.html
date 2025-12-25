@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>LSPD Penal Code - V.17.0</title>
+    <title>LSPD Penal Code - V.18.0</title>
     <style>
         :root {
             --bg-main: #0b0e14;
@@ -20,12 +20,7 @@
         body { margin: 0; background-color: var(--bg-main); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
 
         .container { display: grid; grid-template-columns: 1fr 420px; width: 100%; height: 100vh; padding: 20px; gap: 20px; }
-
         .main-panel { display: flex; flex-direction: column; overflow: hidden; }
-        .header-area { padding: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-        .logo-title { font-size: 24px; font-weight: bold; }
-        .pink { color: var(--accent-pink); }
-        
         .search-field { width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; color: white; outline: none; margin-bottom: 15px; }
         .cards-scroll-area { flex: 1; overflow-y: auto; padding-right: 10px; }
 
@@ -40,81 +35,76 @@
         .law-row td { padding: 10px 12px; font-size: 12.5px; }
         
         .col-para { color: var(--accent-pink); font-weight: bold; width: 90px; }
-        .col-stars { width: 100px; font-size: 14px; letter-spacing: 1px; }
+        .col-stars { width: 120px; font-size: 18px; letter-spacing: 2px; }
         .col-money { text-align: right; color: var(--gold); font-weight: bold; width: 100px; }
         
-        .star-gold { color: var(--gold); }
-        .star-silver { color: var(--silver); }
+        .clickable-star { cursor: pointer; transition: 0.2s; color: var(--silver); }
+        .clickable-star.active { color: var(--gold); }
+        .star-fixed { color: var(--gold); cursor: default; }
 
         .sidebar { display: flex; flex-direction: column; gap: 12px; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .stat-card { background: var(--bg-card); border-radius: 10px; padding: 12px; border: 1px solid var(--border-color); text-align: center; }
         .stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold; }
-        .stat-value { font-size: 24px; font-weight: bold; margin-top: 4px; }
-        .stat-value.gold { color: var(--gold); }
+        .stat-value { font-size: 28px; font-weight: bold; margin-top: 4px; }
         
         .grund-container { background: var(--bg-card); border-radius: 10px; padding: 12px; border: 1px solid var(--border-color); display: none; }
-
         .settings-card { background: var(--bg-card); border-radius: 10px; padding: 15px; border: 1px solid var(--border-color); }
-        .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; cursor: pointer; border-bottom: 1px solid #1a1e26; }
+        .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; cursor: pointer; border-bottom: 1px solid #1a1e26; }
         .toggle { width: 34px; height: 18px; background: #30363d; border-radius: 10px; position: relative; }
         .toggle::after { content: ''; position: absolute; width: 14px; height: 14px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.2s; }
         .active .toggle { background: var(--accent-pink); }
         .active .toggle::after { transform: translateX(16px); }
 
         .output-card { background: var(--bg-card); border-radius: 10px; padding: 12px; border: 1px solid var(--border-color); flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        #generatedEntry { background: #0a0c10; border-left: 3px solid var(--accent-pink); padding: 10px; font-size: 11px; color: #8b949e; flex: 1; overflow-y: auto; font-style: italic; margin-bottom: 8px; cursor: pointer; }
-        
+        #generatedEntry { background: #0a0c10; border-left: 3px solid var(--accent-pink); padding: 10px; font-size: 11px; color: #8b949e; flex: 1; overflow-y: auto; font-style: italic; }
+
         .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
-        .modal-content { background: #151921; width: 850px; height: 85vh; border-radius: 15px; border: 1px solid var(--accent-pink); display: flex; flex-direction: column; overflow: hidden; }
-        .modal-body { flex: 1; overflow-y: auto; padding: 25px; color: #d1d5da; font-size: 14px; line-height: 1.6; }
-        .close-icon { cursor: pointer; font-size: 24px; color: var(--text-muted); padding: 15px; text-align: right; }
-        .belehrung-title { color: var(--accent-pink); font-weight: bold; margin-top: 15px; display: block; border-bottom: 1px solid #333; }
+        .modal-content { background: #151921; width: 800px; max-height: 80vh; border-radius: 15px; border: 1px solid var(--accent-pink); display: flex; flex-direction: column; }
+        .modal-body { padding: 25px; color: #d1d5da; overflow-y: auto; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="main-panel">
-        <div class="header-area"><div class="logo-title">🛡️ LSPD <span class="pink">PENAL</span> CODE</div></div>
-        <input type="text" id="searchInput" class="search-field" placeholder="Suche nach Tatbestand..." onkeyup="filterTable()">
+        <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">🛡️ LSPD <span class="pink">PENAL</span> CODE</div>
+        <input type="text" id="searchInput" class="search-field" placeholder="Suche..." onkeyup="filterTable()">
         <div class="cards-scroll-area" id="cardsContainer"></div>
     </div>
 
     <div class="sidebar">
-        <div class="stats-grid">
-            <div class="stat-card"><span class="stat-label">Bussgeld</span><div class="stat-value gold" id="outM">$0</div></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="stat-card"><span class="stat-label">Bussgeld</span><div class="stat-value" id="outM" style="color:var(--gold)">$0</div></div>
             <div class="stat-card"><span class="stat-label">Wanteds</span><div class="stat-value" id="outW" style="color:#f1fa8c">0 ★</div></div>
         </div>
 
         <div class="grund-container" id="grundBox">
             <span class="stat-label">Grund / Aktenzeichen</span>
-            <input type="text" id="inGrund" class="small-input" style="width:100%; background:var(--bg-input); border:1px solid var(--accent-pink); color:white; padding:8px; border-radius:6px; margin-top:5px;" placeholder="Grund eingeben..." oninput="updateDisplay()">
+            <input type="text" id="inGrund" style="width:100%; background:var(--bg-input); border:1px solid var(--accent-pink); color:white; padding:8px; border-radius:6px; margin-top:5px;" oninput="updateDisplay()">
         </div>
 
         <div class="settings-card">
             <div class="switch-row" id="swRights" onclick="toggleSwitch(this)"><span>Rechte verlesen?</span><div class="toggle"></div></div>
-            <div class="switch-row" id="sw35" onclick="toggleSwitch(this)"><span>Reue zeigen (-20%)</span><div class="toggle"></div></div>
+            <div class="switch-row" id="sw35" onclick="toggleSwitch(this)"><span>Reue zeigen (-2 Wanteds)</span><div class="toggle"></div></div>
             <div class="switch-row" id="swHaft" onclick="toggleHaftSwitch(this)"><span>Haftbefehl / Beschluss</span><div class="toggle"></div></div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px;">
-                <button onclick="openModal('modalAnwalt')" style="background:#1c222d; border:1px solid #21262d; color:#ff2e7e; padding:8px; border-radius:6px; cursor:pointer; font-size:10px; font-weight:bold;">ANWÄLTE</button>
-                <button onclick="openModal('modalRechte')" style="background:#1c222d; border:1px solid #21262d; color:#ff2e7e; padding:8px; border-radius:6px; cursor:pointer; font-size:10px; font-weight:bold;">RECHTE</button>
-                <button onclick="openModal('modalBelehrung')" style="background:#1c222d; border:1px solid #21262d; color:#ff2e7e; padding:8px; border-radius:6px; cursor:pointer; font-size:10px; font-weight:bold;">BELEHRUNG</button>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
+                <button onclick="openModal('modalRechte')" style="background:#1c222d; border:1px solid #21262d; color:#ff2e7e; padding:8px; border-radius:6px; cursor:pointer; font-size:10px;">RECHTE</button>
+                <button onclick="openModal('modalBelehrung')" style="background:#1c222d; border:1px solid #21262d; color:#ff2e7e; padding:8px; border-radius:6px; cursor:pointer; font-size:10px;">BELEHRUNGEN</button>
             </div>
         </div>
 
         <div class="output-card">
             <div id="generatedEntry" onclick="copyText()">Wähle Tatbestände aus...</div>
-            <button onclick="location.reload()" style="background:transparent; border:1px solid #30363d; color:var(--text-muted); padding:8px; border-radius:5px; cursor:pointer; width:100%; font-size:10px;">Reset</button>
+            <button onclick="location.reload()" style="background:transparent; border:1px solid #30363d; color:var(--text-muted); padding:8px; border-radius:5px; cursor:pointer; width:100%; font-size:10px; margin-top:10px;">Reset</button>
         </div>
     </div>
 </div>
 
 <div id="modalRechte" class="modal-overlay" onclick="closeModal('modalRechte')">
-    <div class="modal-content" onclick="event.stopPropagation()" style="height:auto; max-width:600px;">
-        <div class="close-icon" onclick="closeModal('modalRechte')">&times;</div>
+    <div class="modal-content" onclick="event.stopPropagation()">
         <div class="modal-body" style="text-align:center;">
+            <h3>RECHTE</h3>
             <p>Sie haben das Recht zu schweigen, alles was Sie sagen kann und wird gegen Sie verwendet werden. Ab 3 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt, den Sie selbst benennen müssen. Wenn kein Anwalt verfügbar ist, wird Ihnen keiner gestellt. Die Judikative übernimmt der Exekutivbeamte. Wenn ein Anwalt hinzugezogen wird, kann es länger als 25 Minuten dauern.</p>
             <p style="color:var(--accent-pink); font-weight:bold;">Haben Sie ihre Rechte verstanden?</p>
         </div>
@@ -123,86 +113,62 @@
 
 <div id="modalBelehrung" class="modal-overlay" onclick="closeModal('modalBelehrung')">
     <div class="modal-content" onclick="event.stopPropagation()">
-        <div class="close-icon" onclick="closeModal('modalBelehrung')">&times;</div>
         <div class="modal-body">
-            <span class="belehrung-title">Belehrung Haftbefehl</span>
-            <p>"Die Justiz hat einen Haftbefehl gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Haftbefehl vor Gericht zu ziehen..."</p>
-            <span class="belehrung-title">Belehrung Beschluss</span>
-            <p>"Die Justiz hat einen Beschluss gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden..."</p>
-            <span class="belehrung-title">Belehrung Befragung</span>
-            <p>„Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird vor Gericht gegen Sie verwendet werden. Sie haben das Recht, zu jeder Vernehmung einen Rechtsanwalt hinzuzuziehen. Haben Sie das verstanden?“</p>
+            <h3 style="color:var(--accent-pink)">BELEHRUNGEN</h3>
+            <b>Haftbefehl:</b><p>"Die Justiz hat einen Haftbefehl gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Haftbefehl vor Gericht zu ziehen, falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung gegen den Haftbefehl einreichen..."</p>
+            <b>Befragung:</b><p>„Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird vor Gericht gegen Sie verwendet werden. Sie haben das Recht, zu jeder Vernehmung einen Rechtsanwalt hinzuzuziehen. Haben Sie das verstanden?“</p>
         </div>
-    </div>
-</div>
-
-<div id="modalAnwalt" class="modal-overlay" onclick="closeModal('modalAnwalt')">
-    <div class="modal-content" style="width:90vw; height:90vh;">
-        <div class="close-icon" onclick="closeModal('modalAnwalt')">&times;</div>
-        <iframe src="https://docs.google.com/spreadsheets/d/1DufMS-4hxX75e9bJk_z3jSHqCcO6JmimoqYh6M94zP0/edit#gid=690010630"></iframe>
     </div>
 </div>
 
 <script>
 const laws = [
-  { cat: "Psychische & Physische Integrität (StGB)", items: [
-    {p:"StGB §3.1", n:"Beleidigung", m:10000, w:0, gs:1},
-    {p:"StGB §3.2", n:"Belästigung", m:10000, w:0, gs:1},
-    {p:"StGB §4.1", n:"Versuchter Mord / Mord", m:30000, w:4, gs:0},
-    {p:"StGB §4.2", n:"Körperverletzung", m:15000, w:2, gs:0},
-    {p:"StGB §4.3", n:"Körperverletzung mit Todesfolge", m:20000, w:3, gs:0},
-    {p:"StGB §4.4", n:"Gewaltsame Drohung", m:5000, w:1, gs:1},
-    {p:"StGB §27", n:"Geiselnahme / Entführung", m:30000, w:3, gs:0},
-    {p:"StGB §42", n:"Erpressung", m:45000, w:3, gs:0}
-  ]},
-  { cat: "Wirtschaftskriminalität (StGB)", items: [
-    {p:"StGB §6", n:"Diebstahl / Betrug", m:5000, w:0, gs:3},
-    {p:"StGB §7", n:"Fahrzeug Diebstahl", m:10000, w:2, gs:0},
-    {p:"StGB §11", n:"Raub", m:25000, w:3, gs:0},
-    {p:"StGB §12.1", n:"Geschäfts Raub / Ammu Rob", m:35000, w:2, gs:0},
-    {p:"StGB §41.1", n:"Besitz staatl. Eigentum (Waffen)", m:50000, w:3, gs:0}
-  ]},
-  { cat: "Umgang mit Beamten (StGB)", items: [
-    {p:"StGB §15.1", n:"Nichtbeachten amtl. Anweisung", m:10000, w:0, gs:2},
-    {p:"StGB §15.5", n:"Widerstand gegen Vollstreckungsbeamte", m:20000, w:2, gs:0},
-    {p:"StGB §16", n:"Befreiung von Gefangenen", m:10000, w:3, gs:2},
-    {p:"StGB §24", n:"Amtsanmaßung", m:25000, w:2, gs:1}
-  ]},
-  { cat: "Straßenverkehrsordnung (StVO)", items: [
-    {p:"StVO §8", n:"Geschw. ab 101 km/h", m:20000, w:0, gs:0},
-    {p:"StVO §17", n:"Fahren im berauschten Zustand", m:10000, w:0, gs:2},
-    {p:"StVO §24", n:"Fahrerflucht", m:10000, w:1, gs:0},
-    {p:"StVO §28", n:"Sharing-Cars mit Anti-Radar", m:30000, w:3, gs:0}
-  ]},
-  { cat: "Betäubungsmittelgesetz (BtMG)", items: [
-    {p:"BtMG §2.1", n:"Drogenbesitz Groß 50+", m:30000, w:2, gs:0},
-    {p:"BtMG §2.2", n:"Drogenhandel", m:30000, w:3, gs:0}
-  ]},
-  { cat: "Strafprozessordnung (StPO)", items: [
-    {p:"§6 StPO", n:"Bußgelder nicht bezahlt", m:0, w:5, gs:0}
-  ]}
+    { cat: "Psychische & Physische Integrität (StGB)", items: [
+        {p:"StGB §3.1", n:"Beleidigung", m:10000, w:0, gs:1},
+        {p:"StGB §4.1", n:"Mord / Mordversuch", m:30000, w:4, gs:0},
+        {p:"StGB §4.2", n:"Körperverletzung", m:15000, w:2, gs:0},
+        {p:"StGB §27", n:"Geiselnahme / Entführung", m:30000, w:3, gs:0},
+        {p:"StGB §42", n:"Erpressung", m:45000, w:3, gs:0}
+    ]},
+    { cat: "Wirtschaftskriminalität (StGB)", items: [
+        {p:"StGB §7", n:"Fahrzeug Diebstahl", m:10000, w:2, gs:0},
+        {p:"StGB §11", n:"Raub", m:25000, w:3, gs:0},
+        {p:"StGB §12.1", n:"Geschäfts Raub", m:35000, w:2, gs:0},
+        {p:"StGB §41.1", n:"Besitz staatl. Eigentum", m:50000, w:3, gs:0}
+    ]},
+    { cat: "Umgang mit Beamten (StGB)", items: [
+        {p:"StGB §15.1", n:"Nichtbeachten amtl. Anweisung", m:10000, w:0, gs:2},
+        {p:"StGB §15.5", n:"Widerstand gegen Beamte", m:20000, w:2, gs:0},
+        {p:"StGB §24", n:"Amtsanmaßung", m:25000, w:2, gs:1}
+    ]},
+    { cat: "Strafprozessordnung (StPO)", items: [
+        {p:"§6 StPO", n:"Bußgelder nicht bezahlt", m:0, w:5, gs:0}
+    ]}
 ];
 
 let selectedItems = [];
-
-function getStarsHTML(goldCount, silverCount) {
-    let html = "";
-    for(let i=0; i<goldCount; i++) html += '<span class="star-gold">★</span>';
-    for(let i=0; i<silverCount; i++) html += '<span class="star-silver">☆</span>';
-    return html || "-";
-}
+let extraStars = {}; 
 
 function render() {
     const container = document.getElementById('cardsContainer');
     container.innerHTML = "";
-    laws.forEach(c => {
+    laws.forEach((c, catIdx) => {
         let card = document.createElement('div');
         card.className = "law-category-card";
-        let table = `<table><thead><tr><th>§</th><th>Tatbestand</th><th>Wanteds</th><th style="text-align:right">Geld</th></tr></thead><tbody>`;
-        c.items.forEach(i => {
-            table += `<tr class="law-row" data-search="${i.p} ${i.n}" onclick="toggleLaw(this, ${JSON.stringify(i).replace(/"/g, '&quot;')})">
+        let table = `<table><thead><tr><th>§</th><th>Tatbestand</th><th>Sterne</th><th style="text-align:right">Geld</th></tr></thead><tbody>`;
+        c.items.forEach((i, itemIdx) => {
+            const id = `s-${catIdx}-${itemIdx}`;
+            let starsHTML = "";
+            for(let s=0; s<i.w; s++) starsHTML += '<span class="star-fixed">★</span>';
+            for(let s=0; s<i.gs; s++) {
+                const isActive = extraStars[id] && extraStars[id] > s ? 'active' : '';
+                starsHTML += `<span class="clickable-star ${isActive}" onclick="toggleExtraStar(event, '${id}', ${s+1})">☆</span>`;
+            }
+
+            table += `<tr class="law-row" id="row-${id}" onclick="toggleLaw(this, ${JSON.stringify(i)}, '${id}')">
                 <td class="col-para">${i.p}</td>
                 <td>${i.n}</td>
-                <td class="col-stars">${getStarsHTML(i.w, i.gs)}</td>
+                <td class="col-stars">${starsHTML}</td>
                 <td class="col-money">$${i.m.toLocaleString()}</td>
             </tr>`;
         });
@@ -211,10 +177,22 @@ function render() {
     });
 }
 
-function toggleLaw(el, obj) {
-    el.classList.toggle('selected');
-    if(el.classList.contains('selected')) selectedItems.push(obj);
-    else selectedItems = selectedItems.filter(l => l.p !== obj.p || l.n !== obj.n);
+function toggleExtraStar(event, id, count) {
+    event.stopPropagation();
+    if (extraStars[id] === count) extraStars[id] = count - 1;
+    else extraStars[id] = count;
+    render(); 
+    updateDisplay();
+}
+
+function toggleLaw(el, obj, id) {
+    if(el.classList.contains('selected')) {
+        el.classList.remove('selected');
+        selectedItems = selectedItems.filter(item => item.uniqueId !== id);
+    } else {
+        el.classList.add('selected');
+        selectedItems.push({...obj, uniqueId: id});
+    }
     updateDisplay();
 }
 
@@ -225,13 +203,23 @@ function toggleHaftSwitch(el) {
 }
 
 function updateDisplay() {
-    let totalM = 0; let maxW = 0;
-    selectedItems.forEach(l => { totalM += l.m; if(l.w > maxW) maxW = l.w; });
+    let totalM = 0; let totalW = 0;
+    
+    selectedItems.forEach(l => {
+        totalM += l.m;
+        let itemW = l.w + (extraStars[l.uniqueId] || 0);
+        if(itemW > totalW) totalW = itemW;
+    });
+
+    // Reue-Logik: -2 Wanteds, aber mindestens 1 (wenn vorher > 0)
     const reue = document.getElementById('sw35').classList.contains('active');
-    if(reue) totalM *= 0.8;
+    if(reue && totalW > 0) {
+        totalM *= 0.8;
+        totalW = Math.max(1, totalW - 2);
+    }
 
     document.getElementById('outM').innerText = '$' + Math.floor(totalM).toLocaleString();
-    document.getElementById('outW').innerText = maxW + ' ★';
+    document.getElementById('outW').innerText = totalW + ' ★';
 
     const entryBox = document.getElementById('generatedEntry');
     const rights = document.getElementById('swRights').classList.contains('active');
@@ -244,7 +232,8 @@ function updateDisplay() {
         text = `${now.toLocaleDateString('de-DE')} | `;
         if(haft) text += `[HB${grund ? ': '+grund : ''}] `;
         text += selectedItems.map(l => l.p).join(", ");
-        if(maxW > 0) text += ` | ${maxW}★`;
+        if(reue) text += " | §35";
+        if(totalW > 0) text += ` | ${totalW}★`;
     }
 
     if(!rights && (selectedItems.length > 0 || haft)) {
@@ -260,14 +249,13 @@ function copyText() {
     navigator.clipboard.writeText(entry);
 }
 
-function filterTable() {
-    const v = document.getElementById('searchInput').value.toLowerCase();
-    document.querySelectorAll('.law-row').forEach(r => r.style.display = r.getAttribute('data-search').toLowerCase().includes(v) ? "" : "none");
-}
-
 function toggleSwitch(el) { el.classList.toggle('active'); updateDisplay(); }
 function openModal(id) { document.getElementById(id).style.display = "flex"; }
 function closeModal(id) { document.getElementById(id).style.display = "none"; }
+function filterTable() {
+    const v = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('.law-row').forEach(r => r.style.display = r.innerText.toLowerCase().includes(v) ? "" : "none");
+}
 
 render();
 </script>
