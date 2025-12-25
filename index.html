@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Bußgeldrechner - V.1.0</title>
+    <title>LSPD Penal Code - Professional</title>
     <style>
         :root {
             --bg-main: #0b0e14; --bg-card: #151921; --accent-pink: #ff2e7e;
@@ -11,32 +11,47 @@
         }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; user-select: none; }
         body { margin: 0; background-color: var(--bg-main); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
-        .container { display: grid; grid-template-columns: 1fr 420px; width: 100%; height: 100vh; padding: 20px; gap: 20px; }
+        
+        .container { display: grid; grid-template-columns: 1fr 400px; width: 100%; height: 100vh; padding: 15px; gap: 15px; }
         .main-panel { display: flex; flex-direction: column; overflow: hidden; }
-        .search-field { width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; color: white; outline: none; margin-bottom: 15px; }
-        .cards-scroll-area { flex: 1; overflow-y: auto; padding-right: 10px; }
-        .law-category-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 25px; overflow: hidden; }
-        .card-header { background: rgba(255, 46, 126, 0.05); padding: 10px; color: var(--accent-pink); font-weight: bold; text-align: center; border-bottom: 1px solid var(--border-color); font-size: 13px; }
+        .search-field { width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); padding: 10px; border-radius: 6px; color: white; outline: none; margin-bottom: 10px; }
+        .cards-scroll-area { flex: 1; overflow-y: auto; padding-right: 5px; }
+
+        .law-category-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+        .card-header { background: rgba(255, 46, 126, 0.05); padding: 8px; color: var(--accent-pink); font-weight: bold; text-align: center; border-bottom: 1px solid var(--border-color); font-size: 12px; }
+        
         table { width: 100%; border-collapse: collapse; }
-        .law-row { border-bottom: 1px solid #1a1e26; cursor: pointer; }
+        .law-row { border-bottom: 1px solid #1a1e26; cursor: pointer; transition: 0.1s; }
         .law-row:hover { background: #1c222d; }
         .law-row.selected { background: #262c36; border-left: 3px solid var(--accent-pink); }
-        .law-row td { padding: 10px; font-size: 12.5px; }
-        .col-stars { color: var(--gold); font-size: 18px; white-space: nowrap; }
-        .clickable-star { color: var(--silver); cursor: pointer; transition: 0.2s; }
+        .law-row td { padding: 8px; font-size: 12px; }
+        .col-stars { color: var(--gold); font-size: 16px; }
+        .clickable-star { color: var(--silver); cursor: pointer; }
         .clickable-star.active { color: var(--gold); }
-        .sidebar { display: flex; flex-direction: column; gap: 12px; }
-        .stat-card { background: var(--bg-card); border-radius: 10px; padding: 12px; border: 1px solid var(--border-color); text-align: center; }
-        .stat-value { font-size: 28px; font-weight: bold; margin-top: 4px; }
-        .info-box { background: rgba(0, 212, 255, 0.1); border: 1px solid var(--info-blue); border-radius: 10px; padding: 10px; color: var(--info-blue); font-size: 12px; display: none; }
-        .output-card { background: var(--bg-card); border-radius: 10px; padding: 12px; border: 1px solid var(--border-color); flex: 1; display: flex; flex-direction: column; }
-        #generatedEntry { background: #0a0c10; padding: 10px; font-size: 11px; color: #8b949e; flex: 1; cursor: copy; overflow-y: auto; border-left: 2px solid var(--accent-pink); }
-        .toggle-btn { width: 34px; height: 18px; background: #30363d; border-radius: 10px; position: relative; cursor: pointer; }
-        .toggle-btn::after { content: ''; position: absolute; width: 14px; height: 14px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.2s; }
+
+        .sidebar { display: flex; flex-direction: column; gap: 10px; }
+        .stat-card { background: var(--bg-card); border-radius: 8px; padding: 10px; border: 1px solid var(--border-color); }
+        .stat-value { font-size: 24px; font-weight: bold; text-align: center; }
+        
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 5px; }
+        .btn { background: #1c222d; border: 1px solid #333; color: var(--accent-pink); padding: 6px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold; }
+        .btn:hover { background: #262c36; }
+
+        .output-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; }
+        #generatedEntry { 
+            background: #0a0c10; padding: 8px; font-size: 11px; color: #8b949e; 
+            border: 1px dashed #333; cursor: copy; min-height: 40px; max-height: 80px; overflow-y: auto; 
+        }
+
+        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:100; }
+        .modal-content { background: var(--bg-card); padding: 25px; border-radius: 12px; border: 1px solid var(--accent-pink); width: 600px; max-height: 80vh; overflow-y: auto; }
+        
+        .toggle-btn { width: 30px; height: 16px; background: #333; border-radius: 10px; position: relative; cursor: pointer; }
+        .toggle-btn::after { content: ''; position: absolute; width: 12px; height: 12px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.2s; }
         .active.toggle-btn { background: var(--accent-pink); }
-        .active.toggle-btn::after { transform: translateX(16px); }
-        .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; }
-        .grund-input { width: 100%; background: #0a0c10; border: 1px solid #333; color: white; padding: 8px; border-radius: 5px; margin-top: 10px; outline: none; display: none; }
+        .active.toggle-btn::after { transform: translateX(14px); }
+        .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 12px; }
+        .grund-input { width: 100%; background: #0a0c10; border: 1px solid #333; color: white; padding: 5px; border-radius: 4px; margin-top: 5px; font-size: 11px; display: none; }
     </style>
 </head>
 <body>
@@ -48,104 +63,84 @@
     </div>
 
     <div class="sidebar">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <div class="stat-card"><div>Höchste Strafe</div><div class="stat-value" id="outM" style="color:var(--gold)">$0</div></div>
-            <div class="stat-card"><div>Wanteds</div><div class="stat-value" id="outW" style="color:#f1fa8c">0</div></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="stat-card">
+                <div style="font-size: 10px; text-align: center;">HÖCHSTE STRAFE</div>
+                <div class="stat-value" id="outM" style="color:var(--gold)">$0</div>
+            </div>
+            <div class="stat-card">
+                <div style="font-size: 10px; text-align: center;">WANTEDS</div>
+                <div class="stat-value" id="outW" style="color:#f1fa8c">0</div>
+            </div>
         </div>
-        <div class="info-box" id="infoBox"><b>Zusatz-Maßnahmen:</b><div id="infoContent"></div></div>
+
         <div class="stat-card">
             <div class="switch-row"><span>Rechte verlesen?</span><div id="swRights" class="toggle-btn" onclick="toggleSwitch(this)"></div></div>
-            <div class="switch-row"><span>Reue zeigen (-2W)</span><div id="sw35" class="toggle-btn" onclick="toggleSwitch(this)"></div></div>
-            <div class="switch-row"><span>Haftbefehl / Grund</span><div id="swHaft" class="toggle-btn" onclick="toggleHaft(this)"></div></div>
-            <input type="text" id="inGrund" class="grund-input" placeholder="Grund für Haftbefehl eingeben..." oninput="updateDisplay()">
+            <div class="switch-row"><span>Reue (§35)</span><div id="sw35" class="toggle-btn" onclick="toggleSwitch(this)"></div></div>
+            <div class="switch-row"><span>Grund hinzufügen</span><div id="swHaft" class="toggle-btn" onclick="toggleHaft(this)"></div></div>
+            <input type="text" id="inGrund" class="grund-input" placeholder="Grund / Aktenzeichen..." oninput="updateDisplay()">
         </div>
+
+        <div class="btn-grid">
+            <button class="btn" onclick="openModal('modalAnwalt')">ANWÄLTE</button>
+            <button class="btn" onclick="openModal('modalRechte')">RECHTE</button>
+            <button class="btn" onclick="openModal('modalBelehrung')">BELEHRUNG</button>
+        </div>
+
         <div class="output-card">
-            <div style="font-size: 10px; color: var(--accent-pink); margin-bottom: 5px;">KLICKEN ZUM KOPIEREN:</div>
-            <div id="generatedEntry" onclick="copyText()">Wähle Strafen aus...</div>
-            <button onclick="location.reload()" style="margin-top:10px; background:none; border:1px solid #333; color:white; padding:5px; cursor:pointer;">Reset</button>
+            <div style="font-size: 9px; color: var(--accent-pink); margin-bottom: 3px; font-weight: bold;">AKTEN-EINTRAG (KLICKEN)</div>
+            <div id="generatedEntry" onclick="copyText()">Wähle Strafen...</div>
+            <button onclick="location.reload()" style="margin-top:8px; background:none; border:1px solid #333; color:gray; font-size:10px; cursor:pointer;">System Reset</button>
         </div>
+    </div>
+</div>
+
+<div id="modalRechte" class="modal" onclick="closeModal('modalRechte')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3 style="color:var(--accent-pink)">RECHTEBELEHRUNG</h3>
+        <p>Sie haben das Recht zu schweigen. Alles was Sie sagen, kann und wird vor Gericht gegen Sie verwendet werden.</p>
+        <p>Sie haben das Recht, einen Anwalt zu kontaktieren, sofern Sie über 3 Wanteds haben. Wenn Sie sich keinen leisten können, wird Ihnen kein staatlicher gestellt, da die Exekutive die Judikative übernimmt.</p>
+    </div>
+</div>
+
+<div id="modalBelehrung" class="modal" onclick="closeModal('modalBelehrung')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3 style="color:var(--accent-pink)">BELEHRUNGEN</h3>
+        <b style="color:var(--gold)">Haftbefehl:</b>
+        <p>"Hiermit informiere ich Sie, dass gegen Sie ein gültiger Haftbefehl vorliegt. Sie werden vorläufig festgenommen..."</p>
+    </div>
+</div>
+
+<div id="modalAnwalt" class="modal" onclick="closeModal('modalAnwalt')" style="background:rgba(0,0,0,0.95)">
+    <div class="modal-content" style="width:90%; height:90%;" onclick="event.stopPropagation()">
+        <iframe src="https://docs.google.com/spreadsheets/d/1DufMS-4hxX75e9bJk_z3jSHqCcO6JmimoqYh6M94zP0/edit#gid=690010630" style="width:100%; height:100%; border:none;"></iframe>
     </div>
 </div>
 
 <script>
 const laws = [
-    { cat: "Psychische & Physische Integrität (StGB)", items: [
+    { cat: "StGB - Integrität", items: [
         {p:"StGB §3.1", n:"Beleidigung", m:10000, w:0, gs:1},
         {p:"StGB §3.2", n:"Belästigung", m:10000, w:0, gs:1},
-        {p:"StGB §3.3", n:"Drohung", m:5000, w:0, gs:0},
-        {p:"StGB §4.1", n:"Versuchter Mord / Mord", m:30000, w:4, gs:0},
+        {p:"StGB §4.1", n:"Mord / Mordversuch", m:30000, w:4, gs:0},
         {p:"StGB §4.2", n:"Körperverletzung", m:15000, w:2, gs:0},
-        {p:"StGB §4.3", n:"Körperverletzung mit Todesfolge", m:20000, w:3, gs:0},
-        {p:"StGB §4.4", n:"Gewaltsame Drohung", m:5000, w:1, gs:1},
-        {p:"StGB §4.5", n:"Fahrlässige Tötung", m:20000, w:2, gs:0},
-        {p:"StGB §5", n:"Sexuelle Belästigung", m:30000, w:1, gs:2},
-        {p:"StGB §20", n:"Sachbeschädigung", m:5000, w:0, gs:2},
-        {p:"StGB §21", n:"Unterlassene Hilfeleistung", m:5000, w:0, gs:0},
-        {p:"StGB §26", n:"Prostitution", m:10000, w:0, gs:0},
-        {p:"StGB §27", n:"Geiselnahmen / Entführung", m:30000, w:3, gs:0},
-        {p:"StGB §32", n:"Rassismus / Stalking", m:15000, w:3, gs:0},
-        {p:"StGB §38", n:"Fischwilderei", m:5000, w:0, gs:0},
-        {p:"StGB §39", n:"Verleumdung", m:30000, w:0, gs:3},
-        {p:"StGB §42", n:"Erpressung", m:45000, w:3, gs:0},
-        {p:"StGB §43", n:"Androhung einer Straftat", m:20000, w:0, gs:3}
+        {p:"StGB §27", n:"Geiselnahme", m:30000, w:3, gs:0},
+        {p:"StGB §32", n:"Rassismus / Stalking", m:15000, w:3, gs:0}
     ]},
-    { cat: "Wirtschaftskriminalität (StGB)", items: [
-        {p:"StGB §6 / §9", n:"Diebstahl / Betrug", m:5000, w:0, gs:3},
-        {p:"StGB §7", n:"Fahrzeug Diebstahl", m:10000, w:2, gs:0},
-        {p:"StGB §10.1", n:"Besitz illegaler Gegenstände", m:10000, w:2, gs:0},
+    { cat: "StGB - Wirtschaft", items: [
         {p:"StGB §11", n:"Raub", m:25000, w:3, gs:0},
-        {p:"StGB §12.1", n:"Geschäfts Raub / Ammu Rob", m:35000, w:2, gs:0},
-        {p:"StGB §12.3", n:"ATM Raub", m:5000, w:1, gs:0},
-        {p:"StGB §13", n:"Einbruch", m:15000, w:2, gs:0},
         {p:"StGB §14", n:"Steuerhinterziehung", m:50000, w:3, gs:0},
-        {p:"StGB §30", n:"Hausfriedensbruch", m:25000, w:2, gs:0},
-        {p:"StGB §41.1", n:"Besitz staatl. Waffen", m:50000, w:3, gs:0, info:"Waffenschein entziehen"},
-        {p:"StGB §41.2", n:"Besitz staatl. Gegenstände", m:50000, w:3, gs:0}
+        {p:"StGB §41.1", n:"Besitz staatl. Waffen", m:50000, w:3, gs:0}
     ]},
-    { cat: "Umgang mit Beamten (StGB)", items: [
-        {p:"StGB §15.1", n:"Nichtbeachten amtl. Anweisung", m:10000, w:0, gs:2},
-        {p:"StGB §15.2", n:"Entziehung poliz. Maßnahmen", m:10000, w:2, gs:0},
-        {p:"StGB §15.3", n:"Behinderung eines Beamten", m:10000, w:1, gs:0},
-        {p:"StGB §15.6", n:"Behinderung des EMS", m:10000, w:0, gs:2},
-        {p:"StGB §15.4", n:"Bestechung von Beamten", m:10000, w:0, gs:2},
-        {p:"StGB §15.5", n:"Widerstand gegen Beamte", m:20000, w:2, gs:0},
-        {p:"StGB §15.7", n:"Nicht ausweisen", m:15000, w:1, gs:0},
-        {p:"StGB §16", n:"Befreiung von Gefangenen", m:10000, w:3, gs:2},
-        {p:"StGB §19", n:"Falsche Namensangabe", m:10000, w:0, gs:1},
-        {p:"StGB §23", n:"Missbrauch von Notruf", m:30000, w:0, gs:2},
-        {p:"StGB §24", n:"Amtsanmaßung", m:25000, w:2, gs:1},
-        {p:"StGB §29", n:"Missachtung Platzverweis", m:20000, w:1, gs:1}
-    ]},
-    { cat: "Sperrzonen & Kapitalverbrechen (StGB)", items: [
-        {p:"StGB §17", n:"Durchbrechen von Absperrungen", m:15000, w:1, gs:1},
-        {p:"StGB §18", n:"Militärgelände Betreten", m:50000, w:5, gs:0},
-        {p:"StGB §18.1", n:"Betreten von Sperrzonen", m:25000, w:2, gs:1},
-        {p:"StGB §18.1", n:"Befahren von Sperrzonen", m:25000, w:2, gs:1},
-        {p:"StGB §25", n:"Terrorismus", m:25000, w:3, gs:0}
-    ]},
-    { cat: "Straßenverkehrsordnung (StVO)", items: [
-        {p:"StVO §17", n:"Berauschtes Fahren", m:10000, w:0, gs:2, info:"Führerschein entziehen"},
-        {p:"StVO §24", n:"Fahrerflucht", m:10000, w:1, gs:0, info:"Führerschein entziehen"},
-        {p:"StVO §28", n:"Sharing-Cars mit Anti-Radar", m:30000, w:3, gs:0}
-    ]},
-    { cat: "Waffengesetz (WaffG)", items: [
-        {p:"WaffG §1", n:"Besitz ohne Schein", m:10000, w:1, gs:1},
-        {p:"WaffG §5.1", n:"Besitz Illegaler Waffen", m:10000, w:2, gs:1, info:"Waffenschein entziehen"},
-        {p:"WaffG §11", n:"Illegaler Waffenhandel", m:25000, w:3, gs:0}
-    ]},
-    { cat: "Betäubungsmittelgesetz (BtMG)", items: [
-        {p:"BtMG §2.1", n:"Drogenbesitz Groß 50+", m:30000, w:2, gs:0},
-        {p:"BtMG §2.2", n:"Drogenhandel", m:30000, w:3, gs:0},
-        {p:"BtMG §2.1", n:"Drogen Herstellung", m:30000, w:3, gs:0}
-    ]},
-    { cat: "Beamtendienstgesetz (BDG)", items: [
-        {p:"BDG §2", n:"Verhaltenskodex", m:50000, w:0, gs:5},
-        {p:"BDG §7", n:"Bestechlichkeit", m:50000, w:0, gs:5}
+    { cat: "StVO / WaffG / BtMG", items: [
+        {p:"StVO §17", n:"Berauschtes Fahren", m:10000, w:0, gs:2},
+        {p:"StVO §24", n:"Fahrerflucht", m:10000, w:1, gs:0},
+        {p:"WaffG §5.1", n:"Besitz Illegaler Waffen", m:10000, w:2, gs:1},
+        {p:"BtMG §2.2", n:"Drogenhandel", m:30000, w:3, gs:0}
     ]}
 ];
 
-let selectedItems = [];
-let activeGs = {};
+let selectedItems = []; let activeGs = {};
 
 function render() {
     const container = document.getElementById('cardsContainer');
@@ -163,10 +158,10 @@ function render() {
                 starsHTML += `<span class="clickable-star ${active}" onclick="toggleGs(event, '${id}', ${s+1})">☆</span>`;
             }
             table += `<tr class="law-row ${isSelected}" onclick="toggleLaw('${id}', ${JSON.stringify(i).replace(/"/g, '&quot;')})">
-                <td style="color:var(--accent-pink); width:80px;"><b>${i.p}</b></td>
+                <td style="color:var(--accent-pink); width:70px;"><b>${i.p}</b></td>
                 <td>${i.n}</td>
-                <td class="col-stars">${starsHTML}</td>
-                <td style="text-align:right; color:var(--gold); width:80px;">$${i.m.toLocaleString()}</td>
+                <td class="col-stars" style="width:80px;">${starsHTML}</td>
+                <td style="text-align:right; color:var(--gold); width:70px;">$${i.m.toLocaleString()}</td>
             </tr>`;
         });
         card.innerHTML = `<div class="card-header">${c.cat}</div>` + table + `</tbody></table>`;
@@ -174,62 +169,48 @@ function render() {
     });
 }
 
-function toggleGs(e, id, val) {
-    e.stopPropagation();
-    activeGs[id] = activeGs[id] === val ? val - 1 : val;
-    render(); updateDisplay();
-}
-
+function toggleGs(e, id, val) { e.stopPropagation(); activeGs[id] = activeGs[id] === val ? val - 1 : val; render(); updateDisplay(); }
 function toggleLaw(id, data) {
     const idx = selectedItems.findIndex(it => it.id === id);
-    if(idx > -1) selectedItems.splice(idx, 1);
-    else selectedItems.push({id, ...data});
+    if(idx > -1) selectedItems.splice(idx, 1); else selectedItems.push({id, ...data});
     render(); updateDisplay();
 }
 
 function updateDisplay() {
-    let maxM = 0; let totalW = 0; let infos = [];
+    let maxM = 0; let totalW = 0;
     selectedItems.forEach(l => {
         if(l.m > maxM) maxM = l.m;
         totalW += l.w + (activeGs[l.id] || 0);
-        if(l.info) infos.push(l.info);
     });
-    
     const reue = document.getElementById('sw35').classList.contains('active');
     if(reue && totalW > 0) totalW = Math.max(1, totalW - 2);
 
     document.getElementById('outM').innerText = '$' + maxM.toLocaleString();
     document.getElementById('outW').innerText = totalW;
-    document.getElementById('infoBox').style.display = infos.length ? "block" : "none";
-    document.getElementById('infoContent').innerHTML = [...new Set(infos)].join("<br>");
 
     const entry = document.getElementById('generatedEntry');
     const grund = document.getElementById('inGrund').value;
     const haftActive = document.getElementById('swHaft').classList.contains('active');
     
     if(!document.getElementById('swRights').classList.contains('active') && (selectedItems.length || haftActive)) {
-        entry.innerText = "⚠️ RECHTE NOCH NICHT VERLESEN!"; entry.style.color = "red";
+        entry.innerText = "⚠️ RECHTE VERGESSEN!"; entry.style.color = "red";
     } else {
-        let textParts = [];
-        if(haftActive && grund) textParts.push(`Grund: ${grund}`);
-        if(selectedItems.length) textParts.push(selectedItems.map(l => l.p).join(", "));
-        if(reue && selectedItems.length) textParts.push("§35");
-        
-        entry.innerText = textParts.length ? textParts.join(" | ") : "Wähle Strafen aus...";
+        let parts = [];
+        if(haftActive && grund) parts.push(`Grund: ${grund}`);
+        if(selectedItems.length) parts.push(selectedItems.map(l => l.p).join(", "));
+        if(reue && selectedItems.length) parts.push("§35");
+        entry.innerText = parts.length ? parts.join(" | ") : "Wähle Strafen...";
         entry.style.color = "#8b949e";
     }
 }
 
 function toggleSwitch(el) { el.classList.toggle('active'); updateDisplay(); }
-function toggleHaft(el) { 
-    el.classList.toggle('active'); 
-    document.getElementById('inGrund').style.display = el.classList.contains('active') ? "block" : "none";
-    updateDisplay(); 
-}
+function toggleHaft(el) { el.classList.toggle('active'); document.getElementById('inGrund').style.display = el.classList.contains('active') ? "block" : "none"; updateDisplay(); }
+function openModal(id) { document.getElementById(id).style.display = "flex"; }
+function closeModal(id) { document.getElementById(id).style.display = "none"; }
 function copyText() { 
     const entry = document.getElementById('generatedEntry').innerText;
-    if(entry.includes("⚠️") || entry.includes("Wähle")) return;
-    navigator.clipboard.writeText(entry); 
+    if(!entry.includes("⚠️")) navigator.clipboard.writeText(entry); 
 }
 function filterTable() {
     const v = document.getElementById('searchInput').value.toLowerCase();
