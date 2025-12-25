@@ -2,151 +2,85 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>LSPD Leitstelle</title>
+<title>MDT Leitstelle</title>
 
 <style>
 :root{
 --bg:#0b0e14;--card:#151921;--accent:#ff2e7e;
---border:#21262d;--text:#fff;--muted:#8b949e;--gold:#d4af37
+--border:#21262d;--text:#fff;--muted:#8b949e
 }
 *{box-sizing:border-box;font-family:Segoe UI,sans-serif}
 body{margin:0;background:var(--bg);color:var(--text);height:100vh}
 
 /* LOGIN */
-#login{
-position:fixed;inset:0;
-display:flex;justify-content:center;align-items:center;
-background:rgba(10,12,18,.75);
-backdrop-filter:blur(20px)
-}
-.login-box{
-background:linear-gradient(180deg,rgba(21,25,33,.9),rgba(21,25,33,.8));
-border:1px solid rgba(255,46,126,.4);
-border-radius:18px;
-padding:30px;
-width:320px;
-box-shadow:0 40px 80px rgba(0,0,0,.7)
-}
-.login-box h2{margin:0 0 20px;color:var(--accent);text-align:center}
-.login-box input{
-width:100%;margin-bottom:10px;
-background:#0a0c10;border:1px solid #333;
-padding:10px;color:#fff;border-radius:6px
-}
-.login-box button{
-width:100%;padding:10px;
-background:var(--accent);border:none;
-color:#000;font-weight:600;border-radius:6px;cursor:pointer
-}
+#login{position:fixed;inset:0;display:flex;justify-content:center;align-items:center;
+background:rgba(10,12,18,.75);backdrop-filter:blur(20px)}
+.login-box{background:var(--card);border:1px solid var(--border);
+border-radius:18px;padding:30px;width:320px}
+.login-box input,button{width:100%;margin:6px 0;padding:10px;border-radius:6px}
+input{background:#0a0c10;border:1px solid #333;color:#fff}
+button{background:var(--accent);border:none;font-weight:600;cursor:pointer}
 
-/* TOPBAR */
+/* APP */
 #app{display:none;height:100vh}
-.topbar{
-display:flex;gap:8px;
-background:var(--card);
-border-bottom:1px solid var(--border);
-padding:10px
-}
-.tab{
-padding:6px 12px;
-border-radius:6px;
-font-size:12px;
-cursor:pointer;
-color:var(--muted)
-}
-.tab.active{
-background:rgba(255,46,126,.15);
-color:var(--accent)
-}
+.topbar{display:flex;gap:6px;background:var(--card);border-bottom:1px solid var(--border);padding:10px}
+.tab{padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;color:var(--muted)}
+.tab.active{background:rgba(255,46,126,.2);color:var(--accent)}
 
-/* CONTENT */
-.content{padding:15px;height:calc(100vh - 52px);overflow:auto}
-.card{
-background:var(--card);
-border:1px solid var(--border);
-border-radius:14px;
-padding:15px;
-margin-bottom:15px
-}
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-gap:15px
-}
-
-/* IFRAME */
-iframe{width:100%;height:80vh;border:none}
+.content{padding:15px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:15px;margin-bottom:15px}
+.hidden{display:none}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
 <div id="login">
 <div class="login-box">
-<h2>LSPD MDT</h2>
+<h3>MDT Login</h3>
 <input id="user" placeholder="Benutzer">
 <input id="pin" type="password" placeholder="PIN">
-<button onclick="login()">Einloggen</button>
+<button onclick="login()">Login</button>
 </div>
 </div>
 
-<!-- APP -->
 <div id="app">
-
 <div class="topbar">
-<div class="tab active" onclick="show('leitstelle',this)">Leitstelle</div>
+<div class="tab active" onclick="show('dashboard',this)">Leitstelle</div>
 <div class="tab" onclick="show('rechner',this)">Strafrechner</div>
-<div class="tab" onclick="show('anwalt',this)">Anwälte</div>
-<div class="tab" onclick="show('belehrung',this)">Belehrungen</div>
-<div class="tab" onclick="show('rechte',this)">Rechte</div>
+<div class="tab hidden" id="adminTab" onclick="show('admin',this)">Einstellungen</div>
 <div class="tab" onclick="logout()">Logout</div>
 </div>
 
 <div class="content">
 
-<!-- LEITSTELLE -->
-<div id="leitstelle">
-<div class="grid">
-<div class="card"><b>Status</b><br>Alle Einheiten verfügbar</div>
-<div class="card"><b>Funk</b><br>Channel LSPD-1</div>
-<div class="card"><b>Einsätze</b><br>Keine offenen Einsätze</div>
+<div id="dashboard">
+<div class="card">Leitstellen Übersicht</div>
+</div>
+
+<div id="rechner" class="hidden">
+<div class="card">
+<b>Gesetze</b>
+<div id="lawList"></div>
 </div>
 </div>
 
-<!-- STRAFRECHNER -->
-<div id="rechner" style="display:none">
+<div id="admin" class="hidden">
 <div class="card">
-<b>Strafrechner</b><br>
-Hier wird dein bestehender Rechner eingebunden.<br>
-(Dein vorheriger Code kann hier 1:1 rein.)
-</div>
+<h4>Benutzer</h4>
+<input id="newUser" placeholder="User">
+<input id="newPin" placeholder="PIN">
+<button onclick="addUser()">Hinzufügen</button>
+<div id="userList"></div>
 </div>
 
-<!-- ANWÄLTE -->
-<div id="anwalt" style="display:none">
 <div class="card">
-<iframe src="https://docs.google.com/spreadsheets/d/1DufMS-4hxX75e9bJk_z3jSHqCcO6JmimoqYh6M94zP0/edit?gid=690010630"></iframe>
-</div>
-</div>
-
-<!-- BELEHRUNGEN -->
-<div id="belehrung" style="display:none">
-<div class="card">
-<b>Haftbefehl / Beschluss / Befragung</b><br><br>
-(Belehrungstexte hier einfügen – 1:1 wie zuvor)
-</div>
-</div>
-
-<!-- RECHTE -->
-<div id="rechte" style="display:none">
-<div class="card">
-Sie haben das Recht zu schweigen. Alles was Sie sagen, kann und wird gegen Sie verwendet werden.<br>
-Ab 3 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt, den Sie selbst benennen müssen.<br>
-Wenn kein Anwalt verfügbar ist, wird Ihnen keiner gestellt.<br>
-Die Judikative übernimmt der Exekutivbeamte.<br>
-Wenn ein Anwalt hinzugezogen wird, kann es länger als 25 Minuten dauern.<br>
-Haben Sie ihre Rechte verstanden?
+<h4>Gesetze bearbeiten</h4>
+<input id="lawName" placeholder="Paragraph">
+<input id="lawDesc" placeholder="Beschreibung">
+<input id="lawWanted" placeholder="Wanteds">
+<input id="lawFine" placeholder="Geld">
+<button onclick="addLaw()">Gesetz hinzufügen</button>
 </div>
 </div>
 
@@ -154,20 +88,70 @@ Haben Sie ihre Rechte verstanden?
 </div>
 
 <script>
+/* STORAGE INIT */
+if(!localStorage.users){
+localStorage.users=JSON.stringify([
+{u:"ADMIN",p:"9999",r:"admin"},
+{u:"LSPD",p:"1234",r:"user"}
+])
+}
+if(!localStorage.laws){
+localStorage.laws=JSON.stringify([
+{name:"BtMG §2.1",desc:"Drogenbesitz Klein",w:1,f:15000}
+])
+}
+
+let currentRole="user";
+
+/* LOGIN */
 function login(){
-if(user.value==="LSPD" && pin.value==="1234"){
-document.getElementById("login").style.display="none";
-document.getElementById("app").style.display="block";
-}else{
-alert("Zugriff verweigert");
+let users=JSON.parse(localStorage.users);
+let found=users.find(x=>x.u===user.value && x.p===pin.value);
+if(!found)return alert("Falsch");
+currentRole=found.r;
+login.style.display="none";
+app.style.display="block";
+if(currentRole==="admin") adminTab.classList.remove("hidden");
+render();
 }
-}
-function logout(){location.reload()}
+
+/* NAV */
 function show(id,el){
-document.querySelectorAll(".content > div").forEach(d=>d.style.display="none");
-document.getElementById(id).style.display="block";
+document.querySelectorAll(".content>div").forEach(d=>d.classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
 document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
 el.classList.add("active");
+}
+function logout(){location.reload()}
+
+/* USERS */
+function addUser(){
+let u=JSON.parse(localStorage.users);
+u.push({u:newUser.value,p:newPin.value,r:"user"});
+localStorage.users=JSON.stringify(u);
+render();
+}
+function renderUsers(){
+let u=JSON.parse(localStorage.users);
+userList.innerHTML=u.map(x=>`${x.u} (${x.r})`).join("<br>");
+}
+
+/* LAWS */
+function addLaw(){
+let l=JSON.parse(localStorage.laws);
+l.push({name:lawName.value,desc:lawDesc.value,w:lawWanted.value,f:lawFine.value});
+localStorage.laws=JSON.stringify(l);
+render();
+}
+function renderLaws(){
+let l=JSON.parse(localStorage.laws);
+lawList.innerHTML=l.map(x=>`${x.name} – ${x.desc} (${x.w}W / $${x.f})`).join("<br>");
+}
+
+/* RENDER */
+function render(){
+renderUsers();
+renderLaws();
 }
 </script>
 
