@@ -2,214 +2,162 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>LSPD - Tactical Penal Interface</title>
+    <title>LSPD Penal Code Interface</title>
     <style>
         :root {
-            --bg-main: #05070a;
-            --bg-panel: rgba(20, 25, 35, 0.8);
-            --accent-blue: #00f2ff;
-            --accent-pink: #ff0066;
-            --text-main: #e0e6ed;
-            --text-muted: #8892b0;
-            --gold: #ffcc00;
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --police-blue: #1a2a44;
+            --police-light: #f4f7f9;
+            --accent-red: #b32d2d;
+            --gold: #c5a021;
+            --text: #222;
+            --border: #ccc;
         }
+        * { box-sizing: border-box; font-family: 'Arial', sans-serif; user-select: none; }
+        body { margin: 0; background-color: #d1d5db; color: var(--text); height: 100vh; display: flex; }
 
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; user-select: none; }
+        .container { display: grid; grid-template-columns: 1fr 480px; width: 100%; height: 100vh; padding: 20px; gap: 20px; }
         
-        body { 
-            margin: 0; 
-            background: radial-gradient(circle at center, #0a1018 0%, #05070a 100%);
-            color: var(--text-main); 
-            height: 100vh; 
-            display: flex; 
-            overflow: hidden; 
-        }
-
-        .container { 
-            display: grid; 
-            grid-template-columns: 1fr 480px; 
-            width: 100%; 
-            height: 100vh; 
-            padding: 25px; 
-            gap: 25px; 
-            backdrop-filter: blur(10px);
-        }
-
-        /* MAIN PANEL */
-        .main-panel { display: flex; flex-direction: column; overflow: hidden; }
+        /* LINKE SEITE: PARAGRAPHEN */
+        .main-panel { display: flex; flex-direction: column; background: white; border-radius: 8px; border: 2px solid var(--police-blue); overflow: hidden; }
+        .header-bar { background: var(--police-blue); color: white; padding: 15px; font-weight: bold; font-size: 20px; display: flex; align-items: center; justify-content: space-between; }
         
         .search-field { 
-            width: 100%; 
-            background: var(--bg-panel); 
-            border: 1px solid var(--accent-blue); 
-            padding: 18px; 
-            border-radius: 12px; 
-            color: var(--accent-blue); 
-            font-size: 22px; 
-            font-weight: bold; 
-            margin-bottom: 20px;
-            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
-            outline: none;
+            width: 100%; padding: 15px; border: none; border-bottom: 2px solid var(--police-blue); 
+            font-size: 18px; outline: none; background: #fff;
         }
 
-        .cards-scroll-area { flex: 1; overflow-y: auto; padding-right: 15px; }
+        .scroll-area { flex: 1; overflow-y: auto; background: var(--police-light); }
+        .category-title { background: #e2e8f0; padding: 10px 15px; font-weight: bold; font-size: 16px; border-bottom: 1px solid var(--border); color: var(--police-blue); }
         
-        /* LAW CARDS */
-        .law-category-card { 
-            background: var(--bg-panel); 
-            border: 1px solid var(--glass-border); 
-            border-radius: 15px; 
-            margin-bottom: 30px; 
-            overflow: hidden; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .card-header { 
-            background: linear-gradient(90deg, rgba(0,242,255,0.1), transparent);
-            padding: 15px; 
-            color: var(--accent-blue); 
-            font-weight: 900; 
-            text-align: left; 
-            border-bottom: 1px solid var(--glass-border); 
-            font-size: 18px; 
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
         table { width: 100%; border-collapse: collapse; }
-        .law-row { transition: 0.2s; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .law-row:hover { background: rgba(0, 242, 255, 0.05); }
-        .law-row.selected { background: rgba(255, 0, 102, 0.1); border-left: 4px solid var(--accent-pink); }
-        .law-row td { padding: 18px 15px; font-size: 18px; font-weight: 500; }
+        .law-row { border-bottom: 1px solid var(--border); background: white; cursor: pointer; }
+        .law-row:hover { background: #f0f4f8; }
+        .law-row.selected { background: #e0e7ff; border-left: 8px solid var(--police-blue); }
+        .law-row td { padding: 16px; font-size: 18px; font-weight: 500; border-right: 1px solid #eee; }
 
-        .col-stars { color: var(--gold); font-size: 28px; text-shadow: 0 0 10px rgba(255,204,0,0.4); }
-        .clickable-star { color: #333; cursor: pointer; transition: 0.3s; }
+        .col-stars { color: var(--gold); font-size: 26px; white-space: nowrap; }
+        .clickable-star { color: #ddd; cursor: pointer; }
         .clickable-star.active { color: var(--gold); }
 
-        /* SIDEBAR */
-        .sidebar { display: flex; flex-direction: column; gap: 20px; }
+        /* RECHTE SEITE: SIDEBAR */
+        .sidebar { display: flex; flex-direction: column; gap: 15px; }
+        .card { background: white; border-radius: 8px; padding: 20px; border: 2px solid var(--police-blue); box-shadow: 2px 2px 10px rgba(0,0,0,0.1); }
         
-        .stat-card { 
-            background: var(--bg-panel); 
-            border-radius: 15px; 
-            padding: 20px; 
-            border: 1px solid var(--glass-border);
-            position: relative;
-        }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .stat-box { text-align: center; background: #f8fafc; border: 1px solid var(--border); padding: 10px; border-radius: 6px; }
+        .stat-box label { font-size: 12px; font-weight: bold; color: #666; display: block; }
+        .stat-box span { font-size: 38px; font-weight: 900; }
 
-        .stat-label { font-size: 12px; color: var(--accent-blue); letter-spacing: 3px; font-weight: 800; text-align: center; margin-bottom: 10px; display: block; }
-        .stat-value { font-size: 50px; font-weight: 900; text-align: center; }
-
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
         .btn { 
-            background: transparent; 
-            border: 1px solid var(--accent-blue); 
-            color: var(--accent-blue); 
-            padding: 15px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-size: 14px; 
-            font-weight: bold; 
-            transition: 0.3s;
+            background: white; border: 2px solid var(--police-blue); color: var(--police-blue); 
+            padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; 
+            text-transform: uppercase; transition: 0.2s;
         }
-        .btn:hover { background: var(--accent-blue); color: black; box-shadow: 0 0 20px var(--accent-blue); }
+        .btn:hover { background: var(--police-blue); color: white; }
 
         /* OUTPUT BOX */
-        .output-card { 
-            background: rgba(0,0,0,0.4); 
-            border: 1px solid var(--accent-pink); 
-            border-radius: 15px; 
-            padding: 20px; 
-            box-shadow: 0 0 20px rgba(255,0,102,0.1);
-        }
-
+        .output-label { font-weight: bold; font-size: 13px; margin-bottom: 5px; display: block; color: var(--police-blue); }
         #generatedEntry { 
-            background: rgba(0,0,0,0.6); 
-            padding: 15px; 
-            font-size: 17px; 
-            color: #00ffaa; 
-            font-family: 'Consolas', monospace;
-            border-radius: 8px;
-            border: 1px solid #222;
-            cursor: copy;
-            min-height: 80px;
+            background: #f1f5f9; border: 2px dashed var(--police-blue); padding: 15px; 
+            font-size: 18px; font-family: 'Courier New', monospace; color: #1a202c;
+            min-height: 80px; cursor: copy; border-radius: 6px; font-weight: bold;
         }
+        #generatedEntry:active { background: #e2e8f0; }
 
         /* TOGGLES */
-        .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; font-size: 18px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .toggle-btn { 
-            width: 54px; height: 28px; background: #222; border-radius: 20px; position: relative; cursor: pointer; 
-            border: 1px solid #444;
+        .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; font-weight: bold; }
+        .toggle { 
+            width: 50px; height: 26px; background: #ccc; border-radius: 13px; position: relative; cursor: pointer; transition: 0.3s;
         }
-        .toggle-btn::after { 
-            content: ''; position: absolute; width: 22px; height: 22px; background: #666; border-radius: 50%; top: 2px; left: 2px; transition: 0.3s; 
-        }
-        .active.toggle-btn { background: var(--accent-blue); border-color: var(--accent-blue); }
-        .active.toggle-btn::after { transform: translateX(26px); background: #fff; }
+        .toggle::after { content: ''; position: absolute; width: 22px; height: 22px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.3s; }
+        .active.toggle { background: #22c55e; }
+        .active.toggle::after { transform: translateX(24px); }
 
         .grund-input { 
-            width: 100%; background: #000; border: 1px solid var(--accent-blue); color: #fff; 
-            padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 18px; outline: none; display: none;
+            width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 6px; margin-top: 10px; font-size: 16px; display: none;
         }
 
-        /* SCROLLBAR */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: var(--accent-blue); border-radius: 10px; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 30px; border-radius: 8px; border: 4px solid var(--police-blue); width: 80%; max-width: 800px; font-size: 20px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="main-panel">
-        <input type="text" id="searchInput" class="search-field" placeholder="TERMINAL SCANNER [PARAGRAPH/NAME]..." onkeyup="filterTable()">
-        <div class="cards-scroll-area" id="cardsContainer"></div>
+        <div class="header-bar">
+            <span>LSPD - STRAFKATALOG</span>
+            <span style="font-size: 12px; opacity: 0.8;">OFFICER TERMINAL v4.0</span>
+        </div>
+        <input type="text" id="searchInput" class="search-field" placeholder="Suche nach Paragraphen oder Tatbestand..." onkeyup="filterTable()">
+        <div class="scroll-area" id="cardsContainer"></div>
     </div>
 
     <div class="sidebar">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div class="stat-card">
-                <span class="stat-label">PENALTY FEE</span>
-                <div class="stat-value" id="outM" style="color:var(--gold)">$0</div>
+        <div class="stat-grid">
+            <div class="stat-box">
+                <label>GELDSTRAFE</label>
+                <span id="outM" style="color: #166534;">$0</span>
             </div>
-            <div class="stat-card">
-                <span class="stat-label">WANTED LEVEL</span>
-                <div class="stat-value" id="outW" style="color:var(--accent-pink)">0</div>
+            <div class="stat-box">
+                <label>WANTEDS</label>
+                <span id="outW" style="color: var(--accent-red);">0</span>
             </div>
         </div>
 
-        <div class="stat-card">
-            <div class="switch-row"><span>MIRANDA RIGHTS</span><div id="swRights" class="toggle-btn" onclick="toggleSwitch(this)"></div></div>
-            <div class="switch-row"><span>MITIGATION (§35)</span><div id="sw35" class="toggle-btn" onclick="toggleSwitch(this)"></div></div>
-            <div class="switch-row"><span>WARRANT REASON</span><div id="swHaft" class="toggle-btn" onclick="toggleHaft(this)"></div></div>
-            <input type="text" id="inGrund" class="grund-input" placeholder="WARRANT DETAILS..." oninput="updateDisplay()">
+        <div class="card">
+            <div class="switch-row"><span>RECHTE VERLESEN</span><div id="swRights" class="toggle" onclick="toggleSwitch(this)"></div></div>
+            <div class="switch-row"><span>REUE ZEIGEN (§35)</span><div id="sw35" class="toggle" onclick="toggleSwitch(this)"></div></div>
+            <div class="switch-row"><span>GRUND / HAFTBEFEHL</span><div id="swHaft" class="toggle" onclick="toggleHaft(this)"></div></div>
+            <input type="text" id="inGrund" class="grund-input" placeholder="Grund hier eingeben..." oninput="updateDisplay()">
         </div>
 
-        <div class="btn-grid">
-            <button class="btn" onclick="alert('Anwalt-Liste laden...')">LAWYERS</button>
-            <button class="btn" onclick="alert('Miranda Rights Text...')">RIGHTS</button>
-            <button class="btn" onclick="location.reload()">RELOAD</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+            <button class="btn" onclick="openModal('modalAnwalt')">Anwalt</button>
+            <button class="btn" onclick="openModal('modalRechte')">Rechte</button>
+            <button class="btn" onclick="location.reload()">Reset</button>
         </div>
 
-        <div class="output-card">
-            <span class="stat-label" style="text-align:left; margin-bottom:5px;">DATABASE ENTRY</span>
-            <div id="generatedEntry" onclick="copyText()">SYSTEM READY...</div>
+        <div class="card">
+            <label class="output-label">AKTEN-EINTRAG (KLICKEN ZUM KOPIEREN)</label>
+            <div id="generatedEntry" onclick="copyText()">Wähle Strafen aus...</div>
         </div>
     </div>
 </div>
 
+<div id="modalRechte" class="modal" onclick="closeModal('modalRechte')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3>Rechtebelehrung</h3>
+        <p>1. Sie haben das Recht zu schweigen.<br>2. Alles was Sie sagen, kann verwendet werden.<br>3. Anwalt ab 3 Wanteds kontaktierbar.</p>
+        <button class="btn" style="width: 100%" onclick="closeModal('modalRechte')">Schließen</button>
+    </div>
+</div>
+
+<div id="modalAnwalt" class="modal" onclick="closeModal('modalAnwalt')">
+    <div class="modal-content" style="width: 95%; height: 95%;" onclick="event.stopPropagation()">
+        <iframe src="https://docs.google.com/spreadsheets/d/1DufMS-4hxX75e9bJk_z3jSHqCcO6JmimoqYh6M94zP0/edit#gid=690010630" style="width: 100%; height: 85%; border: none;"></iframe>
+        <button class="btn" style="width: 100%; margin-top: 10px;" onclick="closeModal('modalAnwalt')">Zurück</button>
+    </div>
+</div>
+
 <script>
-// (Hier bleibt die Logik identisch wie zuvor, nur mit den Design-Klassen verknüpft)
 const laws = [
-    { cat: "Physical Integrity", items: [
-        {p:"StGB §4.1", n:"Murder / Attempt", m:30000, w:4, gs:0},
-        {p:"StGB §4.2", n:"Assault", m:15000, w:2, gs:0},
-        {p:"StGB §3.1", n:"Insult", m:10000, w:0, gs:1}
+    { cat: "StGB - Physische Integrität", items: [
+        {p:"StGB §3.1", n:"Beleidigung", m:10000, w:0, gs:1},
+        {p:"StGB §4.1", n:"Mord / Mordversuch", m:30000, w:4, gs:0},
+        {p:"StGB §4.2", n:"Körperverletzung", m:15000, w:2, gs:0},
+        {p:"StGB §5", n:"Sexuelle Belästigung", m:30000, w:1, gs:2}
     ]},
-    { cat: "State & Economy", items: [
-        {p:"StGB §14", n:"Tax Evasion", m:50000, w:3, gs:0},
-        {p:"StGB §41.1", n:"Illegal Gov Weapons", m:50000, w:3, gs:0},
-        {p:"StGB §18", n:"Restricted Area", m:50000, w:5, gs:0}
+    { cat: "StGB - Eigentum & Staat", items: [
+        {p:"StGB §11", n:"Raub", m:25000, w:3, gs:0},
+        {p:"StGB §12.1", n:"Geschäftsraub", m:35000, w:2, gs:0},
+        {p:"StGB §14", n:"Steuerhinterziehung", m:50000, w:3, gs:0},
+        {p:"StGB §41.1", n:"Besitz staatl. Waffen", m:50000, w:3, gs:0}
+    ]},
+    { cat: "StVO / WaffG / BtMG", items: [
+        {p:"StVO §17", n:"Berauschtes Fahren", m:10000, w:0, gs:2},
+        {p:"WaffG §5.1", n:"Illegale Waffen", m:10000, w:2, gs:1},
+        {p:"BtMG §2.2", n:"Drogenhandel", m:30000, w:3, gs:0}
     ]}
 ];
 
@@ -219,8 +167,8 @@ function render() {
     const container = document.getElementById('cardsContainer');
     container.innerHTML = "";
     laws.forEach((c, catIdx) => {
-        let card = document.createElement('div');
-        card.className = "law-category-card";
+        let div = document.createElement('div');
+        div.innerHTML = `<div class="category-title">${c.cat}</div>`;
         let table = `<table><tbody>`;
         c.items.forEach((i, itemIdx) => {
             const id = `${catIdx}-${itemIdx}`;
@@ -231,14 +179,14 @@ function render() {
                 starsHTML += `<span class="clickable-star ${active}" onclick="toggleGs(event, '${id}', ${s+1})">☆</span>`;
             }
             table += `<tr class="law-row ${isSelected}" onclick="toggleLaw('${id}', ${JSON.stringify(i).replace(/"/g, '&quot;')})">
-                <td style="color:var(--accent-blue); width:120px; font-weight:bold;">${i.p}</td>
+                <td style="width: 100px; color: var(--police-blue);"><b>${i.p}</b></td>
                 <td>${i.n}</td>
-                <td class="col-stars" style="width:140px;">${starsHTML}</td>
-                <td style="text-align:right; color:var(--gold); width:100px;">$${i.m.toLocaleString()}</td>
+                <td class="col-stars" style="width: 140px;">${starsHTML}</td>
+                <td style="width: 100px; text-align: right; font-weight: bold;">$${i.m.toLocaleString()}</td>
             </tr>`;
         });
-        card.innerHTML = `<div class="card-header">${c.cat}</div>` + table + `</tbody></table>`;
-        container.appendChild(card);
+        div.innerHTML += table + `</tbody></table>`;
+        container.appendChild(div);
     });
 }
 
@@ -255,9 +203,7 @@ function updateDisplay() {
         if(l.m > maxM) maxM = l.m;
         totalW += l.w + (activeGs[l.id] || 0);
     });
-    
-    const reue = document.getElementById('sw35').classList.contains('active');
-    if(reue && totalW > 0) totalW = Math.max(1, totalW - 2);
+    if(document.getElementById('sw35').classList.contains('active') && totalW > 0) totalW = Math.max(1, totalW - 2);
 
     document.getElementById('outM').innerText = '$' + maxM.toLocaleString();
     document.getElementById('outW').innerText = totalW;
@@ -267,27 +213,29 @@ function updateDisplay() {
     const haftActive = document.getElementById('swHaft').classList.contains('active');
     
     if(!document.getElementById('swRights').classList.contains('active') && (selectedItems.length || haftActive)) {
-        entry.innerText = ">> WARNING: MIRANDA RIGHTS NOT READ <<"; entry.style.color = "var(--accent-pink)";
+        entry.innerText = "RECHTE NOCH NICHT VERLESEN!"; entry.style.color = "red";
     } else {
         const now = new Date();
         const timeStr = `[${now.getDate().toString().padStart(2,'0')}.${(now.getMonth()+1).toString().padStart(2,'0')}. ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}]`;
         let parts = [];
-        if(haftActive && grund) parts.push(`AKTE: ${grund.toUpperCase()}`);
+        if(haftActive && grund) parts.push(`GRUND: ${grund.toUpperCase()}`);
         if(selectedItems.length) parts.push(selectedItems.map(l => l.p).join(", "));
-        if(reue && selectedItems.length) parts.push("§35");
-        entry.innerText = parts.length ? `${timeStr} ${parts.join(" | ")}` : "SYSTEM READY...";
-        entry.style.color = "#00ffaa";
+        if(document.getElementById('sw35').classList.contains('active') && selectedItems.length) parts.push("§35");
+        entry.innerText = parts.length ? `${timeStr} ${parts.join(" | ")}` : "Wähle Strafen aus...";
+        entry.style.color = "black";
     }
 }
 
 function toggleSwitch(el) { el.classList.toggle('active'); updateDisplay(); }
 function toggleHaft(el) { el.classList.toggle('active'); document.getElementById('inGrund').style.display = el.classList.contains('active') ? "block" : "none"; updateDisplay(); }
+function openModal(id) { document.getElementById(id).style.display = "flex"; }
+function closeModal(id) { document.getElementById(id).style.display = "none"; }
 function copyText() { 
     const entry = document.getElementById('generatedEntry').innerText;
-    if(!entry.includes("WARNING")) {
+    if(!entry.includes("RECHTE") && !entry.includes("Wähle")) {
         navigator.clipboard.writeText(entry);
-        document.getElementById('generatedEntry').style.color = "#fff";
-        setTimeout(() => { updateDisplay(); }, 200);
+        document.getElementById('generatedEntry').innerText = "KOPIERT!";
+        setTimeout(() => { updateDisplay(); }, 700);
     }
 }
 function filterTable() {
