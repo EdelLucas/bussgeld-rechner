@@ -3,270 +3,242 @@
 <head>
 <meta charset="UTF-8">
 <title>MDT System</title>
-
 <style>
-:root{
---bg:#0b0e14;--card:#151921;--accent:#ff2e7e;
---border:#21262d;--text:#fff;--muted:#8b949e
-}
-*{box-sizing:border-box;font-family:Segoe UI,sans-serif}
-body{margin:0;background:var(--bg);color:var(--text);height:100vh}
-
-/* LOGIN */
-#loginScreen{
-position:fixed;inset:0;display:flex;justify-content:center;align-items:center;
-background:rgba(10,12,18,.85);backdrop-filter:blur(20px);z-index:1000
-}
-.login-box{
-background:var(--card);border:1px solid var(--border);
-border-radius:18px;padding:30px;width:320px
-}
-.login-box input,.login-box button{
-width:100%;margin-top:8px;padding:10px;border-radius:6px
-}
-.login-box input{
-background:#0a0c10;border:1px solid #333;color:#fff
-}
-.login-box button{
-background:var(--accent);border:none;font-weight:600;cursor:pointer
-}
-
-/* APP */
-#app{display:none;height:100vh}
-.topbar{
-display:flex;gap:6px;background:var(--card);
-border-bottom:1px solid var(--border);padding:10px
-}
-.tab{
-padding:6px 12px;border-radius:6px;
-cursor:pointer;font-size:12px;color:var(--muted)
-}
-.tab.active{background:rgba(255,46,126,.2);color:var(--accent)}
-.hidden{display:none}
-.content{padding:15px}
-
-.card{
-background:var(--card);border:1px solid var(--border);
-border-radius:14px;padding:15px;margin-bottom:15px
-}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
-button{cursor:pointer}
-input,select{
-background:#0a0c10;border:1px solid #333;color:#fff;
-padding:8px;border-radius:6px;margin-top:5px;width:100%
-}
-.small{font-size:12px;color:var(--muted)}
-hr{border:0;border-top:1px solid var(--border);margin:10px 0}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont;background:#111;color:#eee}
+header{background:#1c1c1e;padding:10px;display:flex;gap:10px}
+header button{background:#2c2c2e;color:#fff;border:0;padding:8px 14px;border-radius:8px;cursor:pointer}
+header button.active{background:#0a84ff}
+section{display:none;padding:15px}
+.card{background:#1c1c1e;padding:10px;border-radius:10px;margin-bottom:10px}
+input,textarea,select{width:100%;padding:6px;border-radius:6px;border:0;margin:4px 0}
+button.small{padding:4px 8px;font-size:12px}
+#loginBox{max-width:300px;margin:100px auto}
 </style>
 </head>
-
 <body>
 
-<!-- LOGIN -->
-<div id="loginScreen">
-<div class="login-box">
+<div id="loginBox" class="card">
 <h3>MDT Login</h3>
 <input id="loginUser" placeholder="Benutzer">
 <input id="loginPin" type="password" placeholder="PIN">
-<button id="loginBtn">Login</button>
-</div>
-</div>
-
-<!-- APP -->
-<div id="app">
-<div class="topbar">
-<div class="tab active" data-view="dashboard">Leitstelle</div>
-<div class="tab" data-view="laws">Gesetze</div>
-<div class="tab hidden" id="adminTab" data-view="admin">Admin</div>
-<div class="tab" id="logoutBtn">Logout</div>
+<button onclick="login()">Login</button>
+<p id="loginErr" style="color:red"></p>
 </div>
 
-<div class="content">
+<div id="app" style="display:none">
+<header id="nav"></header>
 
-<!-- DASHBOARD -->
-<div id="dashboard" class="view">
-<div class="grid">
-<div class="card">
-<b>Aktive Benutzer</b>
-<div id="statActive"></div>
-</div>
-<div class="card">
-<b>Gesperrte Benutzer</b>
-<div id="statBlocked"></div>
-</div>
-<div class="card">
-<b>Gesetze gesamt</b>
-<div id="statLaws"></div>
-</div>
-</div>
-</div>
+<section id="dashboard" class="card">🚨 Leitstellen-Dashboard</section>
 
-<!-- LAWS -->
-<div id="laws" class="view hidden">
-<div class="card">
-<h4>Gesetze</h4>
+<section id="rechner">
+<h3>Strafrechner</h3>
 <div id="lawList"></div>
-</div>
-</div>
+<b>Grund:</b>
+<div id="lawResult"></div>
+</section>
 
-<!-- ADMIN -->
-<div id="admin" class="view hidden">
+<section id="persons">
+<h3>Personenakten</h3>
+<input id="pName" placeholder="Name">
+<button onclick="addPerson()">Anlegen</button>
+<div id="personList"></div>
+</section>
+
+<section id="calls">
+<h3>Einsätze / Funk</h3>
+<input id="callText" placeholder="Einsatz">
+<button onclick="addCall()">Anlegen</button>
+<div id="callList"></div>
+</section>
+
+<section id="admin">
+<h3>Admin-Panel</h3>
 
 <div class="card">
-<h4>Admin Passwort ändern</h4>
-<input id="newAdminPin" placeholder="Neue PIN">
-<button onclick="changeAdminPin()">Ändern</button>
+<b>Admin-Reset</b>
+<button onclick="resetAdmin()">Reset ADMIN</button>
 </div>
 
 <div class="card">
-<h4>Benutzerverwaltung</h4>
-<input id="uName" placeholder="Benutzer">
-<input id="uPin" placeholder="PIN">
-<select id="uRole">
+<b>Benutzer</b>
+<input id="newUser" placeholder="User">
+<input id="newPin" placeholder="PIN">
+<select id="newRole">
 <option value="user">User</option>
 <option value="admin">Admin</option>
 </select>
 <button onclick="addUser()">Hinzufügen</button>
-<hr>
 <div id="userList"></div>
 </div>
 
 <div class="card">
-<h4>Gesetz hinzufügen</h4>
-<input id="lPara" placeholder="Paragraph">
-<input id="lDesc" placeholder="Beschreibung">
-<input id="lWant" placeholder="Wanteds">
-<input id="lFine" placeholder="Geld">
-<button onclick="addLaw()">Hinzufügen</button>
+<b>Gesetze</b>
+<input id="lawP" placeholder="Paragraph">
+<input id="lawD" placeholder="Beschreibung">
+<input id="lawW" placeholder="Wanteds">
+<input id="lawF" placeholder="Strafe">
+<button onclick="addLaw()">Gesetz hinzufügen</button>
+<div id="adminLaws"></div>
 </div>
-
-</div>
-
-</div>
+</section>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded",()=>{
+/* ========= CONFIG ========= */
+const DISCORD_WEBHOOK="https://discord.com/api/webhooks/1453855487937482894/dO3DP9IQw0xXnl6m62J4rqblUan0u38uya7zEJdtKgekuOXwe0oqdYiMfpGT6okIWSeg";
 
-/* INIT */
-if(!localStorage.users){
-localStorage.users=JSON.stringify([
-{u:"ADMIN",p:"9999",r:"admin",active:true},
-{u:"LSPD",p:"1234",r:"user",active:true}
-])
+/* ========= STORAGE INIT ========= */
+try{
+ const u=JSON.parse(localStorage.users||"[]");
+ if(!u.length) throw 0;
+}catch{
+ localStorage.users=JSON.stringify([
+  {u:"ADMIN",p:"9999",r:"admin",active:true},
+  {u:"LSPD",p:"1234",r:"user",active:true}
+ ]);
 }
-if(!localStorage.laws){
-localStorage.laws=JSON.stringify([
-{p:"BtMG §2.1",d:"Drogenbesitz Klein",w:1,f:15000}
-])
-}
+if(!localStorage.laws) localStorage.laws=JSON.stringify([
+ {p:"BtMG §2.1",d:"Drogenbesitz Klein",w:1,f:15000},
+ {p:"BtMG §2.2",d:"Drogenhandel",w:3,f:30000}
+]);
+if(!localStorage.persons) localStorage.persons="[]";
+if(!localStorage.calls) localStorage.calls="[]";
 
-let currentUser=null;
+/* ========= GLOBAL ========= */
+let CURRENT_USER=null;
+let selectedLaws=[];
 
-/* LOGIN */
-loginBtn.onclick=()=>{
-const u=loginUser.value.trim().toUpperCase();
-const p=loginPin.value.trim();
-const users=JSON.parse(localStorage.users);
-const found=users.find(x=>x.u===u && x.p===p && x.active);
-if(!found){alert("Login fehlgeschlagen");return;}
-currentUser=found;
-loginScreen.style.display="none";
-app.style.display="block";
-if(found.r==="admin") adminTab.classList.remove("hidden");
-renderAll();
-};
-
-/* NAV */
-document.querySelectorAll(".tab").forEach(t=>{
-t.onclick=()=>{
-if(t.id==="logoutBtn"){location.reload();return;}
-document.querySelectorAll(".view").forEach(v=>v.classList.add("hidden"));
-document.getElementById(t.dataset.view)?.classList.remove("hidden");
-document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-t.classList.add("active");
-}
-});
-
-/* DASHBOARD */
-function renderStats(){
-const users=JSON.parse(localStorage.users);
-statActive.innerText=users.filter(x=>x.active).length;
-statBlocked.innerText=users.filter(x=>!x.active).length;
-statLaws.innerText=JSON.parse(localStorage.laws).length;
+/* ========= LOG ========= */
+function audit(msg){
+ fetch(DISCORD_WEBHOOK,{
+  method:"POST",
+  headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({content:`[${new Date().toLocaleString()}] ${msg}`})
+ });
 }
 
-/* USERS */
-function renderUsers(){
-const users=JSON.parse(localStorage.users);
-userList.innerHTML=users.map((x,i)=>`
-${x.u} (${x.r}) - ${x.active?"aktiv":"gesperrt"}
-<button onclick="toggleUser(${i})">Toggle</button>
-<button onclick="delUser(${i})">X</button>
-`).join("<br>");
+/* ========= LOGIN ========= */
+function login(){
+ const u=document.getElementById("loginUser").value.trim().toUpperCase();
+ const p=document.getElementById("loginPin").value;
+ const users=JSON.parse(localStorage.users);
+ const found=users.find(x=>x.u===u && x.p===p && x.active);
+ if(!found){loginErr.innerText="Login fehlgeschlagen";return;}
+ CURRENT_USER=found;
+ loginBox.style.display="none";
+ app.style.display="block";
+ buildNav();
+ audit("Login "+found.u);
+ show("dashboard");
 }
-window.addUser=()=>{
-const users=JSON.parse(localStorage.users);
-users.push({
-u:uName.value.trim().toUpperCase(),
-p:uPin.value,
-r:uRole.value,
-active:true
-});
-localStorage.users=JSON.stringify(users);
-renderAll();
-};
-window.toggleUser=i=>{
-const users=JSON.parse(localStorage.users);
-users[i].active=!users[i].active;
-localStorage.users=JSON.stringify(users);
-renderAll();
-};
-window.delUser=i=>{
-const users=JSON.parse(localStorage.users);
-users.splice(i,1);
-localStorage.users=JSON.stringify(users);
-renderAll();
-};
 
-/* ADMIN PIN */
-window.changeAdminPin=()=>{
-const users=JSON.parse(localStorage.users);
-const admin=users.find(x=>x.u==="ADMIN");
-admin.p=newAdminPin.value;
-localStorage.users=JSON.stringify(users);
-alert("PIN geändert");
-};
+/* ========= NAV ========= */
+function buildNav(){
+ const nav=document.getElementById("nav");
+ nav.innerHTML="";
+ const tabs=[
+  ["dashboard","Dashboard"],
+  ["rechner","Strafrechner"],
+  ["persons","Personen"],
+  ["calls","Einsätze"]
+ ];
+ if(CURRENT_USER.r==="admin") tabs.push(["admin","Admin"]);
+ tabs.forEach(t=>{
+  const b=document.createElement("button");
+  b.innerText=t[1];
+  b.onclick=()=>show(t[0]);
+  nav.appendChild(b);
+ });
+}
+function show(id){
+ document.querySelectorAll("section").forEach(s=>s.style.display="none");
+ document.getElementById(id).style.display="block";
+}
 
-/* LAWS */
+/* ========= STRAFRECHNER ========= */
 function renderLaws(){
-const laws=JSON.parse(localStorage.laws);
-lawList.innerHTML=laws.map((x,i)=>`
-${x.p} – ${x.d} | ${x.w}W | $${x.f}
-<button onclick="delLaw(${i})">X</button>
-`).join("<br>");
+ const laws=JSON.parse(localStorage.laws);
+ lawList.innerHTML=laws.map((l,i)=>`
+ <div class="card">
+ ${l.p} – ${l.d}<br>
+ W:${l.w} $${l.f}
+ <button class="small" onclick="addLawSel(${i})">+</button>
+ </div>`).join("");
 }
-window.addLaw=()=>{
-const laws=JSON.parse(localStorage.laws);
-laws.push({p:lPara.value,d:lDesc.value,w:lWant.value,f:lFine.value});
-localStorage.laws=JSON.stringify(laws);
-renderAll();
-};
-window.delLaw=i=>{
-const laws=JSON.parse(localStorage.laws);
-laws.splice(i,1);
-localStorage.laws=JSON.stringify(laws);
-renderAll();
-};
-
-function renderAll(){
-renderStats();
-renderUsers();
+function addLawSel(i){
+ const laws=JSON.parse(localStorage.laws);
+ selectedLaws.push(laws[i]);
+ lawResult.innerText=selectedLaws.map(l=>l.d).join(", ");
+ audit("Gesetz gewählt "+laws[i].p);
+}
 renderLaws();
+
+/* ========= PERSONEN ========= */
+function addPerson(){
+ const p=JSON.parse(localStorage.persons);
+ p.push({name:pName.value,w:0,notes:[]});
+ localStorage.persons=JSON.stringify(p);
+ audit("Person "+pName.value);
+ renderPersons();
 }
+function renderPersons(){
+ const p=JSON.parse(localStorage.persons);
+ personList.innerHTML=p.map((x,i)=>`
+ <div class="card">
+ <b>${x.name}</b> | W:${x.w}
+ <button class="small" onclick="p[i].w++">+W</button>
+ </div>`).join("");
+}
+renderPersons();
 
-});
+/* ========= EINSÄTZE ========= */
+function addCall(){
+ const c=JSON.parse(localStorage.calls);
+ c.push({t:callText.value,s:"offen"});
+ localStorage.calls=JSON.stringify(c);
+ audit("Einsatz "+callText.value);
+ renderCalls();
+}
+function renderCalls(){
+ const c=JSON.parse(localStorage.calls);
+ callList.innerHTML=c.map(x=>`
+ <div class="card">${x.t} [${x.s}]</div>`).join("");
+}
+renderCalls();
+
+/* ========= ADMIN ========= */
+function resetAdmin(){
+ localStorage.users=JSON.stringify([
+  {u:"ADMIN",p:"9999",r:"admin",active:true}
+ ]);
+ audit("ADMIN RESET");
+ alert("ADMIN zurückgesetzt");
+}
+function addUser(){
+ const u=JSON.parse(localStorage.users);
+ u.push({u:newUser.value.toUpperCase(),p:newPin.value,r:newRole.value,active:true});
+ localStorage.users=JSON.stringify(u);
+ audit("User erstellt "+newUser.value);
+ renderUsers();
+}
+function renderUsers(){
+ const u=JSON.parse(localStorage.users);
+ userList.innerHTML=u.map(x=>`${x.u} (${x.r})`).join("<br>");
+}
+renderUsers();
+
+function addLaw(){
+ const l=JSON.parse(localStorage.laws);
+ l.push({p:lawP.value,d:lawD.value,w:+lawW.value,f:+lawF.value});
+ localStorage.laws=JSON.stringify(l);
+ audit("Gesetz hinzugefügt "+lawP.value);
+ renderLaws(); renderAdminLaws();
+}
+function renderAdminLaws(){
+ const l=JSON.parse(localStorage.laws);
+ adminLaws.innerHTML=l.map(x=>`${x.p} – ${x.d}`).join("<br>");
+}
+renderAdminLaws();
 </script>
-
 </body>
 </html>
