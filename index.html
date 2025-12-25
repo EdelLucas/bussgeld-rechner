@@ -2,96 +2,99 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>LSPD Penal Code Interface</title>
+    <title>LSPD Interface - Monochrome Edition</title>
     <style>
         :root {
-            --police-blue: #1a2a44;
-            --bg-page: #d1d5db;
+            --bg-page: #e5e7eb;
             --bg-card: #ffffff;
-            --bg-list: #f4f7f9;
-            --text-main: #222222;
-            --border: #cccccc;
-            --accent-red: #b32d2d;
-            --gold: #c5a021;
+            --bg-list: #f9fafb;
+            --text-main: #111827;
+            --text-sub: #4b5563;
+            --border: #374151;
+            --accent: #111827;
+            --star-active: #111827;
+            --star-dim: #d1d5db;
         }
 
-        /* Dark Mode Farben */
+        /* Dark Mode: Streng Schwarz/Grau */
         body.dark-mode {
-            --police-blue: #3b82f6;
-            --bg-page: #0f172a;
-            --bg-card: #1e293b;
-            --bg-list: #1e293b;
-            --text-main: #f8fafc;
-            --border: #334155;
+            --bg-page: #000000;
+            --bg-card: #111111;
+            --bg-list: #0a0a0a;
+            --text-main: #ffffff;
+            --text-sub: #9ca3af;
+            --border: #444444;
+            --accent: #ffffff;
+            --star-active: #ffffff;
+            --star-dim: #333333;
         }
 
         * { box-sizing: border-box; font-family: 'Arial', sans-serif; user-select: none; }
-        body { margin: 0; background-color: var(--bg-page); color: var(--text-main); height: 100vh; display: flex; transition: background 0.3s; }
+        body { margin: 0; background-color: var(--bg-page); color: var(--text-main); height: 100vh; display: flex; transition: 0.2s; }
 
         .container { display: grid; grid-template-columns: 1fr 480px; width: 100%; height: 100vh; padding: 20px; gap: 20px; }
         
-        .main-panel { display: flex; flex-direction: column; background: var(--bg-card); border-radius: 8px; border: 2px solid var(--police-blue); overflow: hidden; }
+        .main-panel { display: flex; flex-direction: column; background: var(--bg-card); border: 2px solid var(--border); overflow: hidden; border-radius: 4px; }
         
         .header-bar { 
-            background: #1a2a44; color: white; padding: 15px; font-weight: bold; font-size: 20px; 
+            background: var(--border); color: var(--bg-card); padding: 12px 15px; font-weight: bold; font-size: 18px; 
             display: flex; align-items: center; justify-content: space-between; 
         }
 
-        /* Darkmode Button */
         .dm-btn {
-            background: rgba(255,255,255,0.1); border: 1px solid white; color: white;
-            padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;
+            background: transparent; border: 1px solid var(--bg-card); color: var(--bg-card);
+            padding: 4px 10px; border-radius: 2px; cursor: pointer; font-size: 11px; font-weight: bold;
         }
-        .dm-btn:hover { background: white; color: #1a2a44; }
+        .dm-btn:hover { background: var(--bg-card); color: var(--border); }
 
         .search-field { 
-            width: 100%; padding: 15px; border: none; border-bottom: 2px solid var(--police-blue); 
+            width: 100%; padding: 15px; border: none; border-bottom: 2px solid var(--border); 
             font-size: 18px; outline: none; background: var(--bg-card); color: var(--text-main);
         }
 
         .scroll-area { flex: 1; overflow-y: auto; background: var(--bg-list); }
-        .category-title { background: rgba(0,0,0,0.05); padding: 10px 15px; font-weight: bold; font-size: 16px; border-bottom: 1px solid var(--border); color: var(--police-blue); }
+        .category-title { background: var(--border); padding: 8px 15px; font-weight: bold; font-size: 14px; color: var(--bg-card); text-transform: uppercase; }
         
         table { width: 100%; border-collapse: collapse; }
         .law-row { border-bottom: 1px solid var(--border); background: var(--bg-card); cursor: pointer; }
-        .law-row:hover { background: rgba(0,0,0,0.05); }
-        .law-row.selected { background: rgba(59, 130, 246, 0.2); border-left: 8px solid var(--police-blue); }
-        .law-row td { padding: 16px; font-size: 18px; font-weight: 500; border-right: 1px solid var(--border); }
+        .law-row:hover { background: rgba(128,128,128,0.1); }
+        .law-row.selected { background: rgba(128,128,128,0.2); border-left: 10px solid var(--border); }
+        .law-row td { padding: 16px; font-size: 18px; font-weight: bold; border-right: 1px solid var(--border); }
 
-        .col-stars { color: var(--gold); font-size: 26px; white-space: nowrap; }
-        .clickable-star { color: #555; cursor: pointer; }
-        .clickable-star.active { color: var(--gold); }
+        .col-stars { color: var(--star-active); font-size: 26px; white-space: nowrap; }
+        .clickable-star { color: var(--star-dim); cursor: pointer; }
+        .clickable-star.active { color: var(--star-active); }
 
         .sidebar { display: flex; flex-direction: column; gap: 15px; }
-        .card { background: var(--bg-card); border-radius: 8px; padding: 20px; border: 2px solid var(--police-blue); }
+        .card { background: var(--bg-card); padding: 20px; border: 2px solid var(--border); border-radius: 4px; }
         
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .stat-box { text-align: center; background: rgba(0,0,0,0.03); border: 1px solid var(--border); padding: 10px; border-radius: 6px; }
-        .stat-box label { font-size: 12px; font-weight: bold; color: var(--police-blue); display: block; }
-        .stat-box span { font-size: 38px; font-weight: 900; }
+        .stat-box { text-align: center; border: 1px solid var(--border); padding: 10px; }
+        .stat-box label { font-size: 11px; font-weight: bold; color: var(--text-sub); display: block; margin-bottom: 5px; }
+        .stat-box span { font-size: 40px; font-weight: 900; }
 
         .btn { 
-            background: var(--bg-card); border: 2px solid var(--police-blue); color: var(--police-blue); 
-            padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; transition: 0.2s;
+            background: var(--bg-card); border: 2px solid var(--border); color: var(--text-main); 
+            padding: 12px; font-weight: bold; cursor: pointer; font-size: 13px; text-transform: uppercase;
         }
-        .btn:hover { background: var(--police-blue); color: white; }
+        .btn:hover { background: var(--border); color: var(--bg-card); }
 
         #generatedEntry { 
-            background: rgba(0,0,0,0.05); border: 2px dashed var(--police-blue); padding: 15px; 
+            background: var(--bg-list); border: 1px solid var(--border); padding: 15px; 
             font-size: 18px; font-family: 'Courier New', monospace; color: var(--text-main);
-            min-height: 80px; cursor: copy; border-radius: 6px; font-weight: bold;
+            min-height: 80px; cursor: copy; font-weight: bold;
         }
 
         .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); font-weight: bold; }
-        .toggle { width: 50px; height: 26px; background: #666; border-radius: 13px; position: relative; cursor: pointer; transition: 0.3s; }
-        .toggle::after { content: ''; position: absolute; width: 22px; height: 22px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.3s; }
-        .active.toggle { background: #22c55e; }
-        .active.toggle::after { transform: translateX(24px); }
+        .toggle { width: 44px; height: 22px; background: #666; position: relative; cursor: pointer; border: 1px solid var(--border); }
+        .toggle::after { content: ''; position: absolute; width: 16px; height: 16px; background: white; top: 2px; left: 2px; transition: 0.2s; }
+        .active.toggle { background: var(--border); }
+        .active.toggle::after { transform: translateX(22px); background: var(--bg-card); }
 
-        .grund-input { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 6px; margin-top: 10px; font-size: 16px; background: var(--bg-card); color: var(--text-main); display: none; }
+        .grund-input { width: 100%; padding: 12px; border: 1px solid var(--border); margin-top: 10px; font-size: 16px; background: var(--bg-card); color: var(--text-main); display: none; outline: none; }
         
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; }
-        .modal-content { background: var(--bg-card); padding: 30px; border-radius: 8px; border: 4px solid var(--police-blue); width: 85%; max-width: 800px; color: var(--text-main); }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; }
+        .modal-content { background: var(--bg-card); padding: 30px; border: 2px solid var(--border); width: 85%; max-width: 800px; color: var(--text-main); }
     </style>
 </head>
 <body id="mainBody">
@@ -99,10 +102,10 @@
 <div class="container">
     <div class="main-panel">
         <div class="header-bar">
-            <span>LSPD - STRAFKATALOG</span>
-            <button class="dm-btn" onclick="toggleDarkMode()">DARK MODE AN/AUS</button>
+            <span>LSPD | PENAL CODE</span>
+            <button class="dm-btn" onclick="toggleDarkMode()">MODUS WECHSELN</button>
         </div>
-        <input type="text" id="searchInput" class="search-field" placeholder="Suche..." onkeyup="filterTable()">
+        <input type="text" id="searchInput" class="search-field" placeholder="SUCHBEGRIFF EINGEBEN..." onkeyup="filterTable()">
         <div class="scroll-area" id="cardsContainer"></div>
     </div>
 
@@ -110,11 +113,11 @@
         <div class="stat-grid">
             <div class="stat-box">
                 <label>GELDSTRAFE</label>
-                <span id="outM" style="color: #22c55e;">$0</span>
+                <span id="outM">$0</span>
             </div>
             <div class="stat-box">
                 <label>WANTEDS</label>
-                <span id="outW" style="color: #ef4444;">0</span>
+                <span id="outW">0</span>
             </div>
         </div>
 
@@ -122,7 +125,7 @@
             <div class="switch-row"><span>RECHTE VERLESEN</span><div id="swRights" class="toggle" onclick="toggleSwitch(this)"></div></div>
             <div class="switch-row"><span>REUE ZEIGEN (§35)</span><div id="sw35" class="toggle" onclick="toggleSwitch(this)"></div></div>
             <div class="switch-row"><span>GRUND / HAFTBEFEHL</span><div id="swHaft" class="toggle" onclick="toggleHaft(this)"></div></div>
-            <input type="text" id="inGrund" class="grund-input" placeholder="Grund hier eingeben..." oninput="updateDisplay()">
+            <input type="text" id="inGrund" class="grund-input" placeholder="FALLBEZEICHNUNG..." oninput="updateDisplay()">
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
@@ -132,42 +135,41 @@
         </div>
 
         <div class="card">
-            <label style="font-weight: bold; font-size: 12px; color: var(--police-blue);">AKTEN-EINTRAG (KLICKEN)</label>
-            <div id="generatedEntry" onclick="copyText()">Wähle Strafen aus...</div>
+            <label style="font-weight: bold; font-size: 11px; margin-bottom: 5px; display: block;">DATABASE RECORD (CLICK TO COPY)</label>
+            <div id="generatedEntry" onclick="copyText()">Warten auf Eingabe...</div>
         </div>
     </div>
 </div>
 
 <div id="modalRechte" class="modal" onclick="closeModal('modalRechte')">
     <div class="modal-content" onclick="event.stopPropagation()">
-        <h3>Rechtebelehrung</h3>
+        <h2>RECHTEBELEHRUNG</h2>
         <p>1. Sie haben das Recht zu schweigen.<br>2. Alles was Sie sagen, kann verwendet werden.<br>3. Anwalt ab 3 Wanteds kontaktierbar.</p>
-        <button class="btn" style="width: 100%" onclick="closeModal('modalRechte')">Schließen</button>
+        <button class="btn" style="width: 100%" onclick="closeModal('modalRechte')">SCHLIESSEN</button>
     </div>
 </div>
 
 <div id="modalAnwalt" class="modal" onclick="closeModal('modalAnwalt')">
     <div class="modal-content" style="width: 95%; height: 95%;" onclick="event.stopPropagation()">
         <iframe src="https://docs.google.com/spreadsheets/d/1DufMS-4hxX75e9bJk_z3jSHqCcO6JmimoqYh6M94zP0/edit#gid=690010630" style="width: 100%; height: 85%; border: none;"></iframe>
-        <button class="btn" style="width: 100%; margin-top: 10px;" onclick="closeModal('modalAnwalt')">Zurück</button>
+        <button class="btn" style="width: 100%; margin-top: 10px;" onclick="closeModal('modalAnwalt')">ZURÜCK</button>
     </div>
 </div>
 
 <script>
-// Daten und Logik bleiben erhalten
 const laws = [
-    { cat: "StGB - Physische Integrität", items: [
+    { cat: "StGB - INTEGRITÄT", items: [
         {p:"StGB §3.1", n:"Beleidigung", m:10000, w:0, gs:1},
-        {p:"StGB §4.1", n:"Mord / Mordversuch", m:30000, w:4, gs:0},
-        {p:"StGB §4.2", n:"Körperverletzung", m:15000, w:2, gs:0},
-        {p:"StGB §5", n:"Sexuelle Belästigung", m:30000, w:1, gs:2}
+        {p:"StGB §4.1", n:"Mord / Versuch", m:30000, w:4, gs:0},
+        {p:"StGB §4.2", n:"Körperverletzung", m:15000, w:2, gs:0}
     ]},
-    { cat: "StGB - Wirtschaft & Staat", items: [
+    { cat: "StGB - STAAT & WIRTSCHAFT", items: [
         {p:"StGB §11", n:"Raub", m:25000, w:3, gs:0},
         {p:"StGB §14", n:"Steuerhinterziehung", m:50000, w:3, gs:0},
-        {p:"StGB §18", n:"Militärgelände", m:50000, w:5, gs:0}
+        {p:"StGB §18", n:"Militärgelände", m:50000, w:5, gs:0},
+        {p:"StGB §41.1", n:"Besitz staatl. Waffen", m:50000, w:3, gs:0}
     ]},
-    { cat: "StVO / WaffG / BtMG", items: [
+    { cat: "SONSTIGE GESETZE", items: [
         {p:"StVO §17", n:"Berauschtes Fahren", m:10000, w:0, gs:2},
         {p:"WaffG §5.1", n:"Illegale Waffen", m:10000, w:2, gs:1},
         {p:"BtMG §2.2", n:"Drogenhandel", m:30000, w:3, gs:0}
@@ -194,10 +196,10 @@ function render() {
                 starsHTML += `<span class="clickable-star ${active}" onclick="toggleGs(event, '${id}', ${s+1})">☆</span>`;
             }
             table += `<tr class="law-row ${isSelected}" onclick="toggleLaw('${id}', ${JSON.stringify(i).replace(/"/g, '&quot;')})">
-                <td style="width: 100px; color: var(--police-blue);"><b>${i.p}</b></td>
+                <td style="width: 100px;">${i.p}</td>
                 <td>${i.n}</td>
                 <td class="col-stars" style="width: 140px;">${starsHTML}</td>
-                <td style="width: 100px; text-align: right; font-weight: bold;">$${i.m.toLocaleString()}</td>
+                <td style="width: 100px; text-align: right;">$${i.m.toLocaleString()}</td>
             </tr>`;
         });
         div.innerHTML += table + `</tbody></table>`;
@@ -228,7 +230,7 @@ function updateDisplay() {
     const haftActive = document.getElementById('swHaft').classList.contains('active');
     
     if(!document.getElementById('swRights').classList.contains('active') && (selectedItems.length || haftActive)) {
-        entry.innerText = "RECHTE NOCH NICHT VERLESEN!"; entry.style.color = "red";
+        entry.innerText = "!!! RECHTE NICHT VERLESEN !!!"; entry.style.color = "gray";
     } else {
         const now = new Date();
         const timeStr = `[${now.getDate().toString().padStart(2,'0')}.${(now.getMonth()+1).toString().padStart(2,'0')}. ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}]`;
@@ -236,7 +238,7 @@ function updateDisplay() {
         if(haftActive && grund) parts.push(`GRUND: ${grund.toUpperCase()}`);
         if(selectedItems.length) parts.push(selectedItems.map(l => l.p).join(", "));
         if(document.getElementById('sw35').classList.contains('active') && selectedItems.length) parts.push("§35");
-        entry.innerText = parts.length ? `${timeStr} ${parts.join(" | ")}` : "Wähle Strafen aus...";
+        entry.innerText = parts.length ? `${timeStr} ${parts.join(" | ")}` : "Warten auf Eingabe...";
         entry.style.color = "var(--text-main)";
     }
 }
@@ -247,10 +249,10 @@ function openModal(id) { document.getElementById(id).style.display = "flex"; }
 function closeModal(id) { document.getElementById(id).style.display = "none"; }
 function copyText() { 
     const entry = document.getElementById('generatedEntry').innerText;
-    if(!entry.includes("RECHTE") && !entry.includes("Wähle")) {
+    if(!entry.includes("!!!") && !entry.includes("Warten")) {
         navigator.clipboard.writeText(entry);
-        document.getElementById('generatedEntry').innerText = "KOPIERT!";
-        setTimeout(() => { updateDisplay(); }, 700);
+        document.getElementById('generatedEntry').innerText = "KOPIERT";
+        setTimeout(() => { updateDisplay(); }, 600);
     }
 }
 function filterTable() {
