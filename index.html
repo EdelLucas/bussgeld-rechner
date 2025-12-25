@@ -2,243 +2,166 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>MDT System</title>
+<title>LSPD MDT</title>
 <style>
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont;background:#111;color:#eee}
-header{background:#1c1c1e;padding:10px;display:flex;gap:10px}
-header button{background:#2c2c2e;color:#fff;border:0;padding:8px 14px;border-radius:8px;cursor:pointer}
-header button.active{background:#0a84ff}
-section{display:none;padding:15px}
-.card{background:#1c1c1e;padding:10px;border-radius:10px;margin-bottom:10px}
-input,textarea,select{width:100%;padding:6px;border-radius:6px;border:0;margin:4px 0}
-button.small{padding:4px 8px;font-size:12px}
-#loginBox{max-width:300px;margin:100px auto}
+:root{
+ --bg:#0b0b0c;
+ --card:#1c1c1e;
+ --accent:#ff4f9a;
+ --muted:#9a9a9a;
+}
+body{
+ margin:0;
+ background:linear-gradient(180deg,#0b0b0c,#151517);
+ font-family:-apple-system,BlinkMacSystemFont;
+ color:#eee;
+}
+header{
+ display:flex;
+ gap:10px;
+ padding:12px;
+ background:rgba(20,20,22,.85);
+ backdrop-filter: blur(25px);
+}
+button{
+ background:linear-gradient(180deg,#ff4f9a,#ff2f85);
+ border:none;
+ color:white;
+ padding:8px 14px;
+ border-radius:12px;
+ font-weight:600;
+ cursor:pointer;
+}
+.card{
+ background:rgba(28,28,30,0.9);
+ border-radius:16px;
+ padding:14px;
+ margin:10px;
+ box-shadow:0 10px 30px rgba(0,0,0,.6);
+ backdrop-filter: blur(20px);
+}
+.hidden{display:none}
 </style>
 </head>
+
 <body>
 
-<div id="loginBox" class="card">
-<h3>MDT Login</h3>
-<input id="loginUser" placeholder="Benutzer">
-<input id="loginPin" type="password" placeholder="PIN">
+<!-- LOGIN -->
+<div id="login" class="card">
+<h2>🔐 Login</h2>
+<input id="lu" placeholder="User"><br><br>
+<input id="lp" type="password" placeholder="Pass"><br><br>
 <button onclick="login()">Login</button>
-<p id="loginErr" style="color:red"></p>
 </div>
 
-<div id="app" style="display:none">
-<header id="nav"></header>
+<!-- MDT -->
+<div id="app" class="hidden">
+<header>
+<button onclick="tab('rechner')">Strafrechner</button>
+<button onclick="tab('persons')">Personen</button>
+<button onclick="tab('vehicles')">Fahrzeuge</button>
+<button onclick="tab('weapons')">Waffen</button>
+<button onclick="tab('calls')">Einsätze</button>
+</header>
 
-<section id="dashboard" class="card">🚨 Leitstellen-Dashboard</section>
-
-<section id="rechner">
-<h3>Strafrechner</h3>
-<div id="lawList"></div>
-<b>Grund:</b>
-<div id="lawResult"></div>
-</section>
-
-<section id="persons">
-<h3>Personenakten</h3>
-<input id="pName" placeholder="Name">
-<button onclick="addPerson()">Anlegen</button>
-<div id="personList"></div>
-</section>
-
-<section id="calls">
-<h3>Einsätze / Funk</h3>
-<input id="callText" placeholder="Einsatz">
-<button onclick="addCall()">Anlegen</button>
-<div id="callList"></div>
-</section>
-
-<section id="admin">
-<h3>Admin-Panel</h3>
-
-<div class="card">
-<b>Admin-Reset</b>
-<button onclick="resetAdmin()">Reset ADMIN</button>
-</div>
-
-<div class="card">
-<b>Benutzer</b>
-<input id="newUser" placeholder="User">
-<input id="newPin" placeholder="PIN">
-<select id="newRole">
-<option value="user">User</option>
-<option value="admin">Admin</option>
-</select>
-<button onclick="addUser()">Hinzufügen</button>
-<div id="userList"></div>
-</div>
-
-<div class="card">
-<b>Gesetze</b>
-<input id="lawP" placeholder="Paragraph">
-<input id="lawD" placeholder="Beschreibung">
-<input id="lawW" placeholder="Wanteds">
-<input id="lawF" placeholder="Strafe">
-<button onclick="addLaw()">Gesetz hinzufügen</button>
-<div id="adminLaws"></div>
-</div>
-</section>
+<div id="content"></div>
 </div>
 
 <script>
-/* ========= CONFIG ========= */
-const DISCORD_WEBHOOK="https://discord.com/api/webhooks/1453855487937482894/dO3DP9IQw0xXnl6m62J4rqblUan0u38uya7zEJdtKgekuOXwe0oqdYiMfpGT6okIWSeg";
+let ROLE=null;
+let STATE={};
+let WS=null;
 
-/* ========= STORAGE INIT ========= */
-try{
- const u=JSON.parse(localStorage.users||"[]");
- if(!u.length) throw 0;
-}catch{
- localStorage.users=JSON.stringify([
-  {u:"ADMIN",p:"9999",r:"admin",active:true},
-  {u:"LSPD",p:"1234",r:"user",active:true}
- ]);
-}
-if(!localStorage.laws) localStorage.laws=JSON.stringify([
- {p:"BtMG §2.1",d:"Drogenbesitz Klein",w:1,f:15000},
- {p:"BtMG §2.2",d:"Drogenhandel",w:3,f:30000}
-]);
-if(!localStorage.persons) localStorage.persons="[]";
-if(!localStorage.calls) localStorage.calls="[]";
-
-/* ========= GLOBAL ========= */
-let CURRENT_USER=null;
-let selectedLaws=[];
-
-/* ========= LOG ========= */
-function audit(msg){
- fetch(DISCORD_WEBHOOK,{
-  method:"POST",
-  headers:{'Content-Type':'application/json'},
-  body:JSON.stringify({content:`[${new Date().toLocaleString()}] ${msg}`})
- });
-}
-
-/* ========= LOGIN ========= */
 function login(){
- const u=document.getElementById("loginUser").value.trim().toUpperCase();
- const p=document.getElementById("loginPin").value;
- const users=JSON.parse(localStorage.users);
- const found=users.find(x=>x.u===u && x.p===p && x.active);
- if(!found){loginErr.innerText="Login fehlgeschlagen";return;}
- CURRENT_USER=found;
- loginBox.style.display="none";
- app.style.display="block";
- buildNav();
- audit("Login "+found.u);
- show("dashboard");
+fetch("http://localhost:3000/login",{
+ method:"POST",
+ headers:{'Content-Type':'application/json'},
+ body:JSON.stringify({user:lu.value,pass:lp.value})
+}).then(r=>{
+ if(!r.ok) throw 0;
+ return r.json();
+}).then(d=>{
+ ROLE=d.role;
+ loginDiv(false);
+ connectWS();
+}).catch(()=>alert("Login fehlgeschlagen"));
 }
 
-/* ========= NAV ========= */
-function buildNav(){
- const nav=document.getElementById("nav");
- nav.innerHTML="";
- const tabs=[
-  ["dashboard","Dashboard"],
-  ["rechner","Strafrechner"],
-  ["persons","Personen"],
-  ["calls","Einsätze"]
- ];
- if(CURRENT_USER.r==="admin") tabs.push(["admin","Admin"]);
- tabs.forEach(t=>{
-  const b=document.createElement("button");
-  b.innerText=t[1];
-  b.onclick=()=>show(t[0]);
-  nav.appendChild(b);
- });
-}
-function show(id){
- document.querySelectorAll("section").forEach(s=>s.style.display="none");
- document.getElementById(id).style.display="block";
+function loginDiv(ok){
+login.classList.toggle("hidden",ok);
+app.classList.toggle("hidden",!ok);
 }
 
-/* ========= STRAFRECHNER ========= */
-function renderLaws(){
- const laws=JSON.parse(localStorage.laws);
- lawList.innerHTML=laws.map((l,i)=>`
- <div class="card">
- ${l.p} – ${l.d}<br>
- W:${l.w} $${l.f}
- <button class="small" onclick="addLawSel(${i})">+</button>
- </div>`).join("");
+function connectWS(){
+WS=new WebSocket("ws://localhost:3000");
+WS.onmessage=e=>{
+ const m=JSON.parse(e.data);
+ STATE=m.data;
+ render();
+};
 }
-function addLawSel(i){
- const laws=JSON.parse(localStorage.laws);
- selectedLaws.push(laws[i]);
- lawResult.innerText=selectedLaws.map(l=>l.d).join(", ");
- audit("Gesetz gewählt "+laws[i].p);
-}
-renderLaws();
 
-/* ========= PERSONEN ========= */
+function sync(){
+WS.send(JSON.stringify({type:"SYNC",data:STATE}));
+}
+
+function tab(t){
+if(t==="rechner"){
+content.innerHTML=`
+<div class="card">
+<h3>Strafrechner</h3>
+${STATE.laws.map((l,i)=>`
+${l.p} – ${l.d} (${l.w}W / $${l.f})
+<button onclick="addLaw(${i})">+</button><br>
+`).join("")}
+<div id="entry"></div>
+</div>`;
+}
+if(t==="persons"){
+content.innerHTML=`
+<div class="card">
+<h3>Personen</h3>
+<input id="pn"><button onclick="addPerson()">+</button>
+${STATE.persons.map(p=>`${p.name} (${p.wanteds})`).join("<br>")}
+</div>`;
+}
+if(t==="vehicles"){
+content.innerHTML=`
+<div class="card">
+<h3>Fahrzeuge</h3>
+${STATE.vehicles.map(v=>`${v.plate} ${v.model}`).join("<br>")}
+</div>`;
+}
+if(t==="weapons"){
+content.innerHTML=`
+<div class="card">
+<h3>Waffen</h3>
+${STATE.weapons.map(w=>`${w.serial} ${w.type}`).join("<br>")}
+</div>`;
+}
+if(t==="calls"){
+content.innerHTML=`
+<div class="card">
+<h3>Einsätze</h3>
+<input id="ct"><button onclick="addCall()">+</button>
+${STATE.calls.map(c=>c.text).join("<br>")}
+</div>`;
+}
+}
+
+function addLaw(i){
+entry.innerText+=STATE.laws[i].p+" ";
+}
 function addPerson(){
- const p=JSON.parse(localStorage.persons);
- p.push({name:pName.value,w:0,notes:[]});
- localStorage.persons=JSON.stringify(p);
- audit("Person "+pName.value);
- renderPersons();
+STATE.persons.push({name:pn.value,wanteds:0});
+sync();
 }
-function renderPersons(){
- const p=JSON.parse(localStorage.persons);
- personList.innerHTML=p.map((x,i)=>`
- <div class="card">
- <b>${x.name}</b> | W:${x.w}
- <button class="small" onclick="p[i].w++">+W</button>
- </div>`).join("");
-}
-renderPersons();
-
-/* ========= EINSÄTZE ========= */
 function addCall(){
- const c=JSON.parse(localStorage.calls);
- c.push({t:callText.value,s:"offen"});
- localStorage.calls=JSON.stringify(c);
- audit("Einsatz "+callText.value);
- renderCalls();
+STATE.calls.push({text:ct.value});
+sync();
 }
-function renderCalls(){
- const c=JSON.parse(localStorage.calls);
- callList.innerHTML=c.map(x=>`
- <div class="card">${x.t} [${x.s}]</div>`).join("");
-}
-renderCalls();
 
-/* ========= ADMIN ========= */
-function resetAdmin(){
- localStorage.users=JSON.stringify([
-  {u:"ADMIN",p:"9999",r:"admin",active:true}
- ]);
- audit("ADMIN RESET");
- alert("ADMIN zurückgesetzt");
-}
-function addUser(){
- const u=JSON.parse(localStorage.users);
- u.push({u:newUser.value.toUpperCase(),p:newPin.value,r:newRole.value,active:true});
- localStorage.users=JSON.stringify(u);
- audit("User erstellt "+newUser.value);
- renderUsers();
-}
-function renderUsers(){
- const u=JSON.parse(localStorage.users);
- userList.innerHTML=u.map(x=>`${x.u} (${x.r})`).join("<br>");
-}
-renderUsers();
-
-function addLaw(){
- const l=JSON.parse(localStorage.laws);
- l.push({p:lawP.value,d:lawD.value,w:+lawW.value,f:+lawF.value});
- localStorage.laws=JSON.stringify(l);
- audit("Gesetz hinzugefügt "+lawP.value);
- renderLaws(); renderAdminLaws();
-}
-function renderAdminLaws(){
- const l=JSON.parse(localStorage.laws);
- adminLaws.innerHTML=l.map(x=>`${x.p} – ${x.d}`).join("<br>");
-}
-renderAdminLaws();
+function render(){ tab("rechner"); }
 </script>
 </body>
 </html>
