@@ -1,125 +1,31 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <title>State Portal | Login</title>
-    <style>
-        :root { --bg: #050505; --card: #111; --border: #222; --text: #fff; --accent: #fff; }
-        * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
-        body { margin: 0; background: var(--bg); color: var(--text); height: 100vh; display: flex; justify-content: center; align-items: center; }
-
-        /* LOGIN BOX */
-        .login-container { 
-            width: 380px; background: var(--card); border: 1px solid var(--border); 
-            padding: 40px; border-radius: 2px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-        .login-container h1 { text-align: center; letter-spacing: 4px; font-size: 18px; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
-        
-        input { 
-            width: 100%; background: #000; border: 1px solid var(--border); color: #fff; 
-            padding: 12px; margin-bottom: 15px; outline: none; transition: 0.2s;
-        }
-        input:focus { border-color: #666; }
-        
-        .btn-login { 
-            width: 100%; padding: 12px; background: var(--accent); color: #000; border: none; 
-            font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
-        }
-        .btn-login:hover { background: #ccc; }
-
-        /* DASHBOARD (Initially Hidden) */
-        #main-app { display: none; position: fixed; inset: 0; background: var(--bg); flex-direction: column; }
-        header { height: 60px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; background: var(--card); }
-        
-        .admin-view { padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .orga-card { border: 1px solid var(--border); padding: 15px; background: var(--card); }
-        .orga-card h4 { margin: 0 0 10px 0; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
-
-        .hidden { display: none; }
-    </style>
-</head>
-<body>
-
-<div id="login-window" class="login-container">
-    <h1>GOVERNMENT ACCESS</h1>
-    <div id="err-msg" style="color: red; font-size: 11px; margin-bottom: 10px; display: none;">ZUGRIFF VERWEIGERT: DATEN UNGÜLTIG</div>
-    <input type="text" id="username" placeholder="BENUTZERNAME">
-    <input type="password" id="password" placeholder="PASSWORT">
-    <button class="btn-login" onclick="handleLogin()">Login</button>
-    <p style="font-size: 10px; color: #444; text-align: center; margin-top: 20px;">RESTRICTED AREA - AUTHORIZED PERSONNEL ONLY</p>
+<div id="hr-management-area" class="card hidden" style="border-top: 2px solid #fff; margin-top: 30px;">
+    <h3>HR-VERWALTUNG: <span id="hr-orga-name">DEINE ORGA</span></h3>
+    <p style="font-size: 11px; color: #888;">Hier sehen Sie nur Bewerber für Ihre eigene Organisation.</p>
+    
+    <table style="width: 100%; text-align: left; border-collapse: collapse;">
+        <thead>
+            <tr style="color: #666; font-size: 12px; border-bottom: 1px solid #222;">
+                <th>NAME</th>
+                <th>TEL</th>
+                <th>STATUS</th>
+                <th>AKTION</th>
+            </tr>
+        </thead>
+        <tbody id="hr-pending-list">
+            <tr>
+                <td style="padding: 10px;">Hans_Maier</td>
+                <td>555-123</td>
+                <td><span style="color: #ffa500;">Bewerber</span></td>
+                <td>
+                    <button class="btn-tiny" onclick="approveUser('Hans_Maier')">EINSTELLEN</button>
+                    <button class="btn-tiny-red" onclick="rejectUser()">ABLEHNEN</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 </div>
 
-<div id="main-app">
-    <header>
-        <div id="current-scope" style="font-weight: 900; letter-spacing: 2px;">Scope: UNKNOWN</div>
-        <div id="user-tag" style="font-size: 12px; color: #888;">User: -</div>
-        <button onclick="location.reload()" style="background:none; border:1px solid #333; color:#fff; cursor:pointer; padding:5px 10px;">LOGOUT</button>
-    </header>
-
-    <main id="app-content" style="flex: 1; overflow-y: auto; padding: 20px;">
-        </main>
-</div>
-
-<script>
-    // Beispiel-Datenbank der Orgas für den Admin
-    const orgas = ["FIB", "LSPD", "SAHP", "EMS", "National Garde", "Lifeinvader", "GOV"];
-
-    function handleLogin() {
-        const u = document.getElementById('username').value;
-        const p = document.getElementById('password').value;
-        const errMsg = document.getElementById('err-msg');
-
-        // ADMIN LOGIN
-        if(u.toLowerCase() === "admin" && p === "master123") {
-            loadApp("ADMIN / ÜBERSICHT", "System Administrator", true);
-        } 
-        // BEISPIEL ORGA LOGIN (FIB)
-        else if(u.toLowerCase() === "fib_agent" && p === "fib123") {
-            loadApp("FIB - INTERNAL", "Agent Smith", false);
-        }
-        else {
-            errMsg.style.display = 'block';
-        }
-    }
-
-    function loadApp(scope, user, isAdmin) {
-        document.getElementById('login-window').style.display = 'none';
-        const app = document.getElementById('main-app');
-        app.style.display = 'flex';
-        
-        document.getElementById('current-scope').innerText = "SCOPE: " + scope;
-        document.getElementById('user-tag').innerText = "USER: " + user;
-
-        const content = document.getElementById('app-content');
-
-        if(isAdmin) {
-            // ADMIN MASTER VIEW
-            content.innerHTML = `
-                <h2 style="border-bottom: 1px solid #333; padding-bottom: 10px;">MASTER CONTROL PANEL</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                    ${orgas.map(o => `
-                        <div class="orga-card">
-                            <h4>${o}</h4>
-                            <div style="font-size: 11px; color: #888;">
-                                Status: <span style="color: #00ff00;">AKTIV</span><br>
-                                Letzter Zugriff: vor 2 Min.<br>
-                                Datenbank-Größe: 1.2 GB
-                            </div>
-                            <button style="margin-top:10px; width:100%; background:#222; border:none; color:#fff; font-size:10px; padding:5px; cursor:pointer;">INSPECT DATA</button>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        } else {
-            // NORMALES ORGA DASHBOARD (z.B. FIB)
-            content.innerHTML = `
-                <h2>WILLKOMMEN IM ${scope}</h2>
-                <div style="padding: 20px; border: 1px solid #333;">
-                    Hier befinden sich die Module für Strafrechner, Akten und Leitstelle...
-                </div>
-            `;
-        }
-    }
-</script>
-</body>
-</html>
+<style>
+    .btn-tiny { background: #fff; color: #000; border: none; padding: 5px 10px; font-size: 10px; font-weight: bold; cursor: pointer; }
+    .btn-tiny-red { background: #300; color: #f00; border: 1px solid #f00; padding: 4px 10px; font-size: 10px; cursor: pointer; margin-left: 5px; }
+</style>
