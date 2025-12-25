@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>LSPD Penal Code - V.18.0</title>
+    <title>LSPD Penal Code - V.19.0</title>
     <style>
         :root {
             --bg-main: #0b0e14;
@@ -40,7 +40,7 @@
         
         .clickable-star { cursor: pointer; transition: 0.2s; color: var(--silver); }
         .clickable-star.active { color: var(--gold); }
-        .star-fixed { color: var(--gold); cursor: default; }
+        .star-fixed { color: var(--gold); }
 
         .sidebar { display: flex; flex-direction: column; gap: 12px; }
         .stat-card { background: var(--bg-card); border-radius: 10px; padding: 12px; border: 1px solid var(--border-color); text-align: center; }
@@ -55,12 +55,17 @@
         .active .toggle { background: var(--accent-pink); }
         .active .toggle::after { transform: translateX(16px); }
 
-        .output-card { background: var(--bg-card); border-radius: 10px; padding: 12px; border: 1px solid var(--border-color); flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        #generatedEntry { background: #0a0c10; border-left: 3px solid var(--accent-pink); padding: 10px; font-size: 11px; color: #8b949e; flex: 1; overflow-y: auto; font-style: italic; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 15px; }
+        .action-btn { background:#1c222d; border:1px solid #21262d; color:var(--accent-pink); padding:8px; border-radius:6px; cursor:pointer; font-size:10px; font-weight:bold; }
 
-        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
-        .modal-content { background: #151921; width: 800px; max-height: 80vh; border-radius: 15px; border: 1px solid var(--accent-pink); display: flex; flex-direction: column; }
-        .modal-body { padding: 25px; color: #d1d5da; overflow-y: auto; }
+        .output-card { background: var(--bg-card); border-radius: 10px; padding: 12px; border: 1px solid var(--border-color); flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        #generatedEntry { background: #0a0c10; border-left: 3px solid var(--accent-pink); padding: 10px; font-size: 11px; color: #8b949e; flex: 1; overflow-y: auto; font-style: italic; cursor: copy; }
+
+        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-content { background: #151921; width: 800px; max-height: 80vh; border-radius: 15px; border: 1px solid var(--accent-pink); display: flex; flex-direction: column; position: relative; }
+        .modal-body { padding: 30px; color: #d1d5da; overflow-y: auto; line-height: 1.6; }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: var(--text-muted); }
+        .close-btn:hover { color: white; }
     </style>
 </head>
 <body>
@@ -88,9 +93,10 @@
             <div class="switch-row" id="sw35" onclick="toggleSwitch(this)"><span>Reue zeigen (-2 Wanteds)</span><div class="toggle"></div></div>
             <div class="switch-row" id="swHaft" onclick="toggleHaftSwitch(this)"><span>Haftbefehl / Beschluss</span><div class="toggle"></div></div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
-                <button onclick="openModal('modalRechte')" style="background:#1c222d; border:1px solid #21262d; color:#ff2e7e; padding:8px; border-radius:6px; cursor:pointer; font-size:10px;">RECHTE</button>
-                <button onclick="openModal('modalBelehrung')" style="background:#1c222d; border:1px solid #21262d; color:#ff2e7e; padding:8px; border-radius:6px; cursor:pointer; font-size:10px;">BELEHRUNGEN</button>
+            <div class="btn-grid">
+                <button class="action-btn" onclick="openModal('modalAnwalt')">ANWÄLTE</button>
+                <button class="action-btn" onclick="openModal('modalRechte')">RECHTE</button>
+                <button class="action-btn" onclick="openModal('modalBelehrung')">BELEHRUNG</button>
             </div>
         </div>
 
@@ -101,22 +107,37 @@
     </div>
 </div>
 
+<div id="modalAnwalt" class="modal-overlay" onclick="closeModal('modalAnwalt')">
+    <div class="modal-content" onclick="event.stopPropagation()" style="width:90vw; height:90vh;">
+        <span class="close-btn" onclick="closeModal('modalAnwalt')">&times;</span>
+        <iframe src="https://docs.google.com/spreadsheets/d/1DufMS-4hxX75e9bJk_z3jSHqCcO6JmimoqYh6M94zP0/edit#gid=690010630" style="width:100%; height:100%; border:none; border-radius:15px;"></iframe>
+    </div>
+</div>
+
 <div id="modalRechte" class="modal-overlay" onclick="closeModal('modalRechte')">
     <div class="modal-content" onclick="event.stopPropagation()">
+        <span class="close-btn" onclick="closeModal('modalRechte')">&times;</span>
         <div class="modal-body" style="text-align:center;">
-            <h3>RECHTE</h3>
+            <h2 style="color:var(--accent-pink)">RECHTE</h2>
             <p>Sie haben das Recht zu schweigen, alles was Sie sagen kann und wird gegen Sie verwendet werden. Ab 3 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt, den Sie selbst benennen müssen. Wenn kein Anwalt verfügbar ist, wird Ihnen keiner gestellt. Die Judikative übernimmt der Exekutivbeamte. Wenn ein Anwalt hinzugezogen wird, kann es länger als 25 Minuten dauern.</p>
-            <p style="color:var(--accent-pink); font-weight:bold;">Haben Sie ihre Rechte verstanden?</p>
+            <p style="color:var(--accent-pink); font-weight:bold; font-size:1.2em;">Haben Sie ihre Rechte verstanden?</p>
         </div>
     </div>
 </div>
 
 <div id="modalBelehrung" class="modal-overlay" onclick="closeModal('modalBelehrung')">
     <div class="modal-content" onclick="event.stopPropagation()">
+        <span class="close-btn" onclick="closeModal('modalBelehrung')">&times;</span>
         <div class="modal-body">
-            <h3 style="color:var(--accent-pink)">BELEHRUNGEN</h3>
-            <b>Haftbefehl:</b><p>"Die Justiz hat einen Haftbefehl gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Haftbefehl vor Gericht zu ziehen, falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung gegen den Haftbefehl einreichen..."</p>
-            <b>Befragung:</b><p>„Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird vor Gericht gegen Sie verwendet werden. Sie haben das Recht, zu jeder Vernehmung einen Rechtsanwalt hinzuzuziehen. Haben Sie das verstanden?“</p>
+            <h2 style="color:var(--accent-pink)">BELEHRUNGEN</h2>
+            <b style="color:var(--gold)">Belehrung Haftbefehl</b>
+            <p>"Die Justiz hat einen Haftbefehl gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Haftbefehl vor Gericht zu ziehen, falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung gegen den Haftbefehl einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen Gerichtsprozess ablehnen, wird der Haftbefehl von den ausgewählten Beamten vollstreckt. Im weiteren Verlauf erhalten Sie eine staatliche Berufssperre von X Tagen nach §19 (4) Beamten Dienst Gesetzbuch. Während dieser Zeit dürfen Sie keinem Staatsdienst nachgehen. Wenn Sie flüchten haben Sie kein Recht mehr auf einen Rechtsanwalt.”</p>
+            
+            <b style="color:var(--gold)">Belehrung Beschluss</b>
+            <p>"Die Justiz hat einen Beschluss gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Beschluss vor Gericht zu ziehen, falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung gegen den Beschluss einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen Gerichtsprozess ablehnen, wird der Beschluss von den ausgewählten Beamten vollstreckt. Wenn Sie flüchten haben Sie kein Recht mehr auf einen Rechtsanwalt."</p>
+
+            <b style="color:var(--gold)">Belehrung Befragung</b>
+            <p>„Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird vor Gericht gegen Sie verwendet werden. Sie haben das Recht, zu jeder Vernehmung einen Rechtsanwalt hinzuzuziehen. Haben Sie das verstanden?“</p>
         </div>
     </div>
 </div>
@@ -139,6 +160,7 @@ const laws = [
     { cat: "Umgang mit Beamten (StGB)", items: [
         {p:"StGB §15.1", n:"Nichtbeachten amtl. Anweisung", m:10000, w:0, gs:2},
         {p:"StGB §15.5", n:"Widerstand gegen Beamte", m:20000, w:2, gs:0},
+        {p:"StGB §16", n:"Befreiung von Gefangenen", m:10000, w:3, gs:2},
         {p:"StGB §24", n:"Amtsanmaßung", m:25000, w:2, gs:1}
     ]},
     { cat: "Strafprozessordnung (StPO)", items: [
@@ -161,11 +183,12 @@ function render() {
             let starsHTML = "";
             for(let s=0; s<i.w; s++) starsHTML += '<span class="star-fixed">★</span>';
             for(let s=0; s<i.gs; s++) {
-                const isActive = extraStars[id] && extraStars[id] > s ? 'active' : '';
-                starsHTML += `<span class="clickable-star ${isActive}" onclick="toggleExtraStar(event, '${id}', ${s+1})">☆</span>`;
+                const isActive = extraStars[id] > s ? 'active' : '';
+                starsHTML += `<span class="clickable-star ${isActive}" data-id="${id}" data-val="${s+1}">☆</span>`;
             }
 
-            table += `<tr class="law-row" id="row-${id}" onclick="toggleLaw(this, ${JSON.stringify(i)}, '${id}')">
+            const isSelected = selectedItems.some(item => item.uniqueId === id) ? 'selected' : '';
+            table += `<tr class="law-row ${isSelected}" onclick="handleRowClick(this, ${JSON.stringify(i).replace(/"/g, '&quot;')}, '${id}', event)">
                 <td class="col-para">${i.p}</td>
                 <td>${i.n}</td>
                 <td class="col-stars">${starsHTML}</td>
@@ -177,21 +200,19 @@ function render() {
     });
 }
 
-function toggleExtraStar(event, id, count) {
-    event.stopPropagation();
-    if (extraStars[id] === count) extraStars[id] = count - 1;
-    else extraStars[id] = count;
-    render(); 
-    updateDisplay();
-}
-
-function toggleLaw(el, obj, id) {
-    if(el.classList.contains('selected')) {
-        el.classList.remove('selected');
-        selectedItems = selectedItems.filter(item => item.uniqueId !== id);
+function handleRowClick(el, obj, id, event) {
+    if (event.target.classList.contains('clickable-star')) {
+        const val = parseInt(event.target.getAttribute('data-val'));
+        if (extraStars[id] === val) extraStars[id] = val - 1;
+        else extraStars[id] = val;
+        render();
     } else {
-        el.classList.add('selected');
-        selectedItems.push({...obj, uniqueId: id});
+        if(el.classList.contains('selected')) {
+            selectedItems = selectedItems.filter(item => item.uniqueId !== id);
+        } else {
+            selectedItems.push({...obj, uniqueId: id});
+        }
+        render();
     }
     updateDisplay();
 }
@@ -204,14 +225,12 @@ function toggleHaftSwitch(el) {
 
 function updateDisplay() {
     let totalM = 0; let totalW = 0;
-    
     selectedItems.forEach(l => {
         totalM += l.m;
         let itemW = l.w + (extraStars[l.uniqueId] || 0);
         if(itemW > totalW) totalW = itemW;
     });
 
-    // Reue-Logik: -2 Wanteds, aber mindestens 1 (wenn vorher > 0)
     const reue = document.getElementById('sw35').classList.contains('active');
     if(reue && totalW > 0) {
         totalM *= 0.8;
@@ -238,15 +257,26 @@ function updateDisplay() {
 
     if(!rights && (selectedItems.length > 0 || haft)) {
         entryBox.innerText = "⚠️ RECHTE NOCH NICHT VERLESEN!";
+        entryBox.style.color = "#ff4444";
     } else {
         entryBox.innerText = text || "Wähle Tatbestände aus...";
+        entryBox.style.color = "#8b949e";
     }
 }
 
 function copyText() {
     const entry = document.getElementById('generatedEntry').innerText;
     if(entry.includes("Wähle") || entry.includes("⚠️")) return;
+    
     navigator.clipboard.writeText(entry);
+    
+    // SOUND EFFEKT
+    const audio = new Audio('https://www.soundjay.com/buttons/sounds/button-20.mp3');
+    audio.play();
+
+    const oldText = document.getElementById('generatedEntry').innerText;
+    document.getElementById('generatedEntry').innerText = "✅ KOPIERT!";
+    setTimeout(() => { document.getElementById('generatedEntry').innerText = oldText; }, 800);
 }
 
 function toggleSwitch(el) { el.classList.toggle('active'); updateDisplay(); }
