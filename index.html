@@ -2,16 +2,18 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>LSPD Penal Code - Full Database</title>
+    <title>Busgeldrechner - V.1.0</title>
     <style>
         :root {
             --bg-main: #0b0e14;
             --bg-card: #151921;
+            --bg-input: #0d1117;
             --accent-pink: #ff2e7e;
             --text-main: #ffffff;
             --text-muted: #8b949e;
             --border-color: #21262d;
             --gold: #d4af37;
+            --silver: #5e6673;
             --info-blue: #00d4ff;
         }
 
@@ -21,65 +23,118 @@
         .container { display: grid; grid-template-columns: 1fr 420px; width: 100%; height: 100vh; padding: 20px; gap: 20px; }
         .main-panel { display: flex; flex-direction: column; overflow: hidden; }
         .search-field { width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; color: white; outline: none; margin-bottom: 15px; }
-        .cards-scroll-area { flex: 1; overflow-y: auto; padding-right: 10px; }
+        .cards-scroll-area { flex: 1; overflow-y: auto; padding-right: 10px; scrollbar-width: thin; }
 
         .law-category-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 25px; overflow: hidden; }
         .card-header { background: rgba(255, 46, 126, 0.05); padding: 12px 20px; color: var(--accent-pink); font-weight: bold; text-transform: uppercase; border-bottom: 1px solid var(--border-color); font-size: 13px; text-align: center; }
 
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; color: var(--text-muted); font-size: 10px; text-transform: uppercase; padding: 12px; border-bottom: 1px solid var(--border-color); }
-        .law-row { border-bottom: 1px solid #1a1e26; cursor: pointer; }
+        .law-row { border-bottom: 1px solid #1a1e26; cursor: pointer; transition: 0.1s; }
         .law-row:hover { background: #1c222d; }
         .law-row.selected { background: #262c36; border-left: 3px solid var(--accent-pink); }
         .law-row td { padding: 10px 12px; font-size: 12.5px; }
         
-        .col-stars { color: var(--gold); font-size: 16px; letter-spacing: 2px; }
+        .col-para { color: var(--accent-pink); font-weight: bold; width: 100px; }
+        .col-stars { width: 110px; font-size: 18px; letter-spacing: 2px; }
+        .col-money { text-align: right; color: var(--gold); font-weight: bold; width: 100px; }
+        
+        .clickable-star { cursor: pointer; transition: 0.2s; color: var(--silver); }
+        .clickable-star.active { color: var(--gold); }
+        .star-fixed { color: var(--gold); }
+
         .sidebar { display: flex; flex-direction: column; gap: 12px; }
         .stat-card { background: var(--bg-card); border-radius: 10px; padding: 12px; border: 1px solid var(--border-color); text-align: center; }
-        .stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+        .stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold; }
         .stat-value { font-size: 28px; font-weight: bold; margin-top: 4px; }
         
-        .info-box { background: rgba(0, 212, 255, 0.1); border: 1px solid var(--info-blue); border-radius: 10px; padding: 12px; color: var(--info-blue); font-size: 13px; display: none; }
-        .output-card { background: var(--bg-card); border-radius: 10px; padding: 12px; border: 1px solid var(--border-color); flex: 1; display: flex; flex-direction: column; }
-        #generatedEntry { background: #0a0c10; padding: 10px; font-size: 11px; color: #8b949e; flex: 1; overflow-y: auto; cursor: copy; }
+        .info-box { background: rgba(0, 212, 255, 0.1); border: 1px solid var(--info-blue); border-radius: 10px; padding: 12px; color: var(--info-blue); font-size: 12px; display: none; }
+        .settings-card { background: var(--bg-card); border-radius: 10px; padding: 15px; border: 1px solid var(--border-color); }
+        .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; cursor: pointer; border-bottom: 1px solid #1a1e26; }
+        .toggle { width: 34px; height: 18px; background: #30363d; border-radius: 10px; position: relative; }
+        .toggle::after { content: ''; position: absolute; width: 14px; height: 14px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.2s; }
+        .active .toggle { background: var(--accent-pink); }
+        .active .toggle::after { transform: translateX(16px); }
 
-        .toggle-btn { width: 34px; height: 18px; background: #30363d; border-radius: 10px; position: relative; transition: 0.2s; cursor: pointer; }
-        .toggle-btn::after { content: ''; position: absolute; width: 14px; height: 14px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.2s; }
-        .active.toggle-btn { background: var(--accent-pink); }
-        .active.toggle-btn::after { transform: translateX(16px); }
-        .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #1a1e26; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 15px; }
+        .action-btn { background:#1c222d; border:1px solid #21262d; color:var(--accent-pink); padding:8px; border-radius:6px; cursor:pointer; font-size:10px; font-weight:bold; }
+
+        .output-card { background: var(--bg-card); border-radius: 10px; padding: 12px; border: 1px solid var(--border-color); flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        #generatedEntry { background: #0a0c10; border-left: 3px solid var(--accent-pink); padding: 10px; font-size: 11px; color: #8b949e; flex: 1; overflow-y: auto; cursor: copy; line-height: 1.4; }
+
+        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-content { background: #151921; width: 800px; max-height: 85vh; border-radius: 15px; border: 1px solid var(--accent-pink); display: flex; flex-direction: column; position: relative; }
+        .modal-body { padding: 40px; color: #d1d5da; overflow-y: auto; line-height: 1.6; }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: var(--text-muted); }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="main-panel">
-        <input type="text" id="searchInput" class="search-field" placeholder="Suche nach Paragraphen oder Namen..." onkeyup="filterTable()">
+        <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">🛡️Rechner<span style="color:var(--accent-pink)">von</span>Assan</div>
+        <input type="text" id="searchInput" class="search-field" placeholder="Suche..." onkeyup="filterTable()">
         <div class="cards-scroll-area" id="cardsContainer"></div>
     </div>
 
     <div class="sidebar">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <div class="stat-card"><span class="stat-label">Höchste Geldstrafe</span><div class="stat-value" id="outM" style="color:var(--gold)">$0</div></div>
-            <div class="stat-card"><span class="stat-label">Haftzeit (Sterne)</span><div class="stat-value" id="outW" style="color:#f1fa8c">0</div></div>
+            <div class="stat-card"><span class="stat-label">Max. Geldstrafe</span><div class="stat-value" id="outM" style="color:var(--gold)">$0</div></div>
+            <div class="stat-card"><span class="stat-label">Wanteds (Info)</span><div class="stat-value" id="outW" style="color:#f1fa8c">0 ★</div></div>
         </div>
 
         <div class="info-box" id="infoBox">
-            <b style="text-transform:uppercase; font-size:10px;">⚠ Dokumentenentzug erforderlich:</b><br>
-            <div id="infoContent" style="margin-top:5px;"></div>
+            <b style="display:block; margin-bottom:5px; font-size:10px; text-transform:uppercase;">Zusatz-Maßnahmen:</b>
+            <div id="infoContent"></div>
         </div>
 
-        <div class="stat-card" style="text-align:left;">
-            <div class="switch-row"><span>Rechte verlesen?</span><div id="swRights" class="toggle-btn" onclick="toggleSwitch(this)"></div></div>
-            <div class="switch-row"><span>Reue zeigen (-2W)</span><div id="sw35" class="toggle-btn" onclick="toggleSwitch(this)"></div></div>
+        <div class="settings-card">
+            <div class="switch-row" id="swRights" onclick="toggleSwitch(this)"><span>Rechte verlesen?</span><div class="toggle"></div></div>
+            <div class="switch-row" id="sw35" onclick="toggleSwitch(this)"><span>Reue zeigen (-2W)</span><div class="toggle"></div></div>
+            <div class="switch-row" id="swHaft" onclick="toggleHaftSwitch(this)"><span>Haftbefehl / Beschluss</span><div class="toggle"></div></div>
+            
+            <div id="grundBox" style="display:none; margin-top:10px;">
+                <span class="stat-label">Grund</span>
+                <input type="text" id="inGrund" style="width:100%; background:var(--bg-input); border:1px solid #333; color:white; padding:8px; border-radius:6px; margin-top:5px; outline:none;" oninput="updateDisplay()">
+            </div>
+
+            <div class="btn-grid">
+                <button class="action-btn" onclick="openModal('modalAnwalt')">ANWÄLTE</button>
+                <button class="action-btn" onclick="openModal('modalRechte')">RECHTE</button>
+                <button class="action-btn" onclick="openModal('modalBelehrung')">BELEHRUNG</button>
+            </div>
         </div>
 
         <div class="output-card">
-            <span class="stat-label">Akteneintrag (Klicken zum Kopieren)</span>
-            <div id="generatedEntry" onclick="copyText()">Wähle Strafen aus...</div>
-            <button onclick="location.reload()" style="margin-top:10px; background:none; border:1px solid #333; color:white; padding:5px; cursor:pointer; border-radius:4px;">Reset</button>
+            <div id="generatedEntry" onclick="copyText()">Wähle Tatbestände aus...</div>
+            <button onclick="location.reload()" style="background:transparent; border:1px solid #30363d; color:var(--text-muted); padding:8px; border-radius:5px; cursor:pointer; width:100%; font-size:10px; margin-top:10px;">Reset</button>
         </div>
     </div>
+</div>
+
+<div id="modalRechte" class="modal-overlay" onclick="closeModal('modalRechte')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <span class="close-btn" onclick="closeModal('modalRechte')">&times;</span>
+        <div class="modal-body" style="text-align:center;">
+            <h2>RECHTE</h2>
+            <p>Sie haben das Recht zu schweigen, alles was Sie sagen kann und wird gegen Sie verwendet werden. Ab 3 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt, den Sie selbst benennen müssen. Wenn kein Anwalt verfügbar ist, wird Ihnen keiner gestellt. Die Judikative übernimmt der Exekutivbeamte. Wenn ein Anwalt hinzugezogen wird, kann es länger als 25 Minuten dauern.</p>
+        </div>
+    </div>
+</div>
+
+<div id="modalBelehrung" class="modal-overlay" onclick="closeModal('modalBelehrung')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <span class="close-btn" onclick="closeModal('modalBelehrung')">&times;</span>
+        <div class="modal-body">
+            <h2>BELEHRUNGEN</h2>
+            <b>Haftbefehl</b>
+            <p>"Die Justiz hat einen Haftbefehl gegen Sie erlassen, Sie haben das Recht zu schweigen..."</p>
+        </div>
+    </div>
+</div>
+
+<div id="modalAnwalt" class="modal-overlay" onclick="closeModal('modalAnwalt')">
+    <div class="modal-content" style="width:90vw; height:90vh;"><span class="close-btn" onclick="closeModal('modalAnwalt')">&times;</span><iframe src="https://docs.google.com/spreadsheets/d/1DufMS-4hxX75e9bJk_z3jSHqCcO6JmimoqYh6M94zP0/edit#gid=690010630" style="width:100%; height:100%; border:none; border-radius:15px;"></iframe></div>
 </div>
 
 <script>
@@ -159,6 +214,7 @@ const laws = [
 ];
 
 let selectedItems = [];
+let extraStars = {}; 
 
 function render() {
     const container = document.getElementById('cardsContainer');
@@ -168,14 +224,19 @@ function render() {
         card.className = "law-category-card";
         let table = `<table><thead><tr><th>§</th><th>Tatbestand</th><th>Sterne</th><th style="text-align:right">Geld</th></tr></thead><tbody>`;
         c.items.forEach((i, itemIdx) => {
-            const id = `${catIdx}-${itemIdx}`;
-            const isSelected = selectedItems.some(item => item.id === id) ? 'selected' : '';
-            let stars = "★".repeat(i.w);
-            table += `<tr class="law-row ${isSelected}" onclick="toggleLaw('${id}', ${JSON.stringify(i).replace(/"/g, '&quot;')})">
-                <td style="color:var(--accent-pink); font-weight:bold;">${i.p}</td>
+            const id = `s-${catIdx}-${itemIdx}`;
+            let starsHTML = "";
+            for(let s=0; s<i.w; s++) starsHTML += '<span class="star-fixed">★</span>';
+            for(let s=0; s<i.gs; s++) {
+                const isActive = extraStars[id] > s ? 'active' : '';
+                starsHTML += `<span class="clickable-star ${isActive}" data-id="${id}" data-val="${s+1}">☆</span>`;
+            }
+            const isSelected = selectedItems.some(item => item.uniqueId === id) ? 'selected' : '';
+            table += `<tr class="law-row ${isSelected}" onclick="handleRowClick(this, ${JSON.stringify(i).replace(/"/g, '&quot;')}, '${id}', event)">
+                <td class="col-para">${i.p}</td>
                 <td>${i.n}</td>
-                <td class="col-stars">${stars}</td>
-                <td style="text-align:right; color:var(--gold);">$${i.m.toLocaleString()}</td>
+                <td class="col-stars">${starsHTML}</td>
+                <td class="col-money">$${i.m.toLocaleString()}</td>
             </tr>`;
         });
         card.innerHTML = `<div class="card-header">${c.cat}</div>` + table + `</tbody></table>`;
@@ -183,71 +244,85 @@ function render() {
     });
 }
 
-function toggleLaw(id, data) {
-    const index = selectedItems.findIndex(item => item.id === id);
-    if (index > -1) selectedItems.splice(index, 1);
-    else selectedItems.push({id, ...data});
+function handleRowClick(el, obj, id, event) {
+    if (event.target.classList.contains('clickable-star')) {
+        const val = parseInt(event.target.getAttribute('data-val'));
+        extraStars[id] = (extraStars[id] === val) ? val - 1 : val;
+    } else {
+        if(selectedItems.some(item => item.uniqueId === id)) {
+            selectedItems = selectedItems.filter(item => item.uniqueId !== id);
+        } else {
+            selectedItems.push({...obj, uniqueId: id});
+        }
+    }
     render();
     updateDisplay();
 }
 
 function updateDisplay() {
-    let maxM = 0; 
-    let totalW = 0;
-    let infos = [];
+    let maxM = 0; let maxW = 0;
+    let extraInfos = [];
     
     selectedItems.forEach(l => {
-        if(l.m > maxM) maxM = l.m; // Höchste Geldstrafe gewinnt
-        totalW += l.w;
-        if(l.info) infos.push(l.info);
+        if(l.m > maxM) maxM = l.m;
+        let itemW = l.w + (extraStars[l.uniqueId] || 0);
+        if(itemW > maxW) maxW = itemW;
+        if(l.info) extraInfos.push(l.info);
     });
 
     const reue = document.getElementById('sw35').classList.contains('active');
-    if(reue && totalW > 0) totalW = Math.max(1, totalW - 2);
+    if(reue && maxW > 0) maxW = Math.max(1, maxW - 2);
 
     document.getElementById('outM').innerText = '$' + maxM.toLocaleString();
-    document.getElementById('outW').innerText = totalW;
+    document.getElementById('outW').innerText = maxW + ' ★';
 
     const infoBox = document.getElementById('infoBox');
     const infoContent = document.getElementById('infoContent');
-    if(infos.length > 0) {
+    if(extraInfos.length > 0) {
         infoBox.style.display = "block";
-        infoContent.innerHTML = [...new Set(infos)].map(i => `• ${i}`).join("<br>");
+        infoContent.innerHTML = [...new Set(extraInfos)].map(i => `• ${i}`).join("<br>");
     } else {
         infoBox.style.display = "none";
     }
 
     const entryBox = document.getElementById('generatedEntry');
     const rights = document.getElementById('swRights').classList.contains('active');
-    
-    if(selectedItems.length > 0) {
-        if(!rights) {
-            entryBox.innerText = "⚠️ RECHTE NOCH NICHT VERLESEN!";
-            entryBox.style.color = "#ff4444";
-        } else {
-            let text = selectedItems.map(l => l.p).join(", ");
-            if(reue) text += " | §35 Reue";
-            entryBox.innerText = text;
-            entryBox.style.color = "#8b949e";
-        }
-    } else {
-        entryBox.innerText = "Wähle Strafen aus...";
-    }
-}
+    const haft = document.getElementById('swHaft').classList.contains('active');
+    const grund = document.getElementById('inGrund').value;
 
-function toggleSwitch(el) { el.classList.toggle('active'); updateDisplay(); }
+    if(!rights && (selectedItems.length > 0 || haft)) {
+        entryBox.innerText = "⚠️ RECHTE NOCH NICHT VERLESEN!";
+        entryBox.style.color = "#ff4444";
+        return;
+    }
+
+    let text = "";
+    if(selectedItems.length > 0 || haft) {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'});
+        text = `${now.toLocaleDateString('de-DE')} ${timeStr} | `;
+        if(haft && grund) text += `${grund} | `;
+        text += selectedItems.map(l => l.p).join(", ");
+        if(reue) text += " | §35";
+    }
+
+    entryBox.innerText = text || "Wähle Tatbestände aus...";
+    entryBox.style.color = "#8b949e";
+}
 
 function copyText() {
     const entry = document.getElementById('generatedEntry').innerText;
-    if(entry.includes("⚠️") || entry.includes("Wähle")) return;
+    if(entry.includes("Wähle") || entry.includes("⚠️")) return;
     navigator.clipboard.writeText(entry);
 }
 
+function toggleHaftSwitch(el) { el.classList.toggle('active'); document.getElementById('grundBox').style.display = el.classList.contains('active') ? 'block' : 'none'; updateDisplay(); }
+function toggleSwitch(el) { el.classList.toggle('active'); updateDisplay(); }
+function openModal(id) { document.getElementById(id).style.display = "flex"; }
+function closeModal(id) { document.getElementById(id).style.display = "none"; }
 function filterTable() {
     const v = document.getElementById('searchInput').value.toLowerCase();
-    document.querySelectorAll('.law-row').forEach(r => {
-        r.style.display = r.innerText.toLowerCase().includes(v) ? "" : "none";
-    });
+    document.querySelectorAll('.law-row').forEach(r => r.style.display = r.innerText.toLowerCase().includes(v) ? "" : "none");
 }
 
 render();
