@@ -1,265 +1,218 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>LSPD Interface - Monochrome Edition</title>
-    <style>
-        :root {
-            --bg-page: #e5e7eb;
-            --bg-card: #ffffff;
-            --bg-list: #f9fafb;
-            --text-main: #111827;
-            --text-sub: #4b5563;
-            --border: #374151;
-            --accent: #111827;
-            --star-active: #111827;
-            --star-dim: #d1d5db;
-        }
+<meta charset="UTF-8">
+<title>LSPD Strafrechner</title>
 
-        /* Dark Mode: Streng Schwarz/Grau */
-        body.dark-mode {
-            --bg-page: #000000;
-            --bg-card: #111111;
-            --bg-list: #0a0a0a;
-            --text-main: #ffffff;
-            --text-sub: #9ca3af;
-            --border: #444444;
-            --accent: #ffffff;
-            --star-active: #ffffff;
-            --star-dim: #333333;
-        }
-
-        * { box-sizing: border-box; font-family: 'Arial', sans-serif; user-select: none; }
-        body { margin: 0; background-color: var(--bg-page); color: var(--text-main); height: 100vh; display: flex; transition: 0.2s; }
-
-        .container { display: grid; grid-template-columns: 1fr 480px; width: 100%; height: 100vh; padding: 20px; gap: 20px; }
-        
-        .main-panel { display: flex; flex-direction: column; background: var(--bg-card); border: 2px solid var(--border); overflow: hidden; border-radius: 4px; }
-        
-        .header-bar { 
-            background: var(--border); color: var(--bg-card); padding: 12px 15px; font-weight: bold; font-size: 18px; 
-            display: flex; align-items: center; justify-content: space-between; 
-        }
-
-        .dm-btn {
-            background: transparent; border: 1px solid var(--bg-card); color: var(--bg-card);
-            padding: 4px 10px; border-radius: 2px; cursor: pointer; font-size: 11px; font-weight: bold;
-        }
-        .dm-btn:hover { background: var(--bg-card); color: var(--border); }
-
-        .search-field { 
-            width: 100%; padding: 15px; border: none; border-bottom: 2px solid var(--border); 
-            font-size: 18px; outline: none; background: var(--bg-card); color: var(--text-main);
-        }
-
-        .scroll-area { flex: 1; overflow-y: auto; background: var(--bg-list); }
-        .category-title { background: var(--border); padding: 8px 15px; font-weight: bold; font-size: 14px; color: var(--bg-card); text-transform: uppercase; }
-        
-        table { width: 100%; border-collapse: collapse; }
-        .law-row { border-bottom: 1px solid var(--border); background: var(--bg-card); cursor: pointer; }
-        .law-row:hover { background: rgba(128,128,128,0.1); }
-        .law-row.selected { background: rgba(128,128,128,0.2); border-left: 10px solid var(--border); }
-        .law-row td { padding: 16px; font-size: 18px; font-weight: bold; border-right: 1px solid var(--border); }
-
-        .col-stars { color: var(--star-active); font-size: 26px; white-space: nowrap; }
-        .clickable-star { color: var(--star-dim); cursor: pointer; }
-        .clickable-star.active { color: var(--star-active); }
-
-        .sidebar { display: flex; flex-direction: column; gap: 15px; }
-        .card { background: var(--bg-card); padding: 20px; border: 2px solid var(--border); border-radius: 4px; }
-        
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .stat-box { text-align: center; border: 1px solid var(--border); padding: 10px; }
-        .stat-box label { font-size: 11px; font-weight: bold; color: var(--text-sub); display: block; margin-bottom: 5px; }
-        .stat-box span { font-size: 40px; font-weight: 900; }
-
-        .btn { 
-            background: var(--bg-card); border: 2px solid var(--border); color: var(--text-main); 
-            padding: 12px; font-weight: bold; cursor: pointer; font-size: 13px; text-transform: uppercase;
-        }
-        .btn:hover { background: var(--border); color: var(--bg-card); }
-
-        #generatedEntry { 
-            background: var(--bg-list); border: 1px solid var(--border); padding: 15px; 
-            font-size: 18px; font-family: 'Courier New', monospace; color: var(--text-main);
-            min-height: 80px; cursor: copy; font-weight: bold;
-        }
-
-        .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); font-weight: bold; }
-        .toggle { width: 44px; height: 22px; background: #666; position: relative; cursor: pointer; border: 1px solid var(--border); }
-        .toggle::after { content: ''; position: absolute; width: 16px; height: 16px; background: white; top: 2px; left: 2px; transition: 0.2s; }
-        .active.toggle { background: var(--border); }
-        .active.toggle::after { transform: translateX(22px); background: var(--bg-card); }
-
-        .grund-input { width: 100%; padding: 12px; border: 1px solid var(--border); margin-top: 10px; font-size: 16px; background: var(--bg-card); color: var(--text-main); display: none; outline: none; }
-        
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; }
-        .modal-content { background: var(--bg-card); padding: 30px; border: 2px solid var(--border); width: 85%; max-width: 800px; color: var(--text-main); }
-    </style>
+<style>
+:root{
+--bg:#0b0e14;--card:#151921;--accent:#ff2e7e;
+--border:#21262d;--text:#fff;--muted:#8b949e;--gold:#d4af37
+}
+*{box-sizing:border-box;font-family:Segoe UI,sans-serif}
+body{margin:0;background:var(--bg);color:var(--text);height:100vh;display:flex}
+.container{display:grid;grid-template-columns:1fr 420px;gap:15px;width:100%;padding:15px}
+.main{display:flex;flex-direction:column}
+.search{background:var(--card);border:1px solid var(--border);color:#fff;padding:8px;border-radius:6px}
+.cards{overflow-y:auto;margin-top:10px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:15px}
+.header{text-align:center;color:var(--accent);padding:6px;border-bottom:1px solid var(--border);font-size:12px}
+table{width:100%;border-collapse:collapse}
+tr{cursor:pointer}
+tr:hover{background:#1c222d}
+tr.selected{background:#262c36;border-left:3px solid var(--accent)}
+td{padding:8px;font-size:12px}
+.sidebar{display:flex;flex-direction:column;gap:10px}
+.stat{background:var(--card);border:1px solid var(--border);padding:10px;border-radius:8px}
+.stat b{font-size:22px;display:block;text-align:center}
+.toggle{width:30px;height:16px;background:#333;border-radius:10px;cursor:pointer;position:relative}
+.toggle:after{content:"";width:12px;height:12px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:.2s}
+.toggle.active{background:var(--accent)}
+.toggle.active:after{left:16px}
+.switch{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}
+input.small{width:100%;margin-top:5px;background:#0a0c10;border:1px solid #333;color:#fff;padding:5px;border-radius:4px;display:none}
+button{background:#1c222d;border:1px solid #333;color:var(--accent);padding:6px;font-size:10px;cursor:pointer}
+.output{background:var(--card);border:1px dashed #333;padding:8px;font-size:11px;min-height:50px;color:var(--muted)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;justify-content:center;align-items:center;z-index:99}
+.modal>div{background:var(--card);padding:20px;border-radius:10px;border:1px solid var(--accent);max-width:900px;max-height:90vh;overflow:auto}
+.modal h3{color:var(--accent);margin-top:0}
+</style>
 </head>
-<body id="mainBody">
+
+<body>
 
 <div class="container">
-    <div class="main-panel">
-        <div class="header-bar">
-            <span>LSPD | PENAL CODE</span>
-            <button class="dm-btn" onclick="toggleDarkMode()">MODUS WECHSELN</button>
-        </div>
-        <input type="text" id="searchInput" class="search-field" placeholder="SUCHBEGRIFF EINGEBEN..." onkeyup="filterTable()">
-        <div class="scroll-area" id="cardsContainer"></div>
-    </div>
-
-    <div class="sidebar">
-        <div class="stat-grid">
-            <div class="stat-box">
-                <label>GELDSTRAFE</label>
-                <span id="outM">$0</span>
-            </div>
-            <div class="stat-box">
-                <label>WANTEDS</label>
-                <span id="outW">0</span>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="switch-row"><span>RECHTE VERLESEN</span><div id="swRights" class="toggle" onclick="toggleSwitch(this)"></div></div>
-            <div class="switch-row"><span>REUE ZEIGEN (§35)</span><div id="sw35" class="toggle" onclick="toggleSwitch(this)"></div></div>
-            <div class="switch-row"><span>GRUND / HAFTBEFEHL</span><div id="swHaft" class="toggle" onclick="toggleHaft(this)"></div></div>
-            <input type="text" id="inGrund" class="grund-input" placeholder="FALLBEZEICHNUNG..." oninput="updateDisplay()">
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-            <button class="btn" onclick="openModal('modalAnwalt')">Anwalt</button>
-            <button class="btn" onclick="openModal('modalRechte')">Rechte</button>
-            <button class="btn" onclick="location.reload()">Reset</button>
-        </div>
-
-        <div class="card">
-            <label style="font-weight: bold; font-size: 11px; margin-bottom: 5px; display: block;">DATABASE RECORD (CLICK TO COPY)</label>
-            <div id="generatedEntry" onclick="copyText()">Warten auf Eingabe...</div>
-        </div>
-    </div>
+<div class="main">
+<input class="search" placeholder="Suche…" onkeyup="filter()">
+<div class="cards" id="cards"></div>
 </div>
 
-<div id="modalRechte" class="modal" onclick="closeModal('modalRechte')">
-    <div class="modal-content" onclick="event.stopPropagation()">
-        <h2>RECHTEBELEHRUNG</h2>
-        <p>1. Sie haben das Recht zu schweigen.<br>2. Alles was Sie sagen, kann verwendet werden.<br>3. Anwalt ab 3 Wanteds kontaktierbar.</p>
-        <button class="btn" style="width: 100%" onclick="closeModal('modalRechte')">SCHLIESSEN</button>
-    </div>
+<div class="sidebar">
+
+<div class="stat"><div>HÖCHSTE STRAFE</div><b id="money">$0</b></div>
+<div class="stat"><div>WANTEDS</div><b id="wanted">0</b></div>
+
+<div class="stat">
+<div class="switch">Rechte vorgelesen<div id="swRights" class="toggle" onclick="toggle(this)"></div></div>
+<div class="switch">Reue (§35)<div id="sw35" class="toggle" onclick="toggle(this)"></div></div>
+<div class="switch">Haftbefehl / Beschluss<div id="swHaft" class="toggle" onclick="toggleHaft(this)"></div></div>
+<input id="grund" class="small" placeholder="Haftgrund / Aktenzeichen">
 </div>
 
-<div id="modalAnwalt" class="modal" onclick="closeModal('modalAnwalt')">
-    <div class="modal-content" style="width: 95%; height: 95%;" onclick="event.stopPropagation()">
-        <iframe src="https://docs.google.com/spreadsheets/d/1DufMS-4hxX75e9bJk_z3jSHqCcO6JmimoqYh6M94zP0/edit#gid=690010630" style="width: 100%; height: 85%; border: none;"></iframe>
-        <button class="btn" style="width: 100%; margin-top: 10px;" onclick="closeModal('modalAnwalt')">ZURÜCK</button>
-    </div>
+<button onclick="openM('anwalt')">ANWÄLTE</button>
+<button onclick="openM('rechte')">RECHTE</button>
+<button onclick="openM('belehrung')">BELEHRUNGEN</button>
+<button onclick="location.reload()">RESET</button>
+
+<div id="out" class="output" onclick="copy()">Keine Auswahl</div>
+
+</div>
+</div>
+
+<!-- ANWÄLTE -->
+<div id="anwalt" class="modal" onclick="closeM(this)">
+<div onclick="event.stopPropagation()">
+<iframe src="https://docs.google.com/spreadsheets/d/1DufMS-4hxX75e9bJk_z3jSHqCcO6JmimoqYh6M94zP0/edit?gid=690010630"
+style="width:100%;height:80vh;border:none"></iframe>
+</div>
+</div>
+
+<!-- RECHTE -->
+<div id="rechte" class="modal" onclick="closeM(this)">
+<div>
+<h3>RECHTEBELEHRUNG</h3>
+<p>
+Sie haben das Recht zu schweigen. Alles was Sie sagen, kann und wird gegen Sie verwendet werden.<br>
+Ab 3 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt, den Sie selbst benennen müssen.<br>
+Wenn kein Anwalt verfügbar ist, wird Ihnen keiner gestellt.<br>
+Die Judikative übernimmt der Exekutivbeamte.<br>
+Wenn ein Anwalt hinzugezogen wird, kann es länger als 25 Minuten dauern.<br>
+Haben Sie ihre Rechte verstanden?
+</p>
+</div>
+</div>
+
+<!-- BELEHRUNGEN -->
+<div id="belehrung" class="modal" onclick="closeM(this)">
+<div>
+<h3>BELEHRUNGEN</h3>
+
+<b>Haftbefehl</b>
+<p>
+Die Justiz hat einen Haftbefehl gegen Sie erlassen, Sie haben das Recht zu schweigen.<br>
+Alles, was Sie sagen, kann und wird gegen Sie verwendet werden.<br>
+Sie haben das Recht gegen den Haftbefehl vor Gericht zu ziehen.<br>
+Falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt
+bei der Regierung gegen den Haftbefehl einreichen.<br>
+Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen Gerichtsprozess ablehnen,
+wird der Haftbefehl von den ausgewählten Beamten vollstreckt.<br>
+Im weiteren Verlauf erhalten Sie eine staatliche Berufssperre von X Tagen
+nach §19 (4) Beamten Dienst Gesetzbuch.<br>
+Während dieser Zeit dürfen Sie keinem Staatsdienst nachgehen.<br>
+Wenn Sie flüchten, haben Sie kein Recht mehr auf einen Rechtsanwalt.
+</p>
+
+<b>Beschluss</b>
+<p>
+Die Justiz hat einen Beschluss gegen Sie erlassen, Sie haben das Recht zu schweigen.<br>
+Alles, was Sie sagen, kann und wird gegen Sie verwendet werden.<br>
+Sie haben das Recht gegen den Beschluss vor Gericht zu ziehen.<br>
+Falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt
+bei der Regierung gegen den Beschluss einreichen.<br>
+Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen Gerichtsprozess ablehnen,
+wird der Beschluss von den ausgewählten Beamten vollstreckt.<br>
+Wenn Sie flüchten, haben Sie kein Recht mehr auf einen Rechtsanwalt.
+</p>
+
+<b>Befragung</b>
+<p>
+Sie haben das Recht zu schweigen.<br>
+Alles, was Sie sagen, kann und wird vor Gericht gegen Sie verwendet werden.<br>
+Sie haben das Recht, zu jeder Vernehmung einen Rechtsanwalt hinzuzuziehen.<br>
+Haben Sie das verstanden?
+</p>
+</div>
 </div>
 
 <script>
-const laws = [
-    { cat: "StGB - INTEGRITÄT", items: [
-        {p:"StGB §3.1", n:"Beleidigung", m:10000, w:0, gs:1},
-        {p:"StGB §4.1", n:"Mord / Versuch", m:30000, w:4, gs:0},
-        {p:"StGB §4.2", n:"Körperverletzung", m:15000, w:2, gs:0}
-    ]},
-    { cat: "StGB - STAAT & WIRTSCHAFT", items: [
-        {p:"StGB §11", n:"Raub", m:25000, w:3, gs:0},
-        {p:"StGB §14", n:"Steuerhinterziehung", m:50000, w:3, gs:0},
-        {p:"StGB §18", n:"Militärgelände", m:50000, w:5, gs:0},
-        {p:"StGB §41.1", n:"Besitz staatl. Waffen", m:50000, w:3, gs:0}
-    ]},
-    { cat: "SONSTIGE GESETZE", items: [
-        {p:"StVO §17", n:"Berauschtes Fahren", m:10000, w:0, gs:2},
-        {p:"WaffG §5.1", n:"Illegale Waffen", m:10000, w:2, gs:1},
-        {p:"BtMG §2.2", n:"Drogenhandel", m:30000, w:3, gs:0}
-    ]}
-];
+const laws=[{
+cat:"StGB / StVO / WaffG / BtMG / StPO",
+items:[
+{p:"StGB §3.1",n:"Beleidigung",m:10000,w:1},
+{p:"StGB §4.1",n:"Mord / Mordversuch",m:30000,w:4},
+{p:"StVO §8",n:"Fahren ohne Führerschein",m:6000,w:1},
+{p:"WaffG §1.1",n:"Besitz illegaler Waffen",m:10000,w:2},
+{p:"BtMG §2.2",n:"Drogenhandel",m:30000,w:3},
+{p:"StPO §6",n:"Bußgelder nicht bezahlt",m:500000,w:5}
+]}];
 
-let selectedItems = []; let activeGs = {};
+let sel=[];
 
-function toggleDarkMode() { document.getElementById('mainBody').classList.toggle('dark-mode'); }
-
-function render() {
-    const container = document.getElementById('cardsContainer');
-    container.innerHTML = "";
-    laws.forEach((c, catIdx) => {
-        let div = document.createElement('div');
-        div.innerHTML = `<div class="category-title">${c.cat}</div>`;
-        let table = `<table><tbody>`;
-        c.items.forEach((i, itemIdx) => {
-            const id = `${catIdx}-${itemIdx}`;
-            const isSelected = selectedItems.some(it => it.id === id) ? 'selected' : '';
-            let starsHTML = "★".repeat(i.w);
-            for(let s=0; s<i.gs; s++) {
-                const active = (activeGs[id] || 0) > s ? 'active' : '';
-                starsHTML += `<span class="clickable-star ${active}" onclick="toggleGs(event, '${id}', ${s+1})">☆</span>`;
-            }
-            table += `<tr class="law-row ${isSelected}" onclick="toggleLaw('${id}', ${JSON.stringify(i).replace(/"/g, '&quot;')})">
-                <td style="width: 100px;">${i.p}</td>
-                <td>${i.n}</td>
-                <td class="col-stars" style="width: 140px;">${starsHTML}</td>
-                <td style="width: 100px; text-align: right;">$${i.m.toLocaleString()}</td>
-            </tr>`;
-        });
-        div.innerHTML += table + `</tbody></table>`;
-        container.appendChild(div);
-    });
+function render(){
+const c=document.getElementById("cards");c.innerHTML="";
+laws.forEach(cat=>{
+let h=`<div class="card"><div class="header">${cat.cat}</div><table>`;
+cat.items.forEach(l=>{
+const s=sel.includes(l);
+h+=`<tr class="${s?"selected":""}" onclick="toggleLaw('${l.p}')">
+<td>${l.p}</td><td>${l.n}</td><td>$${l.m.toLocaleString()}</td><td>${"★".repeat(l.w)}</td></tr>`;
+});
+c.innerHTML+=h+"</table></div>";
+});
+update();
 }
 
-function toggleGs(e, id, val) { e.stopPropagation(); activeGs[id] = activeGs[id] === val ? val - 1 : val; render(); updateDisplay(); }
-function toggleLaw(id, data) {
-    const idx = selectedItems.findIndex(it => it.id === id);
-    if(idx > -1) selectedItems.splice(idx, 1); else selectedItems.push({id, ...data});
-    render(); updateDisplay();
+function toggleLaw(p){
+sel=sel.includes(p)?sel.filter(x=>x!==p):[...sel,p];
+render();
 }
 
-function updateDisplay() {
-    let maxM = 0; let totalW = 0;
-    selectedItems.forEach(l => {
-        if(l.m > maxM) maxM = l.m;
-        totalW += l.w + (activeGs[l.id] || 0);
-    });
-    if(document.getElementById('sw35').classList.contains('active') && totalW > 0) totalW = Math.max(1, totalW - 2);
+function update(){
+let w=0,m=0;
+laws[0].items.forEach(l=>{
+if(sel.includes(l.p)){w+=l.w;m=Math.max(m,l.m);}
+});
+if(document.getElementById("sw35").classList.contains("active")&&w>0)w=Math.max(1,w-2);
 
-    document.getElementById('outM').innerText = '$' + maxM.toLocaleString();
-    document.getElementById('outW').innerText = totalW;
+document.getElementById("wanted").innerText=w;
+document.getElementById("money").innerText="$"+m.toLocaleString();
 
-    const entry = document.getElementById('generatedEntry');
-    const grund = document.getElementById('inGrund').value;
-    const haftActive = document.getElementById('swHaft').classList.contains('active');
-    
-    if(!document.getElementById('swRights').classList.contains('active') && (selectedItems.length || haftActive)) {
-        entry.innerText = "!!! RECHTE NICHT VERLESEN !!!"; entry.style.color = "gray";
-    } else {
-        const now = new Date();
-        const timeStr = `[${now.getDate().toString().padStart(2,'0')}.${(now.getMonth()+1).toString().padStart(2,'0')}. ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}]`;
-        let parts = [];
-        if(haftActive && grund) parts.push(`GRUND: ${grund.toUpperCase()}`);
-        if(selectedItems.length) parts.push(selectedItems.map(l => l.p).join(", "));
-        if(document.getElementById('sw35').classList.contains('active') && selectedItems.length) parts.push("§35");
-        entry.innerText = parts.length ? `${timeStr} ${parts.join(" | ")}` : "Warten auf Eingabe...";
-        entry.style.color = "var(--text-main)";
-    }
+const out=document.getElementById("out");
+if(!document.getElementById("swRights").classList.contains("active")){
+out.innerText="RECHTE NICHT VORGELESEN";
+out.style.color="red";
+return;
 }
 
-function toggleSwitch(el) { el.classList.toggle('active'); updateDisplay(); }
-function toggleHaft(el) { el.classList.toggle('active'); document.getElementById('inGrund').style.display = el.classList.contains('active') ? "block" : "none"; updateDisplay(); }
-function openModal(id) { document.getElementById(id).style.display = "flex"; }
-function closeModal(id) { document.getElementById(id).style.display = "none"; }
-function copyText() { 
-    const entry = document.getElementById('generatedEntry').innerText;
-    if(!entry.includes("!!!") && !entry.includes("Warten")) {
-        navigator.clipboard.writeText(entry);
-        document.getElementById('generatedEntry').innerText = "KOPIERT";
-        setTimeout(() => { updateDisplay(); }, 600);
-    }
+if(document.getElementById("swHaft").classList.contains("active")){
+const g=document.getElementById("grund").value;
+if(!g){
+out.innerText="HAFTGRUND FEHLT";
+out.style.color="red";
+return;
 }
-function filterTable() {
-    const v = document.getElementById('searchInput').value.toLowerCase();
-    document.querySelectorAll('.law-row').forEach(r => r.style.display = r.innerText.toLowerCase().includes(v) ? "" : "none");
+out.innerText="Grund: "+g+" | "+sel.join(", ");
+}else{
+out.innerText=sel.join(", ")||"Keine Auswahl";
 }
+out.style.color="var(--muted)";
+}
+
+function toggle(el){el.classList.toggle("active");update()}
+function toggleHaft(el){
+el.classList.toggle("active");
+document.getElementById("grund").style.display=el.classList.contains("active")?"block":"none";
+update();
+}
+function openM(id){document.getElementById(id).style.display="flex"}
+function closeM(m){m.style.display="none"}
+function copy(){
+if(!document.getElementById("swRights").classList.contains("active"))return;
+navigator.clipboard.writeText(document.getElementById("out").innerText);
+}
+function filter(){}
 render();
 </script>
+
 </body>
 </html>
