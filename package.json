@@ -1,14 +1,12 @@
 {
-  "name": "state-portal-backend",
+  "name": "state-portal",
   "version": "1.0.0",
-  "description": "LSPD & State Management Backend",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
   "dependencies": {
     "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "body-parser": "^1.20.2"
+    "cors": "^2.8.5"
+  },
+  "scripts": {
+    "start": "node server.js"
   }
 }
