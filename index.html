@@ -7,35 +7,22 @@
         :root { --bg: #050505; --card: #111; --border: #222; --text: #eee; --accent: #fff; }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { margin: 0; background: var(--bg); color: var(--text); height: 100vh; display: flex; overflow: hidden; }
-
-        /* SCREENS */
         .screen { display: none; width: 100vw; height: 100vh; justify-content: center; align-items: center; position: absolute; }
-        .active-screen { display: flex; }
-
-        /* COMPONENTS */
+        .active-screen { display: flex; flex-direction: column; }
         .box { background: var(--card); border: 1px solid var(--border); padding: 30px; width: 400px; border-radius: 4px; }
         input, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 12px; margin: 8px 0; outline: none; }
-        .btn { width: 100%; padding: 12px; border: none; font-weight: 900; cursor: pointer; text-transform: uppercase; margin-top: 10px; transition: 0.2s; }
+        .btn { width: 100%; padding: 12px; border: none; font-weight: 900; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
         .btn-primary { background: #fff; color: #000; }
-        .btn-primary:hover { background: #bbb; }
         .btn-secondary { background: transparent; color: #888; border: 1px solid #333; }
-
-        /* DASHBOARD LAYOUT */
         #dashboard { display: none; width: 100vw; height: 100vh; grid-template-rows: 60px 1fr; }
         header { background: var(--card); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
         .layout { display: grid; grid-template-columns: 240px 1fr; height: 100%; }
         aside { border-right: 1px solid var(--border); padding: 20px; }
         main { padding: 30px; overflow-y: auto; background: #000; }
-
-        .nav-item { padding: 12px; cursor: pointer; color: #888; font-weight: bold; font-size: 14px; border-radius: 4px; margin-bottom: 5px; }
-        .nav-item:hover, .nav-item.active { background: #1a1a1a; color: #fff; }
-
-        /* RECHNER STYLES */
-        .law-row { border-bottom: 1px solid #222; cursor: pointer; transition: 0.1s; }
+        .nav-item { padding: 12px; cursor: pointer; color: #888; font-weight: bold; margin-bottom: 5px; }
+        .nav-item.active { background: #1a1a1a; color: #fff; }
+        .law-row { border-bottom: 1px solid #222; cursor: pointer; }
         .law-row:hover { background: #111; }
-        .law-row.selected { border-left: 4px solid #fff; background: #1a1a1a; }
-        .star { color: #555; font-size: 20px; cursor: pointer; }
-        .star.active { color: #fff; }
     </style>
 </head>
 <body>
@@ -43,7 +30,7 @@
 <div id="screen-login" class="screen active-screen">
     <div class="box">
         <h2 style="text-align:center; letter-spacing:3px;">SYSTEM ACCESS</h2>
-        <input type="text" id="l-user" placeholder="Dienstname">
+        <input type="text" id="l-user" placeholder="Benutzername">
         <input type="password" id="l-pass" placeholder="Passwort">
         <button class="btn btn-primary" onclick="app.login()">Login</button>
         <button class="btn btn-secondary" onclick="ui.showScreen('screen-register')">Registrieren</button>
@@ -57,29 +44,25 @@
         <input type="password" id="r-pass" placeholder="Passwort">
         <input type="text" id="r-tel" placeholder="Telefonnummer">
         <select id="r-orga">
-            <option value="FIB">FIB</option>
-            <option value="LSPD">LSPD</option>
-            <option value="SAHP">SAHP</option>
-            <option value="EMS">EMS</option>
-            <option value="NG">National Garde</option>
-            <option value="LIFEINVADER">Lifeinvader</option>
+            <option value="FIB">FIB</option><option value="LSPD">LSPD</option>
+            <option value="SAHP">SAHP</option><option value="EMS">EMS</option>
+            <option value="NG">National Garde</option><option value="LIFEINVADER">Lifeinvader</option>
             <option value="GOV">GOV</option>
         </select>
         <button class="btn btn-primary" onclick="app.register()">Absenden</button>
-        <button class="btn btn-secondary" onclick="ui.showScreen('screen-login')">Abbrechen</button>
+        <button class="btn btn-secondary" onclick="ui.showScreen('screen-login')">Zurück</button>
     </div>
 </div>
 
 <div id="dashboard">
     <header>
         <div id="ui-orga" style="font-weight:900; letter-spacing:2px;">ORGA</div>
-        <div id="ui-user" style="font-size:12px; color:#888;">User</div>
+        <div id="ui-user">User</div>
         <button class="btn-secondary" style="width:auto; padding:5px 15px;" onclick="location.reload()">LOGOUT</button>
     </header>
     <div class="layout">
         <aside>
-            <div class="nav-item active" onclick="ui.view('rechner')">Strafrechner</div>
-            <div class="nav-item" onclick="ui.view('files')">Datenbank</div>
+            <div class="nav-item active" onclick="ui.view('rechner')">Bußgeldrechner</div>
             <div class="nav-item" onclick="ui.view('hr')" id="nav-hr">HR Verwaltung</div>
         </aside>
         <main id="main-view"></main>
@@ -87,28 +70,46 @@
 </div>
 
 <script>
-// DATEN & LOGIK
-const LAWS = [
-    {p:"StGB §1", n:"Beleidigung", m:10000, w:1, gs:1},
-    {p:"StGB §4", n:"Körperverletzung", m:20000, w:2, gs:0},
-    {p:"WaffG §5", n:"Illegale Waffe", m:15000, w:3, gs:2}
-];
+// --- KONFIGURATION ---
+const API_URL = "https://DEINE-RENDER-URL.onrender.com"; // HIER RENDER LINK EINTRAGEN!
 
 let currentUser = null;
 let selectedLaws = [];
+const LAWS = [
+    {p:"StGB §1", n:"Beleidigung", m:10000, w:1},
+    {p:"StGB §4", n:"Körperverletzung", m:20000, w:2},
+    {p:"WaffG §5", n:"Illegale Waffe", m:15000, w:3}
+];
 
 const app = {
-    login: () => {
+    login: async () => {
         const user = document.getElementById('l-user').value;
-        // Test-Login für Admin
-        if(user === "admin") {
-            currentUser = { user: "Admin", orga: "GOV", isHR: true };
+        const pass = document.getElementById('l-pass').value;
+        try {
+            const res = await fetch(`${API_URL}/login`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ user, pass })
+            });
+            if(!res.ok) throw await res.json();
+            currentUser = await res.json();
             ui.initDashboard();
-        } else { alert("User-Daten werden vom Server geprüft..."); }
+        } catch(e) { alert(e.msg || "Login fehlgeschlagen"); }
     },
-    register: () => {
-        alert("Anfrage an HR gesendet!");
-        ui.showScreen('screen-login');
+    register: async () => {
+        const user = document.getElementById('r-user').value;
+        const pass = document.getElementById('r-pass').value;
+        const tel = document.getElementById('r-tel').value;
+        const orga = document.getElementById('r-orga').value;
+        try {
+            await fetch(`${API_URL}/register`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ user, pass, tel, orga })
+            });
+            alert("Erfolgreich! Warte auf HR-Freigabe.");
+            ui.showScreen('screen-login');
+        } catch(e) { alert("Fehler"); }
     }
 };
 
@@ -125,39 +126,36 @@ const ui = {
         if(!currentUser.isHR) document.getElementById('nav-hr').style.display = 'none';
         ui.view('rechner');
     },
-    view: (name) => {
+    view: async (name) => {
         const v = document.getElementById('main-view');
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
         if(name === 'rechner') {
-            v.innerHTML = `
-                <div style="display:grid; grid-template-columns: 1fr 350px; gap:20px;">
-                    <div>
-                        <h3>Strafkatalog</h3>
-                        <table style="width:100%; border-collapse:collapse;">
-                            ${LAWS.map(l => `
-                                <tr class="law-row" onclick="ui.addLaw('${l.p}')">
-                                    <td style="padding:15px;"><b>${l.p}</b></td>
-                                    <td>${l.n}</td>
-                                    <td>$${l.m.toLocaleString()}</td>
-                                    <td>${l.w}W</td>
-                                </tr>
-                            `).join('')}
-                        </table>
-                    </div>
-                    <div class="box" style="width:100%; height:fit-content;">
-                        <h3>Berechnung</h3>
-                        <div id="calc-out" style="font-family:monospace; min-height:100px; border:1px dashed #333; padding:10px; margin-bottom:10px;">Keine Auswahl</div>
-                        <button class="btn btn-primary" onclick="alert('Kopiert!')">Eintrag Kopieren</button>
-                    </div>
-                </div>`;
+            v.innerHTML = `<h2>Bußgeldrechner</h2><div style="display:grid; grid-template-columns:1fr 300px; gap:20px;">
+                <table>${LAWS.map(l => `<tr class="law-row" onclick="ui.addLaw('${l.p}')"><td style="padding:10px;">${l.p}</td><td>${l.n}</td><td>$${l.m}</td></tr>`).join('')}</table>
+                <div class="box" style="width:100%"><div id="calc-out">Keine Auswahl</div></div></div>`;
         }
         if(name === 'hr') {
-            v.innerHTML = `<h3>HR Warteschlange - ${currentUser.orga}</h3><p style="color:#666;">Nur Bewerber für Ihre Orga sind hier sichtbar.</p><table style="width:100%;"><tr><th>Name</th><th>Tel</th><th>Aktion</th></tr><tr><td>Bewerber_Test</td><td>555-1122</td><td><button>Annehmen</button></td></tr></table>`;
+            const res = await fetch(`${API_URL}/hr/list`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ orga: currentUser.orga })
+            });
+            const list = await res.json();
+            v.innerHTML = `<h2>HR Warteschlange</h2>` + list.map(u => `<div class="box" style="width:100%; margin-bottom:10px;">${u.user} (${u.tel}) <button onclick="ui.approve('${u.user}')">Freischalten</button></div>`).join('');
         }
     },
     addLaw: (p) => {
-        const l = LAWS.find(x => x.p === p);
-        selectedLaws.push(l);
-        document.getElementById('calc-out').innerText = selectedLaws.map(x => x.p).join(", ");
+        selectedLaws.push(p);
+        document.getElementById('calc-out').innerText = selectedLaws.join(", ");
+    },
+    approve: async (username) => {
+        await fetch(`${API_URL}/hr/approve`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ username, orga: currentUser.orga })
+        });
+        alert("User freigeschaltet!");
+        ui.view('hr');
     }
 };
 </script>
