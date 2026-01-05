@@ -14,13 +14,11 @@
   --text:#e6e6e8;
   --muted:#9a9aa0;
 }
-
 *{box-sizing:border-box}
 
 body{
   margin:0;
   height:100vh;
-  display:flex;
   background:
     radial-gradient(1200px at 20% -20%, rgba(255,79,154,.08), transparent),
     linear-gradient(180deg,#0a0a0b,#0f0f11);
@@ -28,21 +26,28 @@ body{
   color:var(--text);
 }
 
-/* ===== LOGIN ===== */
+/* LOGIN */
 #login{
-  margin:auto;
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.login-box{
   width:340px;
-  background:rgba(20,20,23,.92);
+  background:rgba(20,20,23,.94);
   border:1px solid var(--border);
   border-radius:18px;
   padding:28px;
   box-shadow:0 40px 120px rgba(0,0,0,.8);
 }
 
-#login h2{
-  margin:0 0 20px;
-  font-weight:600;
+.login-box h2{
   text-align:center;
+  font-weight:600;
+  margin-bottom:20px;
 }
 
 input{
@@ -56,33 +61,35 @@ input{
 }
 
 button{
+  width:100%;
+  margin-top:18px;
   background:linear-gradient(180deg,#ff5aa5,#ff2f85);
   border:none;
   border-radius:12px;
-  padding:10px 16px;
+  padding:10px;
   font-weight:600;
   color:white;
   cursor:pointer;
 }
 
-button.secondary{
-  background:#2a2a2f;
-  color:var(--text);
+.small{
+  margin-top:14px;
+  text-align:center;
+  font-size:12px;
+  color:var(--muted);
 }
 
-.hidden{display:none}
-
-/* ===== APP LAYOUT ===== */
+/* APP */
 #app{
+  display:none;
+  height:100vh;
+  width:100vw;
   display:flex;
-  width:100%;
-  height:100%;
 }
 
-/* SIDEBAR */
 aside{
   width:230px;
-  background:rgba(18,18,20,.92);
+  background:rgba(18,18,20,.94);
   border-right:1px solid var(--border);
   backdrop-filter: blur(30px);
   display:flex;
@@ -107,16 +114,9 @@ aside h1{
   cursor:pointer;
 }
 
-.nav-btn:hover{
-  background:#1f1f23;
-}
+.nav-btn:hover{background:#1f1f23}
+.nav-btn.active{background:#232329;color:var(--accent)}
 
-.nav-btn.active{
-  background:#232329;
-  color:var(--accent);
-}
-
-/* CONTENT */
 main{
   flex:1;
   padding:24px;
@@ -139,100 +139,25 @@ main{
   font-size:15px;
   font-weight:600;
 }
-
-.small{font-size:12px;color:var(--muted)}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
+<!-- LOGIN ONLY -->
 <div id="login">
-  <h2>LSPD MDT</h2>
-  <input id="lu" placeholder="Benutzer">
-  <input id="lp" type="password" placeholder="Passwort">
-  <br><br>
-  <button onclick="login()">Login</button>
-  <p class="small" style="margin-top:14px;text-align:center">
-    ADMIN / 9999
-  </p>
+  <div class="login-box">
+    <h2>LSPD MDT</h2>
+    <input id="lu" placeholder="Benutzer">
+    <input id="lp" type="password" placeholder="Passwort">
+    <button onclick="login()">Anmelden</button>
+    <div class="small">ADMIN / 9999</div>
+  </div>
 </div>
 
-<!-- APP -->
-<div id="app" class="hidden">
+<!-- APP (ERST NACH LOGIN) -->
+<div id="app">
   <aside>
     <h1>MDT</h1>
     <button class="nav-btn active" onclick="tab(this,'dashboard')">Leitstelle</button>
-    <button class="nav-btn" onclick="tab(this,'rechner')">Strafrechner</button>
-    <button class="nav-btn" onclick="tab(this,'persons')">Personen</button>
-    <button class="nav-btn" onclick="tab(this,'calls')">Einsätze</button>
-    <button class="nav-btn" onclick="logout()">Logout</button>
-  </aside>
-  <main id="content"></main>
-</div>
-
-<script>
-let CURRENT=null;
-let STATE={
- persons:[],
- calls:[],
- laws:[
-  {p:"BtMG §2.1",d:"Drogenbesitz Klein",w:1,f:15000},
-  {p:"BtMG §2.2",d:"Drogenhandel",w:3,f:30000}
- ]
-};
-
-function login(){
- if(lu.value==="ADMIN" && lp.value==="9999"){
-  CURRENT="ADMIN";
-  login.classList.add("hidden");
-  app.classList.remove("hidden");
-  render("dashboard");
- } else alert("Login fehlgeschlagen");
-}
-
-function logout(){
- location.reload();
-}
-
-function tab(btn,t){
- document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
- btn.classList.add("active");
- render(t);
-}
-
-function render(t){
- if(t==="dashboard"){
-  content.innerHTML=`
-   <div class="card">
-     <h3>🚨 Leitstelle</h3>
-     Aktive Einsätze: ${STATE.calls.length}<br>
-     Personenakten: ${STATE.persons.length}
-   </div>`;
- }
- if(t==="rechner"){
-  content.innerHTML=`
-   <div class="card">
-     <h3>⚖️ Strafrechner</h3>
-     ${STATE.laws.map(l=>`${l.p} – ${l.d}<br>`).join("")}
-   </div>`;
- }
- if(t==="persons"){
-  content.innerHTML=`
-   <div class="card">
-     <h3>👤 Personen</h3>
-     ${STATE.persons.map(p=>p.name).join("<br>") || "Keine Einträge"}
-   </div>`;
- }
- if(t==="calls"){
-  content.innerHTML=`
-   <div class="card">
-     <h3>📻 Einsätze</h3>
-     ${STATE.calls.map(c=>c.text).join("<br>") || "Keine Einsätze"}
-   </div>`;
- }
-}
-</script>
-
-</body>
-</html>
+    <button class="nav-btn" o
