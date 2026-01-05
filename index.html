@@ -144,20 +144,111 @@ main{
 
 <body>
 
-<!-- LOGIN ONLY -->
+<!-- LOGIN -->
 <div id="login">
   <div class="login-box">
     <h2>LSPD MDT</h2>
-    <input id="lu" placeholder="Benutzer">
-    <input id="lp" type="password" placeholder="Passwort">
-    <button onclick="login()">Anmelden</button>
+    <input id="loginUser" placeholder="Benutzer">
+    <input id="loginPass" type="password" placeholder="Passwort">
+    <button onclick="doLogin()">Anmelden</button>
     <div class="small">ADMIN / 9999</div>
   </div>
 </div>
 
-<!-- APP (ERST NACH LOGIN) -->
+<!-- APP -->
 <div id="app">
   <aside>
     <h1>MDT</h1>
-    <button class="nav-btn active" onclick="tab(this,'dashboard')">Leitstelle</button>
-    <button class="nav-btn" o
+    <button class="nav-btn active" onclick="switchTab(this,'dashboard')">Leitstelle</button>
+    <button class="nav-btn" onclick="switchTab(this,'rechner')">Strafrechner</button>
+    <button class="nav-btn" onclick="switchTab(this,'persons')">Personen</button>
+    <button class="nav-btn" onclick="switchTab(this,'calls')">Einsätze</button>
+    <button class="nav-btn" onclick="logout()">Logout</button>
+  </aside>
+  <main id="content"></main>
+</div>
+
+<script>
+/* ===== USERS ===== */
+const USERS = [
+  {u:"ADMIN",p:"9999",r:"admin"},
+  {u:"LSPD",p:"1234",r:"officer"},
+  {u:"CADET",p:"1111",r:"cadet"}
+];
+
+let CURRENT = null;
+
+/* ===== LOGIN ===== */
+function doLogin(){
+  const u = document.getElementById("loginUser").value.trim();
+  const p = document.getElementById("loginPass").value.trim();
+
+  const user = USERS.find(x=>x.u===u && x.p===p);
+  if(!user){
+    alert("Login fehlgeschlagen");
+    return;
+  }
+
+  CURRENT = user;
+  document.getElementById("login").remove();
+  document.getElementById("app").style.display="flex";
+  render("dashboard");
+}
+
+function logout(){
+  location.reload();
+}
+
+/* ===== STATE ===== */
+let STATE = {
+  persons:[],
+  calls:[],
+  laws:[
+    {p:"BtMG §2.1",d:"Drogenbesitz Klein",w:1,f:15000},
+    {p:"BtMG §2.2",d:"Drogenhandel",w:3,f:30000}
+  ]
+};
+
+/* ===== NAV ===== */
+function switchTab(btn,t){
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  render(t);
+}
+
+/* ===== RENDER ===== */
+function render(t){
+  if(t==="dashboard"){
+    content.innerHTML=`
+      <div class="card">
+        <h3>🚨 Leitstelle</h3>
+        Aktive Einsätze: ${STATE.calls.length}<br>
+        Personenakten: ${STATE.persons.length}
+      </div>`;
+  }
+  if(t==="rechner"){
+    content.innerHTML=`
+      <div class="card">
+        <h3>⚖️ Strafrechner</h3>
+        ${STATE.laws.map(l=>`${l.p} – ${l.d}<br>`).join("")}
+      </div>`;
+  }
+  if(t==="persons"){
+    content.innerHTML=`
+      <div class="card">
+        <h3>👤 Personen</h3>
+        ${STATE.persons.map(p=>p.name).join("<br>") || "Keine Einträge"}
+      </div>`;
+  }
+  if(t==="calls"){
+    content.innerHTML=`
+      <div class="card">
+        <h3>📻 Einsätze</h3>
+        ${STATE.calls.map(c=>c.text).join("<br>") || "Keine Einsätze"}
+      </div>`;
+  }
+}
+</script>
+
+</body>
+</html>
