@@ -36,18 +36,17 @@ body{
 }
 
 .login-box{
-  width:340px;
-  background:rgba(20,20,23,.94);
+  width:360px;
+  background:rgba(20,20,23,.96);
   border:1px solid var(--border);
-  border-radius:18px;
-  padding:28px;
-  box-shadow:0 40px 120px rgba(0,0,0,.8);
+  border-radius:20px;
+  padding:30px;
+  box-shadow:0 40px 120px rgba(0,0,0,.85);
 }
 
 .login-box h2{
   text-align:center;
-  font-weight:600;
-  margin-bottom:20px;
+  margin-bottom:22px;
 }
 
 input{
@@ -55,18 +54,18 @@ input{
   background:#0e0e10;
   border:1px solid var(--border);
   border-radius:12px;
-  padding:10px 12px;
+  padding:12px;
   color:var(--text);
-  margin-top:10px;
+  margin-top:12px;
 }
 
 button{
   width:100%;
-  margin-top:18px;
+  margin-top:20px;
   background:linear-gradient(180deg,#ff5aa5,#ff2f85);
   border:none;
-  border-radius:12px;
-  padding:10px;
+  border-radius:14px;
+  padding:12px;
   font-weight:600;
   color:white;
   cursor:pointer;
@@ -81,24 +80,20 @@ button{
 
 /* APP */
 #app{
-  display:none;
-  height:100vh;
-  width:100vw;
   display:flex;
+  height:100vh;
 }
 
 aside{
   width:230px;
-  background:rgba(18,18,20,.94);
+  background:rgba(18,18,20,.96);
   border-right:1px solid var(--border);
-  backdrop-filter: blur(30px);
   display:flex;
   flex-direction:column;
 }
 
 aside h1{
   font-size:14px;
-  font-weight:600;
   padding:18px;
   border-bottom:1px solid var(--border);
   color:var(--accent);
@@ -110,7 +105,6 @@ aside h1{
   border:none;
   color:var(--text);
   text-align:left;
-  font-size:13px;
   cursor:pointer;
 }
 
@@ -120,97 +114,74 @@ aside h1{
 main{
   flex:1;
   padding:24px;
-  overflow:auto;
 }
 
 .card{
-  background:rgba(24,24,28,.9);
+  background:rgba(24,24,28,.92);
   border:1px solid var(--border);
-  border-radius:20px;
-  padding:20px;
-  box-shadow:
-    0 20px 60px rgba(0,0,0,.6),
-    inset 0 1px 0 rgba(255,255,255,.04);
-  margin-bottom:20px;
-}
-
-.card h3{
-  margin:0 0 14px;
-  font-size:15px;
-  font-weight:600;
+  border-radius:22px;
+  padding:22px;
+  box-shadow:0 25px 70px rgba(0,0,0,.7);
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
+<!-- LOGIN IST ALLES -->
 <div id="login">
   <div class="login-box">
     <h2>LSPD MDT</h2>
-    <input id="loginUser" placeholder="Benutzer">
-    <input id="loginPass" type="password" placeholder="Passwort">
-    <button onclick="doLogin()">Anmelden</button>
+    <input id="user" placeholder="Benutzer">
+    <input id="pass" type="password" placeholder="Passwort">
+    <button onclick="login()">Anmelden</button>
     <div class="small">ADMIN / 9999</div>
   </div>
-</div>
-
-<!-- APP -->
-<div id="app">
-  <aside>
-    <h1>MDT</h1>
-    <button class="nav-btn active" onclick="switchTab(this,'dashboard')">Leitstelle</button>
-    <button class="nav-btn" onclick="switchTab(this,'rechner')">Strafrechner</button>
-    <button class="nav-btn" onclick="switchTab(this,'persons')">Personen</button>
-    <button class="nav-btn" onclick="switchTab(this,'calls')">Einsätze</button>
-    <button class="nav-btn" onclick="logout()">Logout</button>
-  </aside>
-  <main id="content"></main>
 </div>
 
 <script>
 /* ===== USERS ===== */
 const USERS = [
   {u:"ADMIN",p:"9999",r:"admin"},
-  {u:"LSPD",p:"1234",r:"officer"},
-  {u:"CADET",p:"1111",r:"cadet"}
+  {u:"LSPD",p:"1234",r:"officer"}
 ];
 
 let CURRENT = null;
 
 /* ===== LOGIN ===== */
-function doLogin(){
-  const u = document.getElementById("loginUser").value.trim();
-  const p = document.getElementById("loginPass").value.trim();
+function login(){
+  const u = user.value.trim();
+  const p = pass.value.trim();
 
-  const user = USERS.find(x=>x.u===u && x.p===p);
-  if(!user){
+  const found = USERS.find(x=>x.u===u && x.p===p);
+  if(!found){
     alert("Login fehlgeschlagen");
     return;
   }
 
-  CURRENT = user;
-  document.getElementById("login").remove();
-  document.getElementById("app").style.display="flex";
-  render("dashboard");
+  CURRENT = found;
+  document.body.innerHTML = "";
+  initApp();
 }
 
-function logout(){
-  location.reload();
+/* ===== APP INIT ===== */
+function initApp(){
+  document.body.innerHTML = `
+  <div id="app">
+    <aside>
+      <h1>MDT</h1>
+      <button class="nav-btn active" onclick="nav(this,'dash')">Leitstelle</button>
+      <button class="nav-btn" onclick="nav(this,'rechner')">Strafrechner</button>
+      <button class="nav-btn" onclick="nav(this,'personen')">Personen</button>
+      <button class="nav-btn" onclick="location.reload()">Logout</button>
+    </aside>
+    <main id="content"></main>
+  </div>`;
+  render("dash");
 }
-
-/* ===== STATE ===== */
-let STATE = {
-  persons:[],
-  calls:[],
-  laws:[
-    {p:"BtMG §2.1",d:"Drogenbesitz Klein",w:1,f:15000},
-    {p:"BtMG §2.2",d:"Drogenhandel",w:3,f:30000}
-  ]
-};
 
 /* ===== NAV ===== */
-function switchTab(btn,t){
+function nav(btn,t){
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
   render(t);
@@ -218,34 +189,15 @@ function switchTab(btn,t){
 
 /* ===== RENDER ===== */
 function render(t){
-  if(t==="dashboard"){
-    content.innerHTML=`
-      <div class="card">
-        <h3>🚨 Leitstelle</h3>
-        Aktive Einsätze: ${STATE.calls.length}<br>
-        Personenakten: ${STATE.persons.length}
-      </div>`;
+  const c = document.getElementById("content");
+  if(t==="dash"){
+    c.innerHTML = `<div class="card">🚨 Leitstelle<br>System bereit</div>`;
   }
   if(t==="rechner"){
-    content.innerHTML=`
-      <div class="card">
-        <h3>⚖️ Strafrechner</h3>
-        ${STATE.laws.map(l=>`${l.p} – ${l.d}<br>`).join("")}
-      </div>`;
+    c.innerHTML = `<div class="card">⚖️ Strafrechner folgt</div>`;
   }
-  if(t==="persons"){
-    content.innerHTML=`
-      <div class="card">
-        <h3>👤 Personen</h3>
-        ${STATE.persons.map(p=>p.name).join("<br>") || "Keine Einträge"}
-      </div>`;
-  }
-  if(t==="calls"){
-    content.innerHTML=`
-      <div class="card">
-        <h3>📻 Einsätze</h3>
-        ${STATE.calls.map(c=>c.text).join("<br>") || "Keine Einsätze"}
-      </div>`;
+  if(t==="personen"){
+    c.innerHTML = `<div class="card">👤 Personenakten folgen</div>`;
   }
 }
 </script>
