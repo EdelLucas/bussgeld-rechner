@@ -6,56 +6,140 @@
 
 <style>
 :root{
- --bg:#0b0b0c;
- --card:#1c1c1e;
- --accent:#ff4f9a;
- --muted:#9a9a9a;
+  --bg:#0a0a0b;
+  --panel:#141416;
+  --panel-soft:#1c1c1f;
+  --border:#2a2a2e;
+  --accent:#ff4f9a;
+  --text:#e6e6e8;
+  --muted:#9a9aa0;
 }
+
 *{box-sizing:border-box}
+
 body{
- margin:0;
- background:linear-gradient(180deg,#0b0b0c,#151517);
- font-family:-apple-system,BlinkMacSystemFont;
- color:#eee;
+  margin:0;
+  height:100vh;
+  display:flex;
+  background:
+    radial-gradient(1200px at 20% -20%, rgba(255,79,154,.08), transparent),
+    linear-gradient(180deg,#0a0a0b,#0f0f11);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color:var(--text);
 }
-header{
- display:flex;
- gap:8px;
- padding:12px;
- background:rgba(20,20,22,.85);
- backdrop-filter: blur(25px);
- border-bottom:1px solid #2a2a2c;
+
+/* ===== LOGIN ===== */
+#login{
+  margin:auto;
+  width:340px;
+  background:rgba(20,20,23,.92);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:28px;
+  box-shadow:0 40px 120px rgba(0,0,0,.8);
 }
+
+#login h2{
+  margin:0 0 20px;
+  font-weight:600;
+  text-align:center;
+}
+
+input{
+  width:100%;
+  background:#0e0e10;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:10px 12px;
+  color:var(--text);
+  margin-top:10px;
+}
+
 button{
- background:linear-gradient(180deg,#ff4f9a,#ff2f85);
- border:none;
- color:white;
- padding:8px 14px;
- border-radius:12px;
- font-weight:600;
- cursor:pointer;
+  background:linear-gradient(180deg,#ff5aa5,#ff2f85);
+  border:none;
+  border-radius:12px;
+  padding:10px 16px;
+  font-weight:600;
+  color:white;
+  cursor:pointer;
 }
-button.gray{
- background:#2c2c2e;
+
+button.secondary{
+  background:#2a2a2f;
+  color:var(--text);
 }
-.card{
- background:rgba(28,28,30,.95);
- border-radius:16px;
- padding:14px;
- margin:12px;
- box-shadow:0 10px 30px rgba(0,0,0,.6);
- backdrop-filter: blur(20px);
-}
-input,textarea{
- width:100%;
- padding:8px;
- margin-top:6px;
- background:#0f0f10;
- border:1px solid #333;
- color:white;
- border-radius:10px;
-}
+
 .hidden{display:none}
+
+/* ===== APP LAYOUT ===== */
+#app{
+  display:flex;
+  width:100%;
+  height:100%;
+}
+
+/* SIDEBAR */
+aside{
+  width:230px;
+  background:rgba(18,18,20,.92);
+  border-right:1px solid var(--border);
+  backdrop-filter: blur(30px);
+  display:flex;
+  flex-direction:column;
+}
+
+aside h1{
+  font-size:14px;
+  font-weight:600;
+  padding:18px;
+  border-bottom:1px solid var(--border);
+  color:var(--accent);
+}
+
+.nav-btn{
+  padding:12px 18px;
+  background:none;
+  border:none;
+  color:var(--text);
+  text-align:left;
+  font-size:13px;
+  cursor:pointer;
+}
+
+.nav-btn:hover{
+  background:#1f1f23;
+}
+
+.nav-btn.active{
+  background:#232329;
+  color:var(--accent);
+}
+
+/* CONTENT */
+main{
+  flex:1;
+  padding:24px;
+  overflow:auto;
+}
+
+.card{
+  background:rgba(24,24,28,.9);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:20px;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.6),
+    inset 0 1px 0 rgba(255,255,255,.04);
+  margin-bottom:20px;
+}
+
+.card h3{
+  margin:0 0 14px;
+  font-size:15px;
+  font-weight:600;
+}
+
 .small{font-size:12px;color:var(--muted)}
 </style>
 </head>
@@ -63,155 +147,91 @@ input,textarea{
 <body>
 
 <!-- LOGIN -->
-<div id="login" class="card">
-<h2>🔐 MDT Login</h2>
-<input id="lu" placeholder="Benutzer">
-<input id="lp" type="password" placeholder="Passwort">
-<br><br>
-<button onclick="login()">Login</button>
-<p class="small">Admin-Reset: Benutzer = ADMIN / Passwort = 9999</p>
+<div id="login">
+  <h2>LSPD MDT</h2>
+  <input id="lu" placeholder="Benutzer">
+  <input id="lp" type="password" placeholder="Passwort">
+  <br><br>
+  <button onclick="login()">Login</button>
+  <p class="small" style="margin-top:14px;text-align:center">
+    ADMIN / 9999
+  </p>
 </div>
 
 <!-- APP -->
 <div id="app" class="hidden">
-
-<header>
-<button onclick="tab('dashboard')">Leitstelle</button>
-<button onclick="tab('rechner')">Strafrechner</button>
-<button onclick="tab('persons')">Personen</button>
-<button onclick="tab('vehicles')">Fahrzeuge</button>
-<button onclick="tab('weapons')">Waffen</button>
-<button onclick="tab('calls')">Einsätze</button>
-<button id="adminBtn" class="hidden" onclick="tab('admin')">Admin</button>
-<button class="gray" onclick="logout()">Logout</button>
-</header>
-
-<div id="content"></div>
+  <aside>
+    <h1>MDT</h1>
+    <button class="nav-btn active" onclick="tab(this,'dashboard')">Leitstelle</button>
+    <button class="nav-btn" onclick="tab(this,'rechner')">Strafrechner</button>
+    <button class="nav-btn" onclick="tab(this,'persons')">Personen</button>
+    <button class="nav-btn" onclick="tab(this,'calls')">Einsätze</button>
+    <button class="nav-btn" onclick="logout()">Logout</button>
+  </aside>
+  <main id="content"></main>
 </div>
 
 <script>
-/* ================== LIVE SYNC ================== */
-const bc = new BroadcastChannel("mdt-sync");
-bc.onmessage = e => {
- STATE = e.data;
- render();
-};
-function sync(){
- bc.postMessage(STATE);
- save();
-}
-
-/* ================== STORAGE ================== */
-function save(){ localStorage.STATE = JSON.stringify(STATE); }
-function load(){ return JSON.parse(localStorage.STATE || "null"); }
-
-/* ================== USERS ================== */
-const USERS_DEFAULT = [
- {u:"ADMIN",p:"9999",r:"admin"},
- {u:"LSPD",p:"1234",r:"officer"},
- {u:"CADET",p:"1111",r:"cadet"}
-];
-if(!localStorage.USERS) localStorage.USERS = JSON.stringify(USERS_DEFAULT);
-
-/* ================== STATE ================== */
-let STATE = load() || {
+let CURRENT=null;
+let STATE={
  persons:[],
- vehicles:[],
- weapons:[],
  calls:[],
  laws:[
   {p:"BtMG §2.1",d:"Drogenbesitz Klein",w:1,f:15000},
   {p:"BtMG §2.2",d:"Drogenhandel",w:3,f:30000}
- ],
- audit:[]
+ ]
 };
 
-let CURRENT = null;
-
-/* ================== LOGIN ================== */
 function login(){
- const users = JSON.parse(localStorage.USERS);
- const u = users.find(x=>x.u===lu.value && x.p===lp.value);
- if(!u) return alert("Login fehlgeschlagen");
- CURRENT = u;
- loginDiv(true);
- document.getElementById("adminBtn").classList.toggle("hidden", u.r!=="admin");
- log(`Login: ${u.u}`);
- render();
+ if(lu.value==="ADMIN" && lp.value==="9999"){
+  CURRENT="ADMIN";
+  login.classList.add("hidden");
+  app.classList.remove("hidden");
+  render("dashboard");
+ } else alert("Login fehlgeschlagen");
 }
+
 function logout(){
- CURRENT=null;
- loginDiv(false);
-}
-function loginDiv(ok){
- login.classList.toggle("hidden",ok);
- app.classList.toggle("hidden",!ok);
+ location.reload();
 }
 
-/* ================== AUDIT ================== */
-function log(t){
- STATE.audit.unshift(`[${new Date().toLocaleTimeString()}] ${CURRENT.u}: ${t}`);
- STATE.audit = STATE.audit.slice(0,50);
- sync();
+function tab(btn,t){
+ document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+ btn.classList.add("active");
+ render(t);
 }
 
-/* ================== TABS ================== */
-function tab(t){
+function render(t){
  if(t==="dashboard"){
-  content.innerHTML=`<div class="card"><h3>🚨 Leitstelle</h3>
-  Aktive Einsätze: ${STATE.calls.length}<br>
-  Personenakten: ${STATE.persons.length}</div>`;
+  content.innerHTML=`
+   <div class="card">
+     <h3>🚨 Leitstelle</h3>
+     Aktive Einsätze: ${STATE.calls.length}<br>
+     Personenakten: ${STATE.persons.length}
+   </div>`;
  }
  if(t==="rechner"){
-  content.innerHTML=`<div class="card"><h3>⚖️ Strafrechner</h3>
-  ${STATE.laws.map(l=>`${l.p} – ${l.d} (${l.w}W / $${l.f})<br>`).join("")}
-  </div>`;
+  content.innerHTML=`
+   <div class="card">
+     <h3>⚖️ Strafrechner</h3>
+     ${STATE.laws.map(l=>`${l.p} – ${l.d}<br>`).join("")}
+   </div>`;
  }
  if(t==="persons"){
-  content.innerHTML=`<div class="card"><h3>👤 Personen</h3>
-  <input id="pn" placeholder="Name">
-  <button onclick="addPerson()">Hinzufügen</button><br><br>
-  ${STATE.persons.map(p=>`${p.name} (${p.wanteds}W)`).join("<br>")}
-  </div>`;
- }
- if(t==="vehicles"){
-  content.innerHTML=`<div class="card"><h3>🚗 Fahrzeuge</h3>
-  ${STATE.vehicles.map(v=>`${v.plate} ${v.model}`).join("<br>")}
-  </div>`;
- }
- if(t==="weapons"){
-  content.innerHTML=`<div class="card"><h3>🔫 Waffen</h3>
-  ${STATE.weapons.map(w=>`${w.serial} ${w.type}`).join("<br>")}
-  </div>`;
+  content.innerHTML=`
+   <div class="card">
+     <h3>👤 Personen</h3>
+     ${STATE.persons.map(p=>p.name).join("<br>") || "Keine Einträge"}
+   </div>`;
  }
  if(t==="calls"){
-  content.innerHTML=`<div class="card"><h3>📻 Einsätze</h3>
-  <input id="ct" placeholder="Einsatz">
-  <button onclick="addCall()">Hinzufügen</button><br><br>
-  ${STATE.calls.map(c=>c.text).join("<br>")}
-  </div>`;
- }
- if(t==="admin" && CURRENT.r==="admin"){
-  content.innerHTML=`<div class="card"><h3>🛠 Admin</h3>
-  <b>Audit-Log</b><br>
-  ${STATE.audit.join("<br>")}
-  </div>`;
+  content.innerHTML=`
+   <div class="card">
+     <h3>📻 Einsätze</h3>
+     ${STATE.calls.map(c=>c.text).join("<br>") || "Keine Einsätze"}
+   </div>`;
  }
 }
-
-/* ================== ACTIONS ================== */
-function addPerson(){
- STATE.persons.push({name:pn.value,wanteds:0});
- log("Person erstellt");
-}
-function addCall(){
- STATE.calls.push({text:ct.value});
- log("Einsatz erstellt");
-}
-
-/* ================== INIT ================== */
-render();
-function render(){ if(CURRENT) tab("dashboard"); }
 </script>
 
 </body>
