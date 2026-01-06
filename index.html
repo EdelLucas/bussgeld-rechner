@@ -5,22 +5,19 @@
 <title>LSPD MDT</title>
 
 <style>
+/* ================= MDT BASIS ================= */
 :root{
   --bg:#0b0b0d;
   --panel:#141417;
-  --panel2:#1d1d22;
   --border:#2a2a30;
   --accent:#ff4f9a;
   --text:#e8e8ea;
   --muted:#9a9aa2;
 }
-*{box-sizing:border-box}
+*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 body{
   margin:0;height:100vh;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background:
-    radial-gradient(1200px at 20% -20%, rgba(255,79,154,.08), transparent),
-    linear-gradient(180deg,#0b0b0d,#101014);
+  background:linear-gradient(180deg,#0b0b0d,#101014);
   color:var(--text);
 }
 
@@ -31,214 +28,174 @@ body{
 }
 .login-box{
   width:360px;padding:28px;
-  background:rgba(20,20,23,.96);
-  border:1px solid var(--border);
-  border-radius:20px;
-  box-shadow:0 40px 120px rgba(0,0,0,.85);
+  background:#141417;border:1px solid var(--border);
+  border-radius:18px;
 }
-.login-box h2{text-align:center;margin-bottom:20px}
 .login-box input{
   width:100%;padding:12px;margin-top:12px;
-  border-radius:12px;border:1px solid var(--border);
-  background:#0e0e11;color:var(--text);
+  background:#0e0e11;border:1px solid var(--border);
+  border-radius:10px;color:white;
 }
 .login-box button{
-  width:100%;margin-top:20px;
-  padding:12px;border:none;border-radius:14px;
-  background:linear-gradient(180deg,#ff5aa5,#ff2f85);
-  color:white;font-weight:600;cursor:pointer;
+  width:100%;margin-top:16px;
+  padding:12px;border:none;border-radius:12px;
+  background:#ff4f9a;color:white;font-weight:600;
 }
-.small{text-align:center;font-size:12px;color:var(--muted);margin-top:14px}
 
 /* APP */
 #app{display:flex;flex-direction:column;height:100vh}
-
-/* TOP NAV */
 nav{
-  height:58px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:0 18px;
-  background:rgba(18,18,21,.96);
-  border-bottom:1px solid var(--border);
+  height:56px;display:flex;align-items:center;
+  gap:10px;padding:0 18px;
+  background:#141417;border-bottom:1px solid var(--border);
 }
-nav .logo{
-  color:var(--accent);
-  font-weight:600;
-  margin-right:20px;
-}
+nav .logo{color:var(--accent);font-weight:600;margin-right:20px}
 .nav-btn{
-  background:none;
-  border:none;
-  color:var(--text);
-  padding:8px 14px;
-  border-radius:10px;
-  cursor:pointer;
+  background:none;border:none;color:var(--text);
+  padding:8px 14px;border-radius:10px;cursor:pointer;
 }
-.nav-btn:hover{background:#202026}
-.nav-btn.active{background:#24242b;color:var(--accent)}
+.nav-btn.active{background:#1f1f26;color:var(--accent)}
 .spacer{flex:1}
 
-main{
-  flex:1;
-  padding:24px;
-  overflow:auto;
-}
-
+main{flex:1;padding:20px;overflow:auto}
 .card{
-  background:rgba(26,26,30,.92);
-  border:1px solid var(--border);
-  border-radius:22px;
-  padding:22px;
-  box-shadow:0 25px 70px rgba(0,0,0,.7);
-  margin-bottom:20px;
+  background:#141417;border:1px solid var(--border);
+  border-radius:18px;padding:20px;
 }
 
-table{width:100%;border-collapse:collapse}
-td,th{padding:8px;font-size:13px;border-bottom:1px solid var(--border)}
-th{text-align:left;color:var(--muted)}
-
-.toggle{cursor:pointer;color:var(--accent)}
-input[type="text"]{
-  width:100%;padding:10px;
-  border-radius:10px;border:1px solid var(--border);
-  background:#0e0e11;color:var(--text);
+/* ================= STRAFRECHNER (GEKAPSELT) ================= */
+.penal *{user-select:none}
+.penal{
+  display:grid;
+  grid-template-columns:1fr 380px;
+  gap:15px;
 }
+.penal input{
+  width:100%;background:#0e0e11;border:1px solid #21262d;
+  padding:8px;border-radius:6px;color:white;
+}
+.penal .law-card{
+  background:#151921;border:1px solid #21262d;
+  border-radius:12px;margin-bottom:14px;overflow:hidden;
+}
+.penal table{width:100%;border-collapse:collapse}
+.penal td{
+  padding:7px;font-size:12px;border-bottom:1px solid #1a1e26;
+}
+.penal tr:hover{background:#1c222d;cursor:pointer}
+.penal .selected{background:#262c36;border-left:3px solid #ff2e7e}
+.penal .stars{color:#d4af37}
+
+/* =========================================================== */
 </style>
 </head>
-
 <body>
 
-<!-- LOGIN -->
 <div id="login">
   <div class="login-box">
     <h2>LSPD MDT</h2>
     <input id="user" placeholder="Benutzer">
     <input id="pass" type="password" placeholder="Passwort">
     <button onclick="login()">Anmelden</button>
-    <div class="small">ADMIN / 9999 · LSPD / 1234</div>
   </div>
 </div>
 
 <script>
 /* USERS */
-let USERS = JSON.parse(localStorage.users||"null") || [
-  {u:"ADMIN",p:"9999",r:"admin",active:true},
-  {u:"LSPD",p:"1234",r:"officer",active:true}
+const USERS=[
+ {u:"ADMIN",p:"9999",r:"admin",active:true},
+ {u:"LSPD",p:"1234",r:"officer",active:true}
 ];
-localStorage.users = JSON.stringify(USERS);
-
 let CURRENT=null;
 
 /* LOGIN */
 function login(){
-  const u=user.value.trim(), p=pass.value.trim();
-  const f=USERS.find(x=>x.u===u && x.p===p && x.active);
-  if(!f){alert("Login fehlgeschlagen");return;}
-  CURRENT=f;
-  document.body.innerHTML="";
-  initApp();
+ const u=user.value,p=pass.value;
+ const f=USERS.find(x=>x.u===u&&x.p===p&&x.active);
+ if(!f){alert("Login fehlgeschlagen");return;}
+ CURRENT=f;document.body.innerHTML="";initApp();
 }
 
-/* APP INIT */
+/* APP */
 function initApp(){
-  document.body.innerHTML=`
-  <div id="app">
-    <nav>
-      <div class="logo">MDT</div>
-      <button class="nav-btn active" onclick="nav(this,'leitstelle')">Leitstelle</button>
-      <button class="nav-btn" onclick="nav(this,'rechner')">Strafrechner</button>
-      <button class="nav-btn" onclick="nav(this,'personen')">Personen</button>
-      ${CURRENT.r==="admin"?`<button class="nav-btn" onclick="nav(this,'admin')">Admin</button>`:""}
-      <div class="spacer"></div>
-      <button class="nav-btn" onclick="logout()">Logout</button>
-    </nav>
-    <main id="content"></main>
-  </div>`;
-  render("leitstelle");
+ document.body.innerHTML=`
+ <div id="app">
+  <nav>
+   <div class="logo">MDT</div>
+   <button class="nav-btn active" onclick="nav(this,'leit')">Leitstelle</button>
+   <button class="nav-btn" onclick="nav(this,'rechner')">Strafrechner</button>
+   ${CURRENT.r==="admin"?`<button class="nav-btn" onclick="nav(this,'admin')">Admin</button>`:""}
+   <div class="spacer"></div>
+   <button class="nav-btn" onclick="location.reload()">Logout</button>
+  </nav>
+  <main id="content"></main>
+ </div>`;
+ render("leit");
 }
-
-function logout(){location.reload()}
-
-function nav(btn,t){
-  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
-  render(t);
+function nav(b,t){
+ document.querySelectorAll(".nav-btn").forEach(x=>x.classList.remove("active"));
+ b.classList.add("active");render(t);
 }
-
-/* DATA */
-let einsaetze=[];
-let personen=[];
-let strafpunkte=0;
 
 /* RENDER */
 function render(t){
-  const c=document.getElementById("content");
-
-  if(t==="leitstelle"){
-    c.innerHTML=`
-    <div class="card">
-      <h3>🚨 Leitstellen-Liveansicht</h3>
-      Aktive Einsätze: ${einsaetze.length}<br>
-      Personenakten: ${personen.length}
-    </div>`;
-  }
-
-  if(t==="rechner"){
-    c.innerHTML=`
-    <div class="card">
-      <h3>⚖️ Strafrechner</h3>
-      <p>Wanteds: <b>${strafpunkte}</b></p>
-      <button onclick="strafpunkte++;render('rechner')">Straftat hinzufügen</button>
-      <button onclick="strafpunkte=Math.max(1,strafpunkte-2);render('rechner')">Reue §35</button>
-    </div>`;
-  }
-
-  if(t==="personen"){
-    c.innerHTML=`
-    <div class="card">
-      <h3>👤 Personenakten</h3>
-      <input placeholder="Name" id="pname">
-      <button onclick="addPerson()">Hinzufügen</button>
-      <p>Gesamt: ${personen.length}</p>
-    </div>`;
-  }
-
-  if(t==="admin"){
-    c.innerHTML=`
-    <div class="card">
-      <h3>🔐 Admin-Panel</h3>
-      <table>
-        <tr><th>User</th><th>Rolle</th><th>Status</th></tr>
-        ${USERS.map((u,i)=>`
-          <tr>
-            <td>${u.u}</td>
-            <td class="toggle" onclick="toggleRole(${i})">${u.r}</td>
-            <td class="toggle" onclick="toggleActive(${i})">${u.active?"aktiv":"gesperrt"}</td>
-          </tr>`).join("")}
-      </table>
-    </div>`;
-  }
+ const c=document.getElementById("content");
+ if(t==="leit") c.innerHTML=`<div class="card">🚨 Leitstellen-Liveansicht</div>`;
+ if(t==="admin") c.innerHTML=`<div class="card">🔐 Admin-Panel</div>`;
+ if(t==="rechner") renderPenal(c);
 }
 
-/* ACTIONS */
-function addPerson(){
-  const n=document.getElementById("pname").value.trim();
-  if(!n)return;
-  personen.push({n});
-  render("personen");
+/* ================= STRAFRECHNER LOGIK ================= */
+function renderPenal(c){
+ c.innerHTML=`
+ <div class="card penal">
+  <div id="lawList"></div>
+  <div>
+   <b>Max. Geldstrafe</b>
+   <div id="outM">$0</div>
+   <b>Wanteds</b>
+   <div id="outW">0</div>
+   <div id="entry" style="margin-top:10px;color:#888">Wähle Strafen…</div>
+  </div>
+ </div>`;
+ penalInit();
 }
 
-function toggleRole(i){
-  USERS[i].r=USERS[i].r==="admin"?"officer":"admin";
-  localStorage.users=JSON.stringify(USERS);
-  render("admin");
+const laws=[
+ {p:"§3.1",n:"Beleidigung",m:10000,w:0},
+ {p:"§4.1",n:"Mord",m:30000,w:4},
+ {p:"§11",n:"Raub",m:25000,w:3}
+];
+let sel=[];
+
+function penalInit(){
+ const l=document.getElementById("lawList");
+ l.innerHTML="";
+ laws.forEach((x,i)=>{
+  l.innerHTML+=`
+  <div class="law-card">
+   <table>
+    <tr onclick="toggleLaw(${i})" class="${sel.includes(i)?"selected":""}">
+     <td style="color:#ff4f9a">${x.p}</td>
+     <td>${x.n}</td>
+     <td class="stars">${"★".repeat(x.w)}</td>
+     <td style="text-align:right">$${x.m}</td>
+    </tr>
+   </table>
+  </div>`;
+ });
+ updatePenal();
 }
-function toggleActive(i){
-  USERS[i].active=!USERS[i].active;
-  localStorage.users=JSON.stringify(USERS);
-  render("admin");
+function toggleLaw(i){
+ sel.includes(i)?sel=sel.filter(x=>x!==i):sel.push(i);
+ penalInit();
+}
+function updatePenal(){
+ let m=0,w=0;
+ sel.forEach(i=>{m=Math.max(m,laws[i].m);w+=laws[i].w});
+ outM.innerText="$"+m;
+ outW.innerText=w;
+ entry.innerText=sel.map(i=>laws[i].p).join(", ")||"Wähle Strafen…";
 }
 </script>
 
