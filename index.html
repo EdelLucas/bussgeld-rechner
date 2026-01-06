@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>LSPD / FIB MDT</title>
+<title>MDT System</title>
 
 <style>
 :root{
@@ -11,18 +11,15 @@
   --panel2:#1c1c22;
   --border:#2a2a30;
   --accent:#ff4f9a;
-  --green:#3ddc84;
-  --red:#ff5c5c;
-  --orange:#ffb84d;
   --text:#e8e8ea;
   --muted:#9a9aa2;
+  --gold:#ffd479;
 }
 
 *{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 body{margin:0;height:100vh;background:var(--bg);color:var(--text)}
 
-/* ========== LOGIN ========== */
-#login{
+#loginScreen{
   position:fixed;inset:0;
   display:flex;align-items:center;justify-content:center;
 }
@@ -43,9 +40,9 @@ body{margin:0;height:100vh;background:var(--bg);color:var(--text)}
   border:none;border-radius:12px;
   background:var(--accent);
   color:white;font-weight:600;
+  cursor:pointer;
 }
 
-/* ========== APP ========== */
 #app{display:none;height:100vh;flex-direction:column}
 
 nav{
@@ -67,7 +64,6 @@ nav{
 
 main{flex:1;overflow:auto;padding:20px}
 
-/* ========== CARDS ========== */
 .card{
   background:var(--panel);
   border:1px solid var(--border);
@@ -76,55 +72,31 @@ main{flex:1;overflow:auto;padding:20px}
   margin-bottom:16px;
 }
 
-/* ========== LEITSTELLE ========== */
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
   gap:16px;
 }
-.status{
-  padding:6px 10px;border-radius:8px;
-  font-size:12px;display:inline-block;
-}
-.green{background:rgba(61,220,132,.15);color:var(--green)}
-.red{background:rgba(255,92,92,.15);color:var(--red)}
-.orange{background:rgba(255,184,77,.15);color:var(--orange)}
 
 .unit{
   background:var(--panel2);
   border-radius:12px;
-  padding:10px;
+  padding:12px;
 }
-.unit h4{margin:0 0 6px 0;color:#ffd479}
-
-/* ========== STRAFRECHNER ========== */
-.penal{
-  display:grid;
-  grid-template-columns:1fr 360px;
-  gap:16px;
-}
-.law{
-  background:var(--panel2);
-  border-radius:12px;
-  padding:8px;
-  cursor:pointer;
-  border-left:4px solid transparent;
-}
-.law.selected{border-left:4px solid var(--accent)}
-.law:hover{background:#24242c}
+.unit h4{margin:0 0 6px;color:var(--gold)}
 .small{font-size:12px;color:var(--muted)}
-.gold{color:#ffd479}
 </style>
 </head>
 <body>
 
 <!-- LOGIN -->
-<div id="login">
+<div id="loginScreen">
   <div class="login-box">
     <h2>MDT Login</h2>
-    <input id="user" placeholder="Benutzer">
-    <input id="pass" type="password" placeholder="Passwort">
-    <button onclick="login()">Anmelden</button>
+    <input id="loginUser" placeholder="Benutzer">
+    <input id="loginPass" type="password" placeholder="Passwort">
+    <button onclick="doLogin()">Anmelden</button>
+    </div>
   </div>
 </div>
 
@@ -141,84 +113,74 @@ main{flex:1;overflow:auto;padding:20px}
 </div>
 
 <script>
-/* ===== USERS ===== */
+/* USERS */
 const USERS=[
  {u:"ADMIN",p:"9999",r:"admin"},
  {u:"LSPD",p:"1234",r:"officer"}
 ];
 let CURRENT=null;
 
-/* ===== LOGIN ===== */
-function login(){
- const f=USERS.find(x=>x.u===user.value && x.p===pass.value);
- if(!f){alert("Login fehlgeschlagen");return;}
- CURRENT=f;
- login.style.display="none";
- app.style.display="flex";
+/* LOGIN */
+function doLogin(){
+ const u=document.getElementById("loginUser").value.trim();
+ const p=document.getElementById("loginPass").value.trim();
+ const found=USERS.find(x=>x.u===u && x.p===p);
+ if(!found){
+   alert("Login fehlgeschlagen");
+   return;
+ }
+ CURRENT=found;
+ document.getElementById("loginScreen").style.display="none";
+ document.getElementById("app").style.display="flex";
  renderLeit();
 }
 
-/* ===== NAV ===== */
-function nav(b,t){
- document.querySelectorAll(".nav-btn").forEach(x=>x.classList.remove("active"));
- b.classList.add("active");
- t==="leit"?renderLeit():renderRechner();
+/* NAV */
+function nav(btn,view){
+ document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+ btn.classList.add("active");
+ view==="leit"?renderLeit():renderRechner();
 }
 
-/* ===== LEITSTELLE ===== */
+/* LEITSTELLE */
 function renderLeit(){
  content.innerHTML=`
  <div class="card">
-  <b>🟢 Grün:</b> Im Dienst &nbsp;
-  <b>🟠 Orange:</b> AFK &nbsp;
-  <b>🔴 Rot:</b> Außer Dienst
+  Eingeloggt als <b>${CURRENT.u}</b> (${CURRENT.r})
  </div>
-
  <div class="grid">
-  <div class="unit">
-   <h4>ALPHA 01</h4>
-   <span class="status green">Streife</span><br>
-   Jason Kimiko – 28-05-050
-  </div>
-  <div class="unit">
-   <h4>BRAVO 01</h4>
-   <span class="status orange">AFK</span>
-  </div>
-  <div class="unit">
-   <h4>CHARLIE 01</h4>
-   <span class="status red">Außer Dienst</span>
-  </div>
+  <div class="unit"><h4>ALPHA 01</h4>Streife</div>
+  <div class="unit"><h4>BRAVO 01</h4>AFK</div>
+  <div class="unit"><h4>CHARLIE 01</h4>Außer Dienst</div>
  </div>`;
 }
 
-/* ===== STRAFRECHNER ===== */
+/* STRAFRECHNER */
 const LAWS=[
- {cat:"Psychische & Physische Integrität",p:"StGB §3.1",n:"Beleidigung",w:1,m:10000},
- {cat:"Psychische & Physische Integrität",p:"StGB §4.1",n:"Mord / Versuch",w:4,m:30000},
- {cat:"Wirtschaft",p:"StGB §11",n:"Raub",w:3,m:25000},
- {cat:"StVO",p:"StVO §8",n:"Geschwindigkeit 61-100",w:0,m:15000},
- {cat:"WaffG",p:"WaffG §5.1",n:"Illegale Waffen",w:3,m:10000}
+ {p:"StGB §3.1",n:"Beleidigung",w:1,m:10000},
+ {p:"StGB §4.1",n:"Mord / Versuch",w:4,m:30000},
+ {p:"StGB §11",n:"Raub",w:3,m:25000},
+ {p:"StVO §8",n:"Geschwindigkeit",w:0,m:15000},
+ {p:"WaffG §5.1",n:"Illegale Waffen",w:3,m:10000}
 ];
 let SEL=[];
 
 function renderRechner(){
  let list=LAWS.map((x,i)=>`
-  <div class="law ${SEL.includes(i)?"selected":""}" onclick="toggle(${i})">
-   <b>${x.p}</b> – ${x.n}<br>
-   <span class="small">⭐ ${x.w} | <span class="gold">$${x.m}</span></span>
-  </div>`).join("");
+ <div class="unit" onclick="toggle(${i})" style="cursor:pointer">
+  <b>${x.p}</b> – ${x.n}<br>
+  <span class="small">⭐ ${x.w} | $${x.m}</span>
+ </div>`).join("");
 
- let sumW=0,maxM=0;
- SEL.forEach(i=>{sumW+=LAWS[i].w;maxM=Math.max(maxM,LAWS[i].m)});
+ let w=0,m=0;
+ SEL.forEach(i=>{w+=LAWS[i].w;m=Math.max(m,LAWS[i].m)});
 
  content.innerHTML=`
- <div class="penal">
+ <div class="grid">
   <div>${list}</div>
   <div class="card">
-   <b>Max. Geldstrafe</b><div class="gold">$${maxM}</div>
-   <b>Wanteds</b><div>${sumW}</div>
-   <hr>
-   ${SEL.map(i=>LAWS[i].p).join(", ")||"—"}
+   <b>Max. Geldstrafe</b><div class="gold">$${m}</div>
+   <b>Wanteds</b><div>${w}</div>
   </div>
  </div>`;
 }
