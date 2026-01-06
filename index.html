@@ -6,199 +6,210 @@
 
 <style>
 :root{
-  --bg:#0a0a0b;
-  --panel:#141416;
-  --panel-soft:#1c1c1f;
-  --border:#2a2a2e;
+  --bg:#0b0b0d;
+  --panel:#141417;
+  --panel2:#1d1d22;
+  --border:#2a2a30;
   --accent:#ff4f9a;
-  --text:#e6e6e8;
-  --muted:#9a9aa0;
+  --text:#e8e8ea;
+  --muted:#9a9aa2;
 }
 *{box-sizing:border-box}
-
 body{
-  margin:0;
-  height:100vh;
+  margin:0;height:100vh;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   background:
     radial-gradient(1200px at 20% -20%, rgba(255,79,154,.08), transparent),
-    linear-gradient(180deg,#0a0a0b,#0f0f11);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    linear-gradient(180deg,#0b0b0d,#101014);
   color:var(--text);
 }
+button,input{font-family:inherit}
 
 /* LOGIN */
 #login{
-  position:fixed;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  position:fixed;inset:0;
+  display:flex;align-items:center;justify-content:center;
 }
-
 .login-box{
-  width:360px;
-  background:rgba(20,20,23,.96);
+  width:360px;padding:28px;
+  background:rgba(20,20,23,.95);
   border:1px solid var(--border);
   border-radius:20px;
-  padding:30px;
   box-shadow:0 40px 120px rgba(0,0,0,.85);
 }
-
-.login-box h2{
-  text-align:center;
-  margin-bottom:22px;
+.login-box h2{text-align:center;margin-bottom:20px}
+.login-box input{
+  width:100%;padding:12px;margin-top:12px;
+  border-radius:12px;border:1px solid var(--border);
+  background:#0e0e11;color:var(--text);
 }
-
-input{
-  width:100%;
-  background:#0e0e10;
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:12px;
-  color:var(--text);
-  margin-top:12px;
-}
-
-button{
-  width:100%;
-  margin-top:20px;
+.login-box button{
+  width:100%;margin-top:20px;
+  padding:12px;border:none;border-radius:14px;
   background:linear-gradient(180deg,#ff5aa5,#ff2f85);
-  border:none;
-  border-radius:14px;
-  padding:12px;
-  font-weight:600;
-  color:white;
-  cursor:pointer;
+  color:white;font-weight:600;cursor:pointer;
 }
-
-.small{
-  margin-top:14px;
-  text-align:center;
-  font-size:12px;
-  color:var(--muted);
-}
+.small{text-align:center;font-size:12px;color:var(--muted);margin-top:14px}
 
 /* APP */
-#app{
-  display:flex;
-  height:100vh;
-}
-
+#app{display:flex;height:100vh}
 aside{
   width:230px;
-  background:rgba(18,18,20,.96);
+  background:rgba(18,18,21,.96);
   border-right:1px solid var(--border);
-  display:flex;
-  flex-direction:column;
 }
-
 aside h1{
-  font-size:14px;
-  padding:18px;
+  padding:18px;font-size:14px;
   border-bottom:1px solid var(--border);
   color:var(--accent);
 }
-
 .nav-btn{
-  padding:12px 18px;
-  background:none;
-  border:none;
-  color:var(--text);
-  text-align:left;
+  width:100%;padding:12px 18px;
+  background:none;border:none;
+  color:var(--text);text-align:left;
   cursor:pointer;
 }
-
-.nav-btn:hover{background:#1f1f23}
-.nav-btn.active{background:#232329;color:var(--accent)}
-
-main{
-  flex:1;
-  padding:24px;
-}
+.nav-btn:hover{background:#202026}
+.nav-btn.active{background:#24242b;color:var(--accent)}
+main{flex:1;padding:24px;overflow:auto}
 
 .card{
-  background:rgba(24,24,28,.92);
+  background:rgba(26,26,30,.92);
   border:1px solid var(--border);
   border-radius:22px;
   padding:22px;
   box-shadow:0 25px 70px rgba(0,0,0,.7);
+  margin-bottom:20px;
 }
+h3{margin-top:0}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse}
+td,th{padding:8px;font-size:13px;border-bottom:1px solid var(--border)}
+th{text-align:left;color:var(--muted)}
+.toggle{cursor:pointer;color:var(--accent)}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN IST ALLES -->
 <div id="login">
   <div class="login-box">
     <h2>LSPD MDT</h2>
     <input id="user" placeholder="Benutzer">
     <input id="pass" type="password" placeholder="Passwort">
-    <button onclick="login()">Anmelden</button>
-    <div class="small">ADMIN / 9999</div>
+    <button onclick="doLogin()">Anmelden</button>
+    <div class="small">ADMIN / 9999 · LSPD / 1234</div>
   </div>
 </div>
 
 <script>
 /* ===== USERS ===== */
-const USERS = [
-  {u:"ADMIN",p:"9999",r:"admin"},
-  {u:"LSPD",p:"1234",r:"officer"}
+let USERS = JSON.parse(localStorage.users||"null") || [
+  {u:"ADMIN",p:"9999",r:"admin",active:true},
+  {u:"LSPD",p:"1234",r:"officer",active:true}
 ];
+localStorage.users = JSON.stringify(USERS);
 
 let CURRENT = null;
 
 /* ===== LOGIN ===== */
-function login(){
-  const u = user.value.trim();
-  const p = pass.value.trim();
-
-  const found = USERS.find(x=>x.u===u && x.p===p);
-  if(!found){
-    alert("Login fehlgeschlagen");
-    return;
-  }
-
-  CURRENT = found;
-  document.body.innerHTML = "";
+function doLogin(){
+  const u=user.value.trim();
+  const p=pass.value.trim();
+  const found=USERS.find(x=>x.u===u && x.p===p && x.active);
+  if(!found){alert("Login fehlgeschlagen");return;}
+  CURRENT=found;
+  document.body.innerHTML="";
   initApp();
 }
 
-/* ===== APP INIT ===== */
+/* ===== APP ===== */
 function initApp(){
-  document.body.innerHTML = `
+  document.body.innerHTML=`
   <div id="app">
     <aside>
       <h1>MDT</h1>
-      <button class="nav-btn active" onclick="nav(this,'dash')">Leitstelle</button>
+      <button class="nav-btn active" onclick="nav(this,'leitstelle')">Leitstelle</button>
       <button class="nav-btn" onclick="nav(this,'rechner')">Strafrechner</button>
       <button class="nav-btn" onclick="nav(this,'personen')">Personen</button>
-      <button class="nav-btn" onclick="location.reload()">Logout</button>
+      ${CURRENT.r==="admin"?`<button class="nav-btn" onclick="nav(this,'admin')">Admin</button>`:""}
+      <button class="nav-btn" onclick="logout()">Logout</button>
     </aside>
     <main id="content"></main>
   </div>`;
-  render("dash");
+  render("leitstelle");
 }
 
-/* ===== NAV ===== */
+function logout(){location.reload()}
+
 function nav(btn,t){
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
   render(t);
 }
 
+/* ===== DATA ===== */
+let einsaetze=[];
+let personen=[];
+
 /* ===== RENDER ===== */
 function render(t){
-  const c = document.getElementById("content");
-  if(t==="dash"){
-    c.innerHTML = `<div class="card">🚨 Leitstelle<br>System bereit</div>`;
+  const c=document.getElementById("content");
+  if(t==="leitstelle"){
+    c.innerHTML=`
+    <div class="card">
+      <h3>🚨 Leitstelle</h3>
+      Aktive Einsätze: ${einsaetze.length}<br>
+      Personenakten: ${personen.length}
+    </div>`;
   }
+
   if(t==="rechner"){
-    c.innerHTML = `<div class="card">⚖️ Strafrechner folgt</div>`;
+    c.innerHTML=`
+    <div class="card">
+      <h3>⚖️ Strafrechner</h3>
+      <button onclick="alert('Strafen können hier erweitert werden')">Strafe hinzufügen</button>
+      <p style="color:var(--muted)">Reue §35 & Rechte-Schalter integrierbar</p>
+    </div>`;
   }
+
   if(t==="personen"){
-    c.innerHTML = `<div class="card">👤 Personenakten folgen</div>`;
+    c.innerHTML=`
+    <div class="card">
+      <h3>👤 Personenakten</h3>
+      <button onclick="personen.push({});render('personen')">Neue Person</button>
+      <p>Gesamt: ${personen.length}</p>
+    </div>`;
   }
+
+  if(t==="admin"){
+    c.innerHTML=`
+    <div class="card">
+      <h3>🔐 Admin-Panel</h3>
+      <table>
+        <tr><th>User</th><th>Rolle</th><th>Status</th></tr>
+        ${USERS.map((u,i)=>`
+          <tr>
+            <td>${u.u}</td>
+            <td class="toggle" onclick="toggleRole(${i})">${u.r}</td>
+            <td class="toggle" onclick="toggleActive(${i})">${u.active?"aktiv":"gesperrt"}</td>
+          </tr>`).join("")}
+      </table>
+    </div>`;
+  }
+}
+
+/* ===== ADMIN ===== */
+function toggleRole(i){
+  USERS[i].r=USERS[i].r==="admin"?"officer":"admin";
+  localStorage.users=JSON.stringify(USERS);
+  render("admin");
+}
+function toggleActive(i){
+  USERS[i].active=!USERS[i].active;
+  localStorage.users=JSON.stringify(USERS);
+  render("admin");
 }
 </script>
 
