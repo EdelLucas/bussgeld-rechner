@@ -2,114 +2,116 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>MDT System</title>
+<title>LSPD MDT</title>
 
 <style>
 :root{
-  --bg:#0b0b0d;
-  --panel:#141417;
-  --panel2:#1c1c22;
-  --border:#2a2a30;
-  --accent:#ff4f9a;
-  --text:#e8e8ea;
-  --muted:#9a9aa2;
-  --gold:#ffd479;
+ --bg:#0b0b0d;
+ --panel:#15151a;
+ --panel2:#1f1f26;
+ --border:#2c2c33;
+ --accent:#ff4f9a;
+ --text:#e9e9ec;
+ --muted:#9a9aa3;
 }
-
 *{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-body{margin:0;height:100vh;background:var(--bg);color:var(--text)}
+body{margin:0;background:var(--bg);color:var(--text);height:100vh}
 
+/* LOGIN */
 #loginScreen{
-  position:fixed;inset:0;
-  display:flex;align-items:center;justify-content:center;
+ position:fixed;inset:0;
+ display:flex;align-items:center;justify-content:center;
+ background:radial-gradient(circle at top,#1a0f17,#000);
 }
-.login-box{
-  width:360px;padding:28px;
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:18px;
+.login{
+ width:360px;padding:26px;
+ background:var(--panel);
+ border-radius:18px;
+ border:1px solid var(--border);
 }
-.login-box h2{text-align:center;margin-bottom:20px}
-.login-box input{
-  width:100%;padding:12px;margin-bottom:12px;
-  background:#0e0e11;border:1px solid var(--border);
-  border-radius:10px;color:white;
+.login h2{text-align:center;margin-bottom:18px}
+.login input{
+ width:100%;padding:12px;margin-bottom:12px;
+ border-radius:10px;border:1px solid var(--border);
+ background:#0f0f13;color:white;
 }
-.login-box button{
-  width:100%;padding:12px;
-  border:none;border-radius:12px;
-  background:var(--accent);
-  color:white;font-weight:600;
-  cursor:pointer;
+.login button{
+ width:100%;padding:12px;
+ border:none;border-radius:12px;
+ background:var(--accent);
+ color:white;font-weight:600;
+ cursor:pointer;
 }
 
+/* APP */
 #app{display:none;height:100vh;flex-direction:column}
 
 nav{
-  height:56px;display:flex;align-items:center;
-  padding:0 18px;gap:10px;
-  background:var(--panel);
-  border-bottom:1px solid var(--border);
+ height:58px;display:flex;align-items:center;
+ padding:0 16px;
+ background:var(--panel);
+ border-bottom:1px solid var(--border);
 }
 .logo{color:var(--accent);font-weight:700;margin-right:20px}
-.nav-btn{
-  background:none;border:none;
-  color:var(--text);
-  padding:8px 14px;
-  border-radius:10px;
-  cursor:pointer;
+.navbtn{
+ background:none;border:none;
+ color:var(--text);
+ padding:8px 14px;border-radius:10px;
+ cursor:pointer;
 }
-.nav-btn.active{background:var(--panel2);color:var(--accent)}
+.navbtn.active{background:var(--panel2);color:var(--accent)}
 .spacer{flex:1}
 
-main{flex:1;overflow:auto;padding:20px}
+main{flex:1;overflow:auto;padding:18px}
 
 .card{
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:18px;
-  padding:16px;
-  margin-bottom:16px;
+ background:var(--panel);
+ border:1px solid var(--border);
+ border-radius:18px;
+ padding:16px;
+ margin-bottom:16px;
 }
-
 .grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-  gap:16px;
+ display:grid;
+ grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+ gap:16px;
 }
-
 .unit{
-  background:var(--panel2);
-  border-radius:12px;
-  padding:12px;
+ background:var(--panel2);
+ border-radius:14px;
+ padding:14px;
+ cursor:pointer;
 }
-.unit h4{margin:0 0 6px;color:var(--gold)}
+.unit:hover{outline:1px solid var(--accent)}
 .small{font-size:12px;color:var(--muted)}
+h3{margin-top:0}
 </style>
 </head>
 <body>
 
 <!-- LOGIN -->
 <div id="loginScreen">
-  <div class="login-box">
-    <h2>MDT Login</h2>
-    <input id="loginUser" placeholder="Benutzer">
-    <input id="loginPass" type="password" placeholder="Passwort">
-    <button onclick="doLogin()">Anmelden</button>
-    </div>
+ <div class="login">
+  <h2>LSPD MDT</h2>
+  <input id="u" placeholder="Benutzer">
+  <input id="p" type="password" placeholder="Passwort">
+  <button onclick="doLogin()">Anmelden</button>
   </div>
+ </div>
 </div>
 
 <!-- APP -->
 <div id="app">
-  <nav>
-    <div class="logo">MDT</div>
-    <button class="nav-btn active" onclick="nav(this,'leit')">Leitstelle</button>
-    <button class="nav-btn" onclick="nav(this,'rechner')">Strafrechner</button>
-    <div class="spacer"></div>
-    <button class="nav-btn" onclick="location.reload()">Logout</button>
-  </nav>
-  <main id="content"></main>
+ <nav>
+  <div class="logo">MDT</div>
+  <button class="navbtn active" onclick="nav(this,'leit')">Leitstelle</button>
+  <button class="navbtn" onclick="nav(this,'rechner')">Strafrechner</button>
+  <button class="navbtn" onclick="nav(this,'personen')">Personen</button>
+  <button class="navbtn adminOnly" onclick="nav(this,'admin')">Admin</button>
+  <div class="spacer"></div>
+  <button class="navbtn" onclick="logout()">Logout</button>
+ </nav>
+ <main id="content"></main>
 </div>
 
 <script>
@@ -118,76 +120,96 @@ const USERS=[
  {u:"ADMIN",p:"9999",r:"admin"},
  {u:"LSPD",p:"1234",r:"officer"}
 ];
-let CURRENT=null;
+let USER=null;
 
 /* LOGIN */
 function doLogin(){
- const u=document.getElementById("loginUser").value.trim();
- const p=document.getElementById("loginPass").value.trim();
- const found=USERS.find(x=>x.u===u && x.p===p);
- if(!found){
-   alert("Login fehlgeschlagen");
-   return;
- }
- CURRENT=found;
+ const u=document.getElementById("u").value.trim();
+ const p=document.getElementById("p").value.trim();
+ const f=USERS.find(x=>x.u===u && x.p===p);
+ if(!f){alert("Login fehlgeschlagen");return;}
+ USER=f;
  document.getElementById("loginScreen").style.display="none";
  document.getElementById("app").style.display="flex";
+ document.querySelectorAll(".adminOnly")
+  .forEach(e=>e.style.display=USER.r==="admin"?"block":"none");
  renderLeit();
 }
+function logout(){location.reload();}
 
 /* NAV */
-function nav(btn,view){
- document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
- btn.classList.add("active");
- view==="leit"?renderLeit():renderRechner();
+function nav(b,v){
+ document.querySelectorAll(".navbtn").forEach(x=>x.classList.remove("active"));
+ b.classList.add("active");
+ if(v==="leit")renderLeit();
+ if(v==="rechner")renderRechner();
+ if(v==="personen")renderPersonen();
+ if(v==="admin")renderAdmin();
 }
 
 /* LEITSTELLE */
 function renderLeit(){
  content.innerHTML=`
  <div class="card">
-  Eingeloggt als <b>${CURRENT.u}</b> (${CURRENT.r})
+  Eingeloggt als <b>${USER.u}</b> (${USER.r})
  </div>
  <div class="grid">
-  <div class="unit"><h4>ALPHA 01</h4>Streife</div>
-  <div class="unit"><h4>BRAVO 01</h4>AFK</div>
-  <div class="unit"><h4>CHARLIE 01</h4>Außer Dienst</div>
+  <div class="unit"><h3>ALPHA-01</h3>Streife</div>
+  <div class="unit"><h3>BRAVO-01</h3>Funkpause</div>
+  <div class="unit"><h3>DISPATCH</h3>Leitstelle</div>
  </div>`;
 }
 
 /* STRAFRECHNER */
 const LAWS=[
- {p:"StGB §3.1",n:"Beleidigung",w:1,m:10000},
- {p:"StGB §4.1",n:"Mord / Versuch",w:4,m:30000},
- {p:"StGB §11",n:"Raub",w:3,m:25000},
- {p:"StVO §8",n:"Geschwindigkeit",w:0,m:15000},
- {p:"WaffG §5.1",n:"Illegale Waffen",w:3,m:10000}
+ {n:"Beleidigung",w:1,m:10000},
+ {n:"Raub",w:3,m:25000},
+ {n:"Illegale Waffen",w:3,m:15000},
+ {n:"Mord",w:4,m:30000}
 ];
 let SEL=[];
-
 function renderRechner(){
  let list=LAWS.map((x,i)=>`
- <div class="unit" onclick="toggle(${i})" style="cursor:pointer">
-  <b>${x.p}</b> – ${x.n}<br>
+ <div class="unit" onclick="t(${i})">
+  <b>${x.n}</b><br>
   <span class="small">⭐ ${x.w} | $${x.m}</span>
  </div>`).join("");
-
  let w=0,m=0;
  SEL.forEach(i=>{w+=LAWS[i].w;m=Math.max(m,LAWS[i].m)});
-
  content.innerHTML=`
  <div class="grid">
   <div>${list}</div>
   <div class="card">
-   <b>Max. Geldstrafe</b><div class="gold">$${m}</div>
    <b>Wanteds</b><div>${w}</div>
+   <b>Max Geld</b><div>$${m}</div>
   </div>
  </div>`;
 }
-
-function toggle(i){
+function t(i){
  SEL.includes(i)?SEL=SEL.filter(x=>x!==i):SEL.push(i);
  renderRechner();
+}
+
+/* PERSONEN */
+function renderPersonen(){
+ content.innerHTML=`
+ <div class="card">
+  <h3>Personenakten</h3>
+  <div class="small">Backend-fähig vorbereitet</div>
+ </div>`;
+}
+
+/* ADMIN */
+function renderAdmin(){
+ if(USER.r!=="admin")return;
+ content.innerHTML=`
+ <div class="card">
+  <h3>Admin Panel</h3>
+  🔐 Benutzerverwaltung<br>
+  🧾 Gesetze editierbar<br>
+  📜 Audit-Log vorbereitet<br>
+  🌐 Backend / WebSocket ready
+ </div>`;
 }
 </script>
 </body>
