@@ -23,7 +23,6 @@ body{
     linear-gradient(180deg,#0b0b0d,#101014);
   color:var(--text);
 }
-button,input{font-family:inherit}
 
 /* LOGIN */
 #login{
@@ -32,7 +31,7 @@ button,input{font-family:inherit}
 }
 .login-box{
   width:360px;padding:28px;
-  background:rgba(20,20,23,.95);
+  background:rgba(20,20,23,.96);
   border:1px solid var(--border);
   border-radius:20px;
   box-shadow:0 40px 120px rgba(0,0,0,.85);
@@ -52,26 +51,40 @@ button,input{font-family:inherit}
 .small{text-align:center;font-size:12px;color:var(--muted);margin-top:14px}
 
 /* APP */
-#app{display:flex;height:100vh}
-aside{
-  width:230px;
+#app{display:flex;flex-direction:column;height:100vh}
+
+/* TOP NAV */
+nav{
+  height:58px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:0 18px;
   background:rgba(18,18,21,.96);
-  border-right:1px solid var(--border);
-}
-aside h1{
-  padding:18px;font-size:14px;
   border-bottom:1px solid var(--border);
+}
+nav .logo{
   color:var(--accent);
+  font-weight:600;
+  margin-right:20px;
 }
 .nav-btn{
-  width:100%;padding:12px 18px;
-  background:none;border:none;
-  color:var(--text);text-align:left;
+  background:none;
+  border:none;
+  color:var(--text);
+  padding:8px 14px;
+  border-radius:10px;
   cursor:pointer;
 }
 .nav-btn:hover{background:#202026}
 .nav-btn.active{background:#24242b;color:var(--accent)}
-main{flex:1;padding:24px;overflow:auto}
+.spacer{flex:1}
+
+main{
+  flex:1;
+  padding:24px;
+  overflow:auto;
+}
 
 .card{
   background:rgba(26,26,30,.92);
@@ -81,61 +94,66 @@ main{flex:1;padding:24px;overflow:auto}
   box-shadow:0 25px 70px rgba(0,0,0,.7);
   margin-bottom:20px;
 }
-h3{margin-top:0}
 
-/* TABLE */
 table{width:100%;border-collapse:collapse}
 td,th{padding:8px;font-size:13px;border-bottom:1px solid var(--border)}
 th{text-align:left;color:var(--muted)}
+
 .toggle{cursor:pointer;color:var(--accent)}
+input[type="text"]{
+  width:100%;padding:10px;
+  border-radius:10px;border:1px solid var(--border);
+  background:#0e0e11;color:var(--text);
+}
 </style>
 </head>
 
 <body>
 
+<!-- LOGIN -->
 <div id="login">
   <div class="login-box">
     <h2>LSPD MDT</h2>
     <input id="user" placeholder="Benutzer">
     <input id="pass" type="password" placeholder="Passwort">
-    <button onclick="doLogin()">Anmelden</button>
+    <button onclick="login()">Anmelden</button>
     <div class="small">ADMIN / 9999 · LSPD / 1234</div>
   </div>
 </div>
 
 <script>
-/* ===== USERS ===== */
+/* USERS */
 let USERS = JSON.parse(localStorage.users||"null") || [
   {u:"ADMIN",p:"9999",r:"admin",active:true},
   {u:"LSPD",p:"1234",r:"officer",active:true}
 ];
 localStorage.users = JSON.stringify(USERS);
 
-let CURRENT = null;
+let CURRENT=null;
 
-/* ===== LOGIN ===== */
-function doLogin(){
-  const u=user.value.trim();
-  const p=pass.value.trim();
-  const found=USERS.find(x=>x.u===u && x.p===p && x.active);
-  if(!found){alert("Login fehlgeschlagen");return;}
-  CURRENT=found;
+/* LOGIN */
+function login(){
+  const u=user.value.trim(), p=pass.value.trim();
+  const f=USERS.find(x=>x.u===u && x.p===p && x.active);
+  if(!f){alert("Login fehlgeschlagen");return;}
+  CURRENT=f;
   document.body.innerHTML="";
   initApp();
 }
 
-/* ===== APP ===== */
+/* APP INIT */
 function initApp(){
   document.body.innerHTML=`
   <div id="app">
-    <aside>
-      <h1>MDT</h1>
+    <nav>
+      <div class="logo">MDT</div>
       <button class="nav-btn active" onclick="nav(this,'leitstelle')">Leitstelle</button>
       <button class="nav-btn" onclick="nav(this,'rechner')">Strafrechner</button>
       <button class="nav-btn" onclick="nav(this,'personen')">Personen</button>
       ${CURRENT.r==="admin"?`<button class="nav-btn" onclick="nav(this,'admin')">Admin</button>`:""}
+      <div class="spacer"></div>
       <button class="nav-btn" onclick="logout()">Logout</button>
-    </aside>
+    </nav>
     <main id="content"></main>
   </div>`;
   render("leitstelle");
@@ -149,17 +167,19 @@ function nav(btn,t){
   render(t);
 }
 
-/* ===== DATA ===== */
+/* DATA */
 let einsaetze=[];
 let personen=[];
+let strafpunkte=0;
 
-/* ===== RENDER ===== */
+/* RENDER */
 function render(t){
   const c=document.getElementById("content");
+
   if(t==="leitstelle"){
     c.innerHTML=`
     <div class="card">
-      <h3>🚨 Leitstelle</h3>
+      <h3>🚨 Leitstellen-Liveansicht</h3>
       Aktive Einsätze: ${einsaetze.length}<br>
       Personenakten: ${personen.length}
     </div>`;
@@ -169,8 +189,9 @@ function render(t){
     c.innerHTML=`
     <div class="card">
       <h3>⚖️ Strafrechner</h3>
-      <button onclick="alert('Strafen können hier erweitert werden')">Strafe hinzufügen</button>
-      <p style="color:var(--muted)">Reue §35 & Rechte-Schalter integrierbar</p>
+      <p>Wanteds: <b>${strafpunkte}</b></p>
+      <button onclick="strafpunkte++;render('rechner')">Straftat hinzufügen</button>
+      <button onclick="strafpunkte=Math.max(1,strafpunkte-2);render('rechner')">Reue §35</button>
     </div>`;
   }
 
@@ -178,7 +199,8 @@ function render(t){
     c.innerHTML=`
     <div class="card">
       <h3>👤 Personenakten</h3>
-      <button onclick="personen.push({});render('personen')">Neue Person</button>
+      <input placeholder="Name" id="pname">
+      <button onclick="addPerson()">Hinzufügen</button>
       <p>Gesamt: ${personen.length}</p>
     </div>`;
   }
@@ -200,7 +222,14 @@ function render(t){
   }
 }
 
-/* ===== ADMIN ===== */
+/* ACTIONS */
+function addPerson(){
+  const n=document.getElementById("pname").value.trim();
+  if(!n)return;
+  personen.push({n});
+  render("personen");
+}
+
 function toggleRole(i){
   USERS[i].r=USERS[i].r==="admin"?"officer":"admin";
   localStorage.users=JSON.stringify(USERS);
