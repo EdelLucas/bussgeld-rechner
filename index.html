@@ -2,202 +2,231 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>LSPD MDT</title>
+<title>LSPD / FIB MDT</title>
 
 <style>
-/* ================= MDT BASIS ================= */
 :root{
   --bg:#0b0b0d;
   --panel:#141417;
+  --panel2:#1c1c22;
   --border:#2a2a30;
   --accent:#ff4f9a;
+  --green:#3ddc84;
+  --red:#ff5c5c;
+  --orange:#ffb84d;
   --text:#e8e8ea;
   --muted:#9a9aa2;
 }
-*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-body{
-  margin:0;height:100vh;
-  background:linear-gradient(180deg,#0b0b0d,#101014);
-  color:var(--text);
-}
 
-/* LOGIN */
+*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{margin:0;height:100vh;background:var(--bg);color:var(--text)}
+
+/* ========== LOGIN ========== */
 #login{
   position:fixed;inset:0;
   display:flex;align-items:center;justify-content:center;
 }
 .login-box{
   width:360px;padding:28px;
-  background:#141417;border:1px solid var(--border);
+  background:var(--panel);
+  border:1px solid var(--border);
   border-radius:18px;
 }
+.login-box h2{text-align:center;margin-bottom:20px}
 .login-box input{
-  width:100%;padding:12px;margin-top:12px;
+  width:100%;padding:12px;margin-bottom:12px;
   background:#0e0e11;border:1px solid var(--border);
   border-radius:10px;color:white;
 }
 .login-box button{
-  width:100%;margin-top:16px;
-  padding:12px;border:none;border-radius:12px;
-  background:#ff4f9a;color:white;font-weight:600;
+  width:100%;padding:12px;
+  border:none;border-radius:12px;
+  background:var(--accent);
+  color:white;font-weight:600;
 }
 
-/* APP */
-#app{display:flex;flex-direction:column;height:100vh}
+/* ========== APP ========== */
+#app{display:none;height:100vh;flex-direction:column}
+
 nav{
   height:56px;display:flex;align-items:center;
-  gap:10px;padding:0 18px;
-  background:#141417;border-bottom:1px solid var(--border);
+  padding:0 18px;gap:10px;
+  background:var(--panel);
+  border-bottom:1px solid var(--border);
 }
-nav .logo{color:var(--accent);font-weight:600;margin-right:20px}
+.logo{color:var(--accent);font-weight:700;margin-right:20px}
 .nav-btn{
-  background:none;border:none;color:var(--text);
-  padding:8px 14px;border-radius:10px;cursor:pointer;
+  background:none;border:none;
+  color:var(--text);
+  padding:8px 14px;
+  border-radius:10px;
+  cursor:pointer;
 }
-.nav-btn.active{background:#1f1f26;color:var(--accent)}
+.nav-btn.active{background:var(--panel2);color:var(--accent)}
 .spacer{flex:1}
 
-main{flex:1;padding:20px;overflow:auto}
+main{flex:1;overflow:auto;padding:20px}
+
+/* ========== CARDS ========== */
 .card{
-  background:#141417;border:1px solid var(--border);
-  border-radius:18px;padding:20px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:16px;
+  margin-bottom:16px;
 }
 
-/* ================= STRAFRECHNER (GEKAPSELT) ================= */
-.penal *{user-select:none}
+/* ========== LEITSTELLE ========== */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:16px;
+}
+.status{
+  padding:6px 10px;border-radius:8px;
+  font-size:12px;display:inline-block;
+}
+.green{background:rgba(61,220,132,.15);color:var(--green)}
+.red{background:rgba(255,92,92,.15);color:var(--red)}
+.orange{background:rgba(255,184,77,.15);color:var(--orange)}
+
+.unit{
+  background:var(--panel2);
+  border-radius:12px;
+  padding:10px;
+}
+.unit h4{margin:0 0 6px 0;color:#ffd479}
+
+/* ========== STRAFRECHNER ========== */
 .penal{
   display:grid;
-  grid-template-columns:1fr 380px;
-  gap:15px;
+  grid-template-columns:1fr 360px;
+  gap:16px;
 }
-.penal input{
-  width:100%;background:#0e0e11;border:1px solid #21262d;
-  padding:8px;border-radius:6px;color:white;
+.law{
+  background:var(--panel2);
+  border-radius:12px;
+  padding:8px;
+  cursor:pointer;
+  border-left:4px solid transparent;
 }
-.penal .law-card{
-  background:#151921;border:1px solid #21262d;
-  border-radius:12px;margin-bottom:14px;overflow:hidden;
-}
-.penal table{width:100%;border-collapse:collapse}
-.penal td{
-  padding:7px;font-size:12px;border-bottom:1px solid #1a1e26;
-}
-.penal tr:hover{background:#1c222d;cursor:pointer}
-.penal .selected{background:#262c36;border-left:3px solid #ff2e7e}
-.penal .stars{color:#d4af37}
-
-/* =========================================================== */
+.law.selected{border-left:4px solid var(--accent)}
+.law:hover{background:#24242c}
+.small{font-size:12px;color:var(--muted)}
+.gold{color:#ffd479}
 </style>
 </head>
 <body>
 
+<!-- LOGIN -->
 <div id="login">
   <div class="login-box">
-    <h2>LSPD MDT</h2>
+    <h2>MDT Login</h2>
     <input id="user" placeholder="Benutzer">
     <input id="pass" type="password" placeholder="Passwort">
     <button onclick="login()">Anmelden</button>
   </div>
 </div>
 
+<!-- APP -->
+<div id="app">
+  <nav>
+    <div class="logo">MDT</div>
+    <button class="nav-btn active" onclick="nav(this,'leit')">Leitstelle</button>
+    <button class="nav-btn" onclick="nav(this,'rechner')">Strafrechner</button>
+    <div class="spacer"></div>
+    <button class="nav-btn" onclick="location.reload()">Logout</button>
+  </nav>
+  <main id="content"></main>
+</div>
+
 <script>
-/* USERS */
+/* ===== USERS ===== */
 const USERS=[
- {u:"ADMIN",p:"9999",r:"admin",active:true},
- {u:"LSPD",p:"1234",r:"officer",active:true}
+ {u:"ADMIN",p:"9999",r:"admin"},
+ {u:"LSPD",p:"1234",r:"officer"}
 ];
 let CURRENT=null;
 
-/* LOGIN */
+/* ===== LOGIN ===== */
 function login(){
- const u=user.value,p=pass.value;
- const f=USERS.find(x=>x.u===u&&x.p===p&&x.active);
+ const f=USERS.find(x=>x.u===user.value && x.p===pass.value);
  if(!f){alert("Login fehlgeschlagen");return;}
- CURRENT=f;document.body.innerHTML="";initApp();
+ CURRENT=f;
+ login.style.display="none";
+ app.style.display="flex";
+ renderLeit();
 }
 
-/* APP */
-function initApp(){
- document.body.innerHTML=`
- <div id="app">
-  <nav>
-   <div class="logo">MDT</div>
-   <button class="nav-btn active" onclick="nav(this,'leit')">Leitstelle</button>
-   <button class="nav-btn" onclick="nav(this,'rechner')">Strafrechner</button>
-   ${CURRENT.r==="admin"?`<button class="nav-btn" onclick="nav(this,'admin')">Admin</button>`:""}
-   <div class="spacer"></div>
-   <button class="nav-btn" onclick="location.reload()">Logout</button>
-  </nav>
-  <main id="content"></main>
- </div>`;
- render("leit");
-}
+/* ===== NAV ===== */
 function nav(b,t){
  document.querySelectorAll(".nav-btn").forEach(x=>x.classList.remove("active"));
- b.classList.add("active");render(t);
+ b.classList.add("active");
+ t==="leit"?renderLeit():renderRechner();
 }
 
-/* RENDER */
-function render(t){
- const c=document.getElementById("content");
- if(t==="leit") c.innerHTML=`<div class="card">🚨 Leitstellen-Liveansicht</div>`;
- if(t==="admin") c.innerHTML=`<div class="card">🔐 Admin-Panel</div>`;
- if(t==="rechner") renderPenal(c);
-}
+/* ===== LEITSTELLE ===== */
+function renderLeit(){
+ content.innerHTML=`
+ <div class="card">
+  <b>🟢 Grün:</b> Im Dienst &nbsp;
+  <b>🟠 Orange:</b> AFK &nbsp;
+  <b>🔴 Rot:</b> Außer Dienst
+ </div>
 
-/* ================= STRAFRECHNER LOGIK ================= */
-function renderPenal(c){
- c.innerHTML=`
- <div class="card penal">
-  <div id="lawList"></div>
-  <div>
-   <b>Max. Geldstrafe</b>
-   <div id="outM">$0</div>
-   <b>Wanteds</b>
-   <div id="outW">0</div>
-   <div id="entry" style="margin-top:10px;color:#888">Wähle Strafen…</div>
+ <div class="grid">
+  <div class="unit">
+   <h4>ALPHA 01</h4>
+   <span class="status green">Streife</span><br>
+   Jason Kimiko – 28-05-050
+  </div>
+  <div class="unit">
+   <h4>BRAVO 01</h4>
+   <span class="status orange">AFK</span>
+  </div>
+  <div class="unit">
+   <h4>CHARLIE 01</h4>
+   <span class="status red">Außer Dienst</span>
   </div>
  </div>`;
- penalInit();
 }
 
-const laws=[
- {p:"§3.1",n:"Beleidigung",m:10000,w:0},
- {p:"§4.1",n:"Mord",m:30000,w:4},
- {p:"§11",n:"Raub",m:25000,w:3}
+/* ===== STRAFRECHNER ===== */
+const LAWS=[
+ {cat:"Psychische & Physische Integrität",p:"StGB §3.1",n:"Beleidigung",w:1,m:10000},
+ {cat:"Psychische & Physische Integrität",p:"StGB §4.1",n:"Mord / Versuch",w:4,m:30000},
+ {cat:"Wirtschaft",p:"StGB §11",n:"Raub",w:3,m:25000},
+ {cat:"StVO",p:"StVO §8",n:"Geschwindigkeit 61-100",w:0,m:15000},
+ {cat:"WaffG",p:"WaffG §5.1",n:"Illegale Waffen",w:3,m:10000}
 ];
-let sel=[];
+let SEL=[];
 
-function penalInit(){
- const l=document.getElementById("lawList");
- l.innerHTML="";
- laws.forEach((x,i)=>{
-  l.innerHTML+=`
-  <div class="law-card">
-   <table>
-    <tr onclick="toggleLaw(${i})" class="${sel.includes(i)?"selected":""}">
-     <td style="color:#ff4f9a">${x.p}</td>
-     <td>${x.n}</td>
-     <td class="stars">${"★".repeat(x.w)}</td>
-     <td style="text-align:right">$${x.m}</td>
-    </tr>
-   </table>
-  </div>`;
- });
- updatePenal();
+function renderRechner(){
+ let list=LAWS.map((x,i)=>`
+  <div class="law ${SEL.includes(i)?"selected":""}" onclick="toggle(${i})">
+   <b>${x.p}</b> – ${x.n}<br>
+   <span class="small">⭐ ${x.w} | <span class="gold">$${x.m}</span></span>
+  </div>`).join("");
+
+ let sumW=0,maxM=0;
+ SEL.forEach(i=>{sumW+=LAWS[i].w;maxM=Math.max(maxM,LAWS[i].m)});
+
+ content.innerHTML=`
+ <div class="penal">
+  <div>${list}</div>
+  <div class="card">
+   <b>Max. Geldstrafe</b><div class="gold">$${maxM}</div>
+   <b>Wanteds</b><div>${sumW}</div>
+   <hr>
+   ${SEL.map(i=>LAWS[i].p).join(", ")||"—"}
+  </div>
+ </div>`;
 }
-function toggleLaw(i){
- sel.includes(i)?sel=sel.filter(x=>x!==i):sel.push(i);
- penalInit();
-}
-function updatePenal(){
- let m=0,w=0;
- sel.forEach(i=>{m=Math.max(m,laws[i].m);w+=laws[i].w});
- outM.innerText="$"+m;
- outW.innerText=w;
- entry.innerText=sel.map(i=>laws[i].p).join(", ")||"Wähle Strafen…";
+
+function toggle(i){
+ SEL.includes(i)?SEL=SEL.filter(x=>x!==i):SEL.push(i);
+ renderRechner();
 }
 </script>
-
 </body>
 </html>
