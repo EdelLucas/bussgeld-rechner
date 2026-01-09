@@ -1,57 +1,48 @@
 const express = require("express");
-const cors = require("cors");
+const http = require("http");
+const WebSocket = require("ws");
+const fetch = (...a)=>import("node-fetch").then(({default:f})=>f(...a));
+
 const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 
-app.use(cors());
 app.use(express.json());
+app.use(express.static("public"));
 
-// DATENSPEICHER (Wird bei Neustart auf Render zurückgesetzt, solange keine DB verbunden ist)
-let DB = {
-    users: [
-        { user: "admin", pass: "master123", orga: "GOV", rank: "Admin", isHR: true, status: "active" }
-    ],
-    pending: [] 
-};
+const DISCORD = "https://discord.com/api/webhooks/1453855487937482894/dO3DP9IQw0xXnl6m62J4rqblUan0u38uya7zEJdtKgekuOXwe0oqdYiMfpGT6okIWSeg";
 
-// LOGIN
-app.post("/login", (req, res) => {
-    const { user, pass } = req.body;
-    const u = DB.users.find(x => x.user === user && x.pass === pass);
-    if (!u) return res.status(401).json({ msg: "Ungültige Login-Daten" });
-    if (u.status !== "active") return res.status(403).json({ msg: "Account noch nicht durch HR freigeschaltet!" });
-    res.json(u);
+let users = [
+ {u:"ADMIN",p:"9999",r:"admin"},
+ {u:"LSPD",p:"1234",r:"officer"}
+];
+
+let state = {units:{}};
+
+app.post("/login",(req,res)=>{
+ const {u,p}=req.body;
+ const f=users.find(x=>x.u===u && x.p===p);
+ if(!f) return res.status(401).end();
+ res.json({u:f.u,r:f.r});
 });
 
-// REGISTRIERUNG
-app.post("/register", (req, res) => {
-    const { user, pass, tel, orga } = req.body;
-    if (DB.users.find(x => x.user === user)) return res.status(400).json({ msg: "Name bereits vergeben" });
-    
-    DB.pending.push({ user, pass, tel, orga, status: "pending" });
-    console.log(`Neue Registrierung für ${orga}: ${user}`);
-    res.json({ ok: true });
+function broadcast(){
+ const msg=JSON.stringify(state);
+ wss.clients.forEach(c=>c.readyState===1&&c.send(msg));
+}
+
+wss.on("connection",ws=>{
+ ws.send(JSON.stringify(state));
+ ws.on("message",m=>{
+  const d=JSON.parse(m);
+  state.units[d.unit]=d.status;
+  broadcast();
+  fetch(DISCORD,{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({content:`🧾 ${d.unit} → ${d.status}`})
+  });
+ });
 });
 
-// HR LISTE (Gibt nur Bewerber der eigenen Orga zurück)
-app.post("/hr/list", (req, res) => {
-    const { orga } = req.body;
-    const list = DB.pending.filter(u => u.orga === orga);
-    res.json(list);
-});
-
-// HR FREISCHALTUNG
-app.post("/hr/approve", (req, res) => {
-    const { username, orga } = req.body;
-    const idx = DB.pending.findIndex(u => u.user === username);
-    if (idx > -1) {
-        const newUser = { ...DB.pending[idx], status: "active", rank: "Rekrut", isHR: false };
-        DB.users.push(newUser);
-        DB.pending.splice(idx, 1);
-        res.json({ ok: true });
-    } else {
-        res.status(404).json({ msg: "User nicht gefunden" });
-    }
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Backend läuft auf Port ${PORT}`));
+server.listen(3000,()=>console.log("MDT läuft auf :3000"));
