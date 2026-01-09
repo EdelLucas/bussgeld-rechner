@@ -4,76 +4,112 @@
 <meta charset="UTF-8">
 <title>MDT</title>
 <style>
-:root{
---bg:#0b0b0d;--panel:#15151a;--accent:#ff4f9a;
---border:#2c2c33;--text:#eee
-}
-*{font-family:-apple-system;margin:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text)}
+body{margin:0;background:#0c0c0f;color:#eee;font-family:-apple-system}
 #login,#app{height:100vh;display:flex;align-items:center;justify-content:center}
-.card{background:var(--panel);padding:24px;border-radius:18px;border:1px solid var(--border)}
-input,button{width:100%;padding:12px;margin:8px 0;border-radius:10px;border:none}
-button{background:var(--accent);color:#fff;font-weight:600}
-nav{display:flex;gap:10px;margin-bottom:10px}
-.unit{background:#222;padding:12px;border-radius:12px;cursor:pointer}
+.card{background:#15151a;padding:24px;border-radius:16px;width:320px}
+input,select,button{width:100%;margin:6px 0;padding:10px;border-radius:10px;border:none}
+button{background:#ff4f9a;color:#fff;font-weight:600}
+nav{position:fixed;top:0;left:0;right:0;display:flex;gap:10px;
+background:#111;padding:10px}
+nav button{width:auto}
+#content{margin-top:60px;padding:20px}
+.unit{background:#222;padding:10px;border-radius:10px;margin:5px;cursor:pointer}
+.green{background:#1f5}
+.red{background:#f33}
+.orange{background:#fa0}
 </style>
 </head>
 <body>
 
 <div id="login">
  <div class="card">
-  <h2>MDT Login</h2>
+  <h3>MDT Login</h3>
   <input id="u" placeholder="User">
   <input id="p" type="password" placeholder="Passwort">
   <button onclick="login()">Login</button>
  </div>
 </div>
 
-<div id="app" style="display:none;flex-direction:column;padding:16px">
- <nav>
-  <button onclick="view('leit')">Leitstelle</button>
-  <button onclick="view('straf')">Strafrechner</button>
-  <button id="adminBtn" onclick="view('admin')">Admin</button>
- </nav>
- <div id="content"></div>
+<div id="app" style="display:none">
+<nav>
+ <button onclick="view('leit')">Leitstelle</button>
+ <button onclick="view('straf')">Strafrechner</button>
+ <button onclick="view('personen')">Personen</button>
+ <button onclick="view('fahrzeuge')">Fahrzeuge</button>
+</nav>
+<div id="content"></div>
 </div>
 
 <script>
-let user=null,ws=null;
+let ws=null,state={},selected=[];
+
+const STRAFEN=[
+{name:"Beleidigung",betrag:10000},
+{name:"Belästigung",betrag:10000},
+{name:"Drohung",betrag:5000},
+{name:"Mord / Versuch",betrag:30000},
+{name:"Körperverletzung",betrag:15000},
+{name:"Raub",betrag:25000},
+{name:"Diebstahl",betrag:5000},
+{name:"Drogenbesitz groß",betrag:30000},
+{name:"Fahrerflucht",betrag:10000}
+];
 
 function login(){
  fetch("/login",{method:"POST",headers:{'Content-Type':'application/json'},
  body:JSON.stringify({u:u.value,p:p.value})})
  .then(r=>r.ok?r.json():Promise.reject())
- .then(d=>{
-  user=d;
+ .then(()=>{
   login.style.display="none";
-  app.style.display="flex";
-  if(user.r!=="admin")adminBtn.remove();
+  app.style.display="block";
   ws=new WebSocket(`ws://${location.host}`);
-  ws.onmessage=e=>renderLeit(JSON.parse(e.data));
+  ws.onmessage=e=>{state=JSON.parse(e.data);render();};
   view('leit');
  }).catch(()=>alert("Login fehlgeschlagen"));
 }
 
 function view(v){
- if(v==='leit')content.innerHTML="<h3>Leitstelle</h3><div id='units'></div>";
- if(v==='straf')content.innerHTML="<h3>Strafrechner</h3>✓ integriert";
- if(v==='admin')content.innerHTML="<h3>Admin Panel</h3>✓ Benutzer ✓ Logs ✓ Rechte";
+ if(v==='leit'){
+  content.innerHTML="<h2>Leitstelle</h2><div id='units'></div>";
+  ["ALPHA 01","BRAVO 01","CHARLIE 01"].forEach(u=>{
+   const d=document.createElement("div");
+   d.className="unit green";
+   d.innerText=u+" – Streife";
+   d.onclick=()=>ws.send(JSON.stringify({type:"unit",name:u,status:"Pause"}));
+   units.appendChild(d);
+  });
+ }
+ if(v==='straf'){
+  content.innerHTML="<h2>Strafrechner</h2><div id='list'></div><h3 id='sum'>0$</h3>";
+  STRAFEN.forEach(s=>{
+   const d=document.createElement("div");
+   d.className="unit";
+   d.innerText=s.name+" – "+s.betrag+"$";
+   d.onclick=()=>{selected.push(s);calc();};
+   list.appendChild(d);
+  });
+ }
+ if(v==='personen'){
+  content.innerHTML="<h2>Personenakte</h2><input id='pn' placeholder='Name'><button onclick='addP()'>Speichern</button>";
+ }
+ if(v==='fahrzeuge'){
+  content.innerHTML="<h2>Fahrzeugakte</h2><input id='pl' placeholder='Kennzeichen'><button onclick='addV()'>Speichern</button>";
+ }
 }
 
-function renderLeit(data){
- const u=document.getElementById("units");
- if(!u)return;
- u.innerHTML="";
- Object.entries(data.units).forEach(([k,v])=>{
-  const d=document.createElement("div");
-  d.className="unit";
-  d.innerText=k+" → "+v;
-  d.onclick=()=>ws.send(JSON.stringify({unit:k,status:v==="Streife"?"Pause":"Streife"}));
-  u.appendChild(d);
- });
+function calc(){
+ sum.innerText=selected.reduce((a,b)=>a+b.betrag,0)+"$";
 }
+
+function addP(){
+ ws.send(JSON.stringify({type:"person",data:{name:pn.value}}));
+}
+
+function addV(){
+ ws.send(JSON.stringify({type:"vehicle",data:{plate:pl.value}}));
+}
+
+function render(){}
 </script>
 </body>
 </html>
