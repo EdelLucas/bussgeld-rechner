@@ -1,48 +1,42 @@
-const express = require("express");
-const http = require("http");
-const WebSocket = require("ws");
-const fetch = (...a)=>import("node-fetch").then(({default:f})=>f(...a));
+const express=require("express");
+const http=require("http");
+const WebSocket=require("ws");
 
-const app = express();
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const app=express();
+const server=http.createServer(app);
+const wss=new WebSocket.Server({server});
 
 app.use(express.json());
 app.use(express.static("public"));
 
-const DISCORD = "https://discord.com/api/webhooks/1453855487937482894/dO3DP9IQw0xXnl6m62J4rqblUan0u38uya7zEJdtKgekuOXwe0oqdYiMfpGT6okIWSeg";
-
-let users = [
+const users=[
  {u:"ADMIN",p:"9999",r:"admin"},
  {u:"LSPD",p:"1234",r:"officer"}
 ];
 
-let state = {units:{}};
+let state={
+ units:{},
+ persons:[],
+ vehicles:[]
+};
 
 app.post("/login",(req,res)=>{
- const {u,p}=req.body;
- const f=users.find(x=>x.u===u && x.p===p);
- if(!f) return res.status(401).end();
+ const f=users.find(x=>x.u===req.body.u&&x.p===req.body.p);
+ if(!f)return res.sendStatus(401);
  res.json({u:f.u,r:f.r});
 });
 
-function broadcast(){
- const msg=JSON.stringify(state);
- wss.clients.forEach(c=>c.readyState===1&&c.send(msg));
-}
+app.get("/data",(req,res)=>res.json(state));
 
 wss.on("connection",ws=>{
  ws.send(JSON.stringify(state));
  ws.on("message",m=>{
   const d=JSON.parse(m);
-  state.units[d.unit]=d.status;
-  broadcast();
-  fetch(DISCORD,{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({content:`🧾 ${d.unit} → ${d.status}`})
-  });
+  if(d.type==="unit")state.units[d.name]=d.status;
+  if(d.type==="person")state.persons.push(d.data);
+  if(d.type==="vehicle")state.vehicles.push(d.data);
+  wss.clients.forEach(c=>c.readyState===1&&c.send(JSON.stringify(state)));
  });
 });
 
-server.listen(3000,()=>console.log("MDT läuft auf :3000"));
+server.listen(3000);
