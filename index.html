@@ -1,107 +1,32 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<title>MDT</title>
-<style>
-body{
- margin:0;
- font-family:-apple-system, BlinkMacSystemFont;
- background:#0b0b0f;
- color:#eee;
-}
-.hidden{display:none}
-#login{
- height:100vh;
- display:flex;
- align-items:center;
- justify-content:center;
-}
-.card{
- background:#16161d;
- padding:30px;
- border-radius:18px;
- width:320px;
- box-shadow:0 20px 60px rgba(0,0,0,.6);
-}
-input,button{
- width:100%;
- padding:12px;
- margin-top:10px;
- border-radius:12px;
- border:none;
- font-size:15px;
-}
-button{
- background:#ff5fa2;
- color:white;
- font-weight:600;
- cursor:pointer;
-}
-nav{
- display:flex;
- gap:10px;
- padding:10px;
- background:#111;
-}
-nav button{width:auto}
-#content{padding:20px}
-</style>
+  <meta charset="UTF-8">
+  <title>LSPD MDT</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div id="login">
- <div class="card">
-  <h2>MDT Login</h2>
+<div id="loginBox">
+  <h2>LSPD MDT</h2>
   <input id="user" placeholder="Benutzer">
   <input id="pass" type="password" placeholder="Passwort">
-  <button onclick="doLogin()">Anmelden</button>
- </div>
+  <button onclick="login()">Anmelden</button>
+  <div id="error"></div>
 </div>
 
-<div id="app" class="hidden">
- <nav>
-  <button onclick="show('leit')">Leitstelle</button>
-  <button onclick="show('straf')">Strafrechner</button>
-  <button onclick="show('akten')">Personen</button>
-  <button id="adminBtn" class="hidden">Admin</button>
- </nav>
- <div id="content"></div>
+<div id="app" style="display:none">
+  <h1>Leitstelle</h1>
+  <p id="welcome"></p>
+
+  <div id="adminPanel" style="display:none">
+    <h2>Admin Panel</h2>
+    <p>Nur für Admin sichtbar</p>
+  </div>
+
+  <button onclick="logout()">Logout</button>
 </div>
 
-<script>
-function doLogin(){
- fetch("/login",{
-  method:"POST",
-  headers:{"Content-Type":"application/json"},
-  body:JSON.stringify({
-   u:user.value,
-   p:pass.value
-  })
- })
- .then(r=>{
-  if(!r.ok) throw "fail";
-  return r.json();
- })
- .then(d=>{
-  document.getElementById("login").classList.add("hidden");
-  document.getElementById("app").classList.remove("hidden");
-  if(d.role==="admin")
-    document.getElementById("adminBtn").classList.remove("hidden");
-  show("leit");
- })
- .catch(()=>alert("Login fehlgeschlagen"));
-}
-
-function show(v){
- if(v==="leit")
-  content.innerHTML="<h2>🚨 Leitstelle</h2><p>Units online</p>";
- if(v==="straf")
-  content.innerHTML="<h2>⚖ Strafrechner</h2><p>Strafen auswählbar</p>";
- if(v==="akten")
-  content.innerHTML="<h2>👤 Personenakten</h2>";
-}
-</script>
-
+<script src="app.js"></script>
 </body>
 </html>
