@@ -1,34 +1,37 @@
-const API = "http://localhost:3000"; 
-// 👉 auf Render später ändern
+const inUser = document.getElementById("user");
+const inPass = document.getElementById("pass");
+const btn = document.getElementById("btn");
+const msg = document.getElementById("msg");
 
-function login() {
-  const u = document.getElementById("user").value;
-  const p = document.getElementById("pass").value;
+btn.addEventListener("click", doLogin);
+[inUser, inPass].forEach(el => el.addEventListener("keydown", e => {
+  if (e.key === "Enter") doLogin();
+}));
 
-  fetch(API + "/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ u, p })
-  })
-  .then(r => {
-    if (!r.ok) throw "Login fehlgeschlagen";
-    return r.json();
-  })
-  .then(data => {
-    document.getElementById("loginBox").style.display = "none";
-    document.getElementById("app").style.display = "block";
-    document.getElementById("welcome").innerText =
-      "Angemeldet als " + data.user;
+async function doLogin(){
+  msg.textContent = "";
 
-    if (data.role === "admin") {
-      document.getElementById("adminPanel").style.display = "block";
+  const u = inUser.value.trim();
+  const p = inPass.value.trim();
+
+  try{
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ u, p })
+    });
+
+    const data = await res.json().catch(()=>({}));
+
+    if(!res.ok || !data.ok){
+      msg.textContent = "Login fehlgeschlagen";
+      return;
     }
-  })
-  .catch(() => {
-    document.getElementById("error").innerText = "Login fehlgeschlagen";
-  });
-}
 
-function logout() {
-  location.reload();
+    // Erfolg: hier später App anzeigen
+    msg.textContent = "Login OK: " + data.user + " (" + data.role + ")";
+    msg.style.color = "green";
+  }catch{
+    msg.textContent = "Backend nicht erreichbar";
+  }
 }
