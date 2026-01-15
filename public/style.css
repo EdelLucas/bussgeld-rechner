@@ -1,6 +1,87 @@
-body{font-family:Segoe UI,Arial;margin:30px;background:#0b0e14;color:#fff}
-.wrap{max-width:700px}
-.row{display:flex;gap:10px;align-items:center}
-input,button{padding:10px;border-radius:6px;border:1px solid #333;background:#151921;color:#fff}
-button{cursor:pointer;background:#ff2e7e;border:none;font-weight:700}
-.msg{margin-top:10px;color:#ff6b6b}
+:root{
+  --bg:#0b0e14;
+  --card:#151921;
+  --border:#222;
+  --text:#fff;
+  --muted:#9aa0aa;
+  --accent:#ff2e7e;
+}
+
+*{box-sizing:border-box;font-family:Segoe UI,system-ui}
+body{margin:0;background:var(--bg);color:var(--text)}
+
+.hidden{display:none}
+
+/* LOGIN */
+.center{
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.login-card{
+  background:var(--card);
+  padding:30px;
+  border-radius:14px;
+  width:320px;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+.login-card h1{text-align:center;margin-bottom:20px}
+.login-card input{
+  width:100%;
+  margin-bottom:10px;
+  padding:10px;
+  background:#0e1117;
+  border:1px solid var(--border);
+  color:#fff;
+  border-radius:8px;
+}
+.login-card button{
+  width:100%;
+  padding:10px;
+  background:var(--accent);
+  border:none;
+  border-radius:8px;
+  font-weight:700;
+  cursor:pointer;
+}
+.msg{margin-top:10px;color:#ff6b6b;text-align:center}
+
+/* TOPBAR */
+.topbar{
+  height:60px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 20px;
+  background:rgba(20,22,30,.85);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+}
+.logo{font-weight:700;letter-spacing:.5px}
+
+nav button{
+  background:none;
+  border:none;
+  color:var(--muted);
+  margin-left:12px;
+  padding:8px 12px;
+  border-radius:8px;
+  cursor:pointer;
+}
+nav button.active{
+  background:var(--card);
+  color:#fff;
+}
+nav button:hover{color:#fff}
+nav .danger{color:#ff6b6b}
+
+/* CONTENT */
+main{
+  padding:20px;
+}
+.view-card{
+  background:var(--card);
+  border-radius:16px;
+  padding:20px;
+}
