@@ -11,11 +11,6 @@ const users = [
   { u: "LSPD", p: "1234", role: "user" }
 ];
 
-// HEALTH CHECK
-app.get("/", (req, res) => {
-  res.json({ status: "Backend läuft" });
-});
-
 // LOGIN
 app.post("/login", (req, res) => {
   const { u, p } = req.body;
@@ -36,3 +31,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("Server läuft auf Port", PORT);
 });
+
