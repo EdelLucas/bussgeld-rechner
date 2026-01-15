@@ -1,24 +1,47 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="UTF-8">
   <title>LSPD MDT</title>
-  <link rel="stylesheet" href="style.css"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="wrap">
+
+<!-- LOGIN -->
+<div id="loginView" class="center">
+  <div class="login-card">
     <h1>LSPD MDT</h1>
-
-    <div class="row">
-      <input id="inUser" placeholder="Benutzer (ADMIN/LSPD)" />
-      <input id="inPass" type="password" placeholder="Passwort (9999/1234)" />
-      <button id="btnLogin">Anmelden</button>
-    </div>
-
+    <input id="inUser" placeholder="Benutzer">
+    <input id="inPass" type="password" placeholder="Passwort">
+    <button id="btnLogin">Anmelden</button>
     <div id="msg" class="msg"></div>
   </div>
+</div>
 
-  <script src="app.js"></script>
+<!-- MDT -->
+<div id="appView" class="hidden">
+
+  <!-- NAVIGATION -->
+  <header class="topbar">
+    <div class="logo">LSPD MDT</div>
+    <nav id="nav">
+      <button data-view="leitstelle">Leitstelle</button>
+      <button data-view="rechner">Strafrechner</button>
+      <button data-view="personen">Personen</button>
+      <button data-view="fahrzeuge">Fahrzeuge</button>
+      <button data-view="admin" class="admin-only">Admin</button>
+      <button id="logout" class="danger">Logout</button>
+    </nav>
+  </header>
+
+  <!-- CONTENT -->
+  <main id="content">
+    <!-- Views werden hier geladen -->
+  </main>
+
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
