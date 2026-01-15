@@ -4,16 +4,13 @@ const path = require("path");
 const app = express();
 app.use(express.json());
 
-// Demo-User
 const users = [
   { u: "ADMIN", p: "9999", role: "admin" },
   { u: "LSPD", p: "1234", role: "user" }
 ];
 
-// Frontend aus /public ausliefern
 app.use(express.static(path.join(__dirname, "public")));
 
-// Login API
 app.post("/api/login", (req, res) => {
   const { u, p } = req.body || {};
   const user = users.find(x => x.u === String(u).trim() && x.p === String(p).trim());
@@ -21,7 +18,6 @@ app.post("/api/login", (req, res) => {
   res.json({ ok: true, user: user.u, role: user.role });
 });
 
-// SPA Fallback
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
