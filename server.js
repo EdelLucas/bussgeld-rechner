@@ -12,6 +12,8 @@ const users = [
 
 // ===== STATIC FRONTEND =====
 app.use(express.static(path.join(__dirname, "public")));
+app.get("*", (req,res)=>res.sendFile(path.join(__dirname,"public","index.html")));
+
 
 // ===== LOGIN API =====
 app.post("/api/login", (req, res) => {
@@ -31,3 +33,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("Server läuft auf Port", PORT);
 });
+
