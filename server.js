@@ -4,6 +4,7 @@ const path = require("path");
 const app = express();
 app.use(express.json());
 
+// Demo-User (später DB/Users)
 const users = [
   { u: "ADMIN", p: "9999", role: "admin" },
   { u: "LSPD", p: "1234", role: "user" }
@@ -18,6 +19,7 @@ app.post("/api/login", (req, res) => {
   res.json({ ok: true, user: user.u, role: user.role });
 });
 
+// SPA fallback
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
