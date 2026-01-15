@@ -1,32 +1,24 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>LSPD MDT</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
+  <div class="wrap">
+    <h1>LSPD MDT</h1>
 
-<div id="loginBox">
-  <h2>LSPD MDT</h2>
-  <input id="user" placeholder="Benutzer">
-  <input id="pass" type="password" placeholder="Passwort">
-  <button onclick="login()">Anmelden</button>
-  <div id="error"></div>
-</div>
+    <div class="row">
+      <input id="inUser" placeholder="Benutzer (ADMIN/LSPD)" />
+      <input id="inPass" type="password" placeholder="Passwort (9999/1234)" />
+      <button id="btnLogin">Anmelden</button>
+    </div>
 
-<div id="app" style="display:none">
-  <h1>Leitstelle</h1>
-  <p id="welcome"></p>
-
-  <div id="adminPanel" style="display:none">
-    <h2>Admin Panel</h2>
-    <p>Nur für Admin sichtbar</p>
+    <div id="msg" class="msg"></div>
   </div>
 
-  <button onclick="logout()">Logout</button>
-</div>
-
-<script src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
