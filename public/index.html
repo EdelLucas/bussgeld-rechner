@@ -1,48 +1,61 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>LSPD MDT</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Grand LST</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="loginView" class="center">
-  <div class="login-card">
-    <h1>LSPD MDT</h1>
-    <input id="inUser" placeholder="Benutzer">
-    <input id="inPass" type="password" placeholder="Passwort">
-    <button id="btnLogin">Anmelden</button>
-    <div id="msg" class="msg"></div>
+  <div class="card">
+    <div class="brand">Grand LST</div>
+    <div class="sub">Login erforderlich</div>
+
+    <label class="lbl">Benutzer</label>
+    <input id="inUser"/>
+
+    <label class="lbl">Passwort</label>
+    <input id="inPass" type="password"/>
+
+    <button id="btnLogin" class="btn">Anmelden</button>
+    <div id="loginMsg" class="msg"></div>
+
+    <div class="hint"><b>ADMIN / 9999</b> | <b>LSPD / 1234</b></div>
   </div>
 </div>
 
-<!-- MDT -->
-<div id="appView" class="hidden">
-  <!-- NAVIGATION -->
+<div id="appView" class="app" style="display:none">
   <header class="topbar">
-    <div class="logo">LSPD MDT</div>
-    <nav id="nav">
-      <button data-view="leitstelle">Leitstelle</button>
-      <button data-view="rechner">Strafrechner</button>
-      <button data-view="personen">Personen</button>
-      <button data-view="fahrzeuge">Fahrzeuge</button>
-      <button data-view="admin" class="admin-only">Admin</button>
-      <button id="logout" class="danger">Logout</button>
-    </nav>
+    <div class="top-left">
+      <div class="logoDot"></div>
+      <div>
+        <div class="topTitle">Grand Leitstellen System</div>
+        <div id="who" class="topSub"></div>
+      </div>
+    </div>
+
+    <nav class="tabs" id="tabs"></nav>
+
+    <button id="btnLogout" class="btn ghost">Logout</button>
   </header>
 
-  <!-- CONTENT -->
-  <main id="content">
-    <!-- Views werden hier geladen -->
+  <main class="main">
+    <section id="view-leitstelle" class="view"></section>
+    <section id="view-rechner" class="view" style="display:none"></section>
+    <section id="view-personen" class="view" style="display:none"></section>
+    <section id="view-fahrzeuge" class="view" style="display:none"></section>
+    <section id="view-admin" class="view" style="display:none"></section>
   </main>
-
 </div>
 
+<script src="data-laws.js"></script>
+<script src="module-leitstelle.js"></script>
+<script src="module-rechner.js"></script>
+<script src="module-personen.js"></script>
+<script src="module-fahrzeuge.js"></script>
+<script src="module-admin.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
-
-
