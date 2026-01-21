@@ -98,3 +98,14 @@ hr{border:none; border-top:1px solid #1f2430; margin:12px 0;}
 }
 .kpi .k{font-size:11px; color:var(--muted); font-weight:900;}
 .kpi .v{font-size:22px; font-weight:900; margin-top:6px;}
+.sel{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #2a2f38;
+  background:#0a0c10;
+  color:var(--text);
+  outline:none;
+}
+.sel:focus{border-color:var(--accent);}
+
