@@ -8,26 +8,22 @@
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="loginView" class="center">
   <div class="card">
     <div class="brand">Grand LST</div>
     <div class="sub">Login erforderlich</div>
 
     <label class="lbl">Benutzer</label>
-    <input id="inUser" placeholder="E-Mail" autocomplete="username"/>
+    <input id="inUser" autocomplete="username"/>
 
     <label class="lbl">Passwort</label>
     <input id="inPass" type="password" autocomplete="current-password"/>
 
     <button id="btnLogin" class="btn">Anmelden</button>
     <div id="loginMsg" class="msg"></div>
-
-    <div class="hint"><b>ADMIN / 9999</b> | <b>LSPD / 1234</b></div>
   </div>
 </div>
 
-<!-- APP -->
 <div id="appView" class="app" style="display:none">
   <header class="topbar">
     <div class="top-left">
@@ -45,6 +41,7 @@
 
   <main class="main">
     <section id="view-leitstelle" class="view"></section>
+    <section id="view-einsaetze" class="view" style="display:none"></section>
     <section id="view-rechner" class="view" style="display:none"></section>
     <section id="view-personen" class="view" style="display:none"></section>
     <section id="view-fahrzeuge" class="view" style="display:none"></section>
@@ -54,6 +51,7 @@
 
 <script src="data-laws.js"></script>
 <script src="module-leitstelle.js"></script>
+<script src="module-einsaetze.js"></script>
 <script src="module-rechner.js"></script>
 <script src="module-personen.js"></script>
 <script src="module-fahrzeuge.js"></script>
