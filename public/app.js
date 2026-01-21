@@ -1,114 +1,61 @@
-window.addEventListener("error", (e) => {
-  console.log("SCRIPT ERROR:", e.message, e.filename, e.lineno);
-});
-console.log("app.js geladen OK");
-const loginView = document.getElementById("loginView");
-const appView = document.getElementById("appView");
-const inUser = document.getElementById("inUser");
-const inPass = document.getElementById("inPass");
-const btnLogin = document.getElementById("btnLogin");
-const btnLogout = document.getElementById("btnLogout");
-const loginMsg = document.getElementById("loginMsg");
-const who = document.getElementById("who");
-const tabsEl = document.getElementById("tabs");
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Grand LST</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
 
-let SESSION = { user:null, role:null };
+<div id="loginView" class="center">
+  <div class="card">
+    <div class="brand">Grand LST</div>
+    <div class="sub">Login erforderlich</div>
 
-btnLogin.addEventListener("click", doLogin);
-btnLogout.addEventListener("click", () => {
-  sessionStorage.removeItem("SESSION");
-  location.reload();
-});
-[inUser,inPass].forEach(el => el.addEventListener("keydown", e => { if(e.key==="Enter") doLogin(); }));
+    <label class="lbl">Benutzer</label>
+    <input id="inUser" autocomplete="username"/>
 
-function setView(v){
-  document.querySelectorAll(".view").forEach(s => s.style.display = "none");
-  const target = document.getElementById("view-"+v);
-  if (target) target.style.display = "block";
-  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.view === v));
-}
+    <label class="lbl">Passwort</label>
+    <input id="inPass" type="password" autocomplete="current-password"/>
 
-function buildTabs(){
-  const base = [
-    { id:"leitstelle", label:"Leitstelle" },
-    { id:"rechner", label:"Strafrechner" },
-    { id:"personen", label:"Personen" },
-    { id:"fahrzeuge", label:"Fahrzeuge" },
-  ];
-  if(SESSION.role === "admin") base.push({ id:"admin", label:"Admin" });
+    <button id="btnLogin" class="btn">Anmelden</button>
+    <div id="loginMsg" class="msg"></div>
+  </div>
+</div>
 
-  tabsEl.innerHTML = "";
-  base.forEach(t => {
-    const b = document.createElement("button");
-    b.className = "tab";
-    b.dataset.view = t.id;
-    b.textContent = t.label;
-    b.onclick = () => setView(t.id);
-    tabsEl.appendChild(b);
-  });
+<div id="appView" class="app" style="display:none">
+  <header class="topbar">
+    <div class="top-left">
+      <div class="logoDot"></div>
+      <div>
+        <div class="topTitle">Grand Leitstellen System</div>
+        <div id="who" class="topSub"></div>
+      </div>
+    </div>
 
-  setView("leitstelle");
-}
+    <nav class="tabs" id="tabs"></nav>
 
-function mountAll(){
-  Leitstelle.mount(document.getElementById("view-leitstelle"));
-  Rechner.mount(document.getElementById("view-rechner"));
-  Personen.mount(document.getElementById("view-personen"));
-  Fahrzeuge.mount(document.getElementById("view-fahrzeuge"));
-  if(SESSION.role === "admin") Admin.mount(document.getElementById("view-admin"));
-}
+    <button id="btnLogout" class="btn ghost">Logout</button>
+  </header>
 
-async function doLogin(){
-  loginMsg.textContent = "";
-  const u = inUser.value.trim();
-  const p = inPass.value.trim();
-  if(!u || !p){ loginMsg.textContent = "Bitte Benutzer und Passwort eingeben."; return; }
+  <main class="main">
+    <section id="view-leitstelle" class="view"></section>
+    <section id="view-einsaetze" class="view" style="display:none"></section>
+    <section id="view-rechner" class="view" style="display:none"></section>
+    <section id="view-personen" class="view" style="display:none"></section>
+    <section id="view-fahrzeuge" class="view" style="display:none"></section>
+    <section id="view-admin" class="view" style="display:none"></section>
+  </main>
+</div>
 
-  let res, data;
-  try{
-    res = await fetch("/api/login", {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ u, p })
-    });
-    data = await res.json().catch(()=>({}));
-  }catch{
-    loginMsg.textContent = "Backend nicht erreichbar.";
-    return;
-  }
-
-  if(!res.ok || !data.ok){
-    loginMsg.textContent = "Login fehlgeschlagen.";
-    return;
-  }
-
-  SESSION.user = data.user;
-  SESSION.role = data.role;
-  sessionStorage.setItem("SESSION", JSON.stringify(SESSION));
-
-  loginView.style.display = "none";
-  appView.style.display = "block";
-  who.textContent = `Angemeldet als ${SESSION.user} (${SESSION.role})`;
-
-  buildTabs();
-  mountAll();
-}
-
-(function boot(){
-  // Auto-Resume
-  try{
-    const raw = sessionStorage.getItem("SESSION");
-    if(raw){
-      const s = JSON.parse(raw);
-      if(s && s.user && s.role){
-        SESSION = s;
-        loginView.style.display = "none";
-        appView.style.display = "block";
-        who.textContent = `Angemeldet als ${SESSION.user} (${SESSION.role})`;
-        buildTabs();
-        mountAll();
-      }
-    }
-  }catch{}
-})();
-
+<script src="data-laws.js"></script>
+<script src="module-leitstelle.js"></script>
+<script src="module-einsaetze.js"></script>
+<script src="module-rechner.js"></script>
+<script src="module-personen.js"></script>
+<script src="module-fahrzeuge.js"></script>
+<script src="module-admin.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
