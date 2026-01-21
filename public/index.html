@@ -15,12 +15,15 @@
     <div class="sub">Login erforderlich</div>
 
     <label class="lbl">Benutzer</label>
+    <input id="inUser" placeholder="E-Mail" autocomplete="username"/>
 
     <label class="lbl">Passwort</label>
-    <input id="inPass" type="password" placeholder="9999 oder 1234" autocomplete="current-password"/>
+    <input id="inPass" type="password" autocomplete="current-password"/>
 
     <button id="btnLogin" class="btn">Anmelden</button>
     <div id="loginMsg" class="msg"></div>
+
+    <div class="hint"><b>ADMIN / 9999</b> | <b>LSPD / 1234</b></div>
   </div>
 </div>
 
@@ -58,4 +61,3 @@
 <script src="app.js"></script>
 </body>
 </html>
-
