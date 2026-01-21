@@ -1,36 +1,5 @@
 // public/module-leitstelle.js
 (function () {
-  const LS_KEY = "LST_STATE_V2";
-
-  const DEFAULT_STATE = {
-    dispatcher: { name: "", badge: "" },
-    units: [
-      { id: "ALPHA 01", officer: "", callSign: "", status: "Standby", note: "" },
-      { id: "ALPHA 02", officer: "", callSign: "", status: "Standby", note: "" },
-      { id: "BRAVO 01", officer: "", callSign: "", status: "Standby", note: "" },
-      { id: "CHARLIE 01", officer: "", callSign: "", status: "Standby", note: "" },
-      { id: "CHARLIE 02", officer: "", callSign: "", status: "Standby", note: "" },
-      { id: "DELTA 01", officer: "", callSign: "", status: "Standby", note: "" },
-      { id: "ECHO 01", officer: "", callSign: "", status: "Standby", note: "" },
-      { id: "ECHO 02", officer: "", callSign: "", status: "Standby", note: "" },
-      { id: "FOXTROT 01", officer: "", callSign: "", status: "Standby", note: "" },
-    ]
-  };
-
-  function deepClone(x){ return JSON.parse(JSON.stringify(x)); }
-
-  function loadState() {
-    try {
-      const raw = localStorage.getItem(LS_KEY);
-      if (raw) return { ...deepClone(DEFAULT_STATE), ...JSON.parse(raw) };
-    } catch {}
-    return deepClone(DEFAULT_STATE);
-  }
-
-  function saveState(st) {
-    localStorage.setItem(LS_KEY, JSON.stringify(st));
-  }
-
   function esc(s) {
     return String(s ?? "").replace(/[&<>"']/g, (m) => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
@@ -44,13 +13,24 @@
     return `<span class="badge b-green">${esc(s)}</span>`;
   }
 
-  function isInDienst(s){ return s === "Standby" || s === "Streife"; }
+  function isInDienst(s) { return s === "Standby" || s === "Streife"; }
+
+  function wsUrl() {
+    const proto = location.protocol === "https:" ? "wss:" : "ws:";
+    return `${proto}//${location.host}/ws`;
+  }
 
   window.Leitstelle = {
     mount(root) {
       if (!root) return;
 
-      let st = loadState();
+      let st = {
+        dispatcher: { name: "", badge: "" },
+        units: []
+      };
+
+      let socket = null;
+      let live = { ok: false, text: "Verbinde..." };
 
       function counts() {
         let inDienst = 0, streife = 0, ausser = 0, afk = 0;
@@ -65,6 +45,12 @@
         return { inDienst, streife, ausser, afk };
       }
 
+      function send(msg) {
+        try {
+          if (socket && socket.readyState === 1) socket.send(JSON.stringify(msg));
+        } catch { /* ignore */ }
+      }
+
       function render() {
         const c = counts();
 
@@ -77,10 +63,13 @@
             <div class="row" style="align-items:flex-start; justify-content:space-between; gap:12px;">
               <div>
                 <div class="title">🚨 Leitstelle</div>
-                <div class="small">Streifen eintragen + Status ändern (speichert aktuell lokal)</div>
+                <div class="small">Streifen eintragen + Status ändern (LIVE Sync)</div>
               </div>
 
               <div style="display:flex; gap:10px; align-items:center;">
+                <span class="badge" style="border-color:${live.ok ? "rgba(50,255,90,.35)" : "rgba(255,70,70,.35)"}; background:${live.ok ? "rgba(50,255,90,.08)" : "rgba(255,70,70,.08)"}">
+                  Live: ${esc(live.text)}
+                </span>
                 <button class="btnMini" id="btnResetLST">Reset</button>
               </div>
             </div>
@@ -174,7 +163,7 @@
           </div>
         `;
 
-        // render lists
+        // lists
         const cardMini = (u) => `
           <div style="border:1px solid #1f2430; background:#0a0c10; border-radius:12px; padding:8px; margin-bottom:8px">
             <div style="font-weight:900; font-size:12px">${esc(u.id)}</div>
@@ -186,7 +175,7 @@
         root.querySelector("#listOut").innerHTML = ausserList.length ? ausserList.map(cardMini).join("") : `<div class="small">-</div>`;
         root.querySelector("#listAfk").innerHTML = afkList.length ? afkList.map(cardMini).join("") : `<div class="small">-</div>`;
 
-        // unit grid
+        // grid
         const grid = root.querySelector("#unitGrid");
         grid.innerHTML = st.units.map(u => `
           <div style="border:1px solid #1f2430; background:#0a0c10; border-radius:14px; padding:12px">
@@ -226,82 +215,97 @@
           </div>
         `).join("");
 
-        // handlers
-        const updateDispatcher = () => {
-          st.dispatcher.name = root.querySelector("#dispName").value;
-          st.dispatcher.badge = root.querySelector("#dispBadge").value;
-          saveState(st);
-        };
-        root.querySelector("#dispName").addEventListener("input", updateDispatcher);
-        root.querySelector("#dispBadge").addEventListener("input", updateDispatcher);
+        // dispatcher events
+        const dispName = root.querySelector("#dispName");
+        const dispBadge = root.querySelector("#dispBadge");
+        const onDisp = () => send({ type: "set_dispatcher", name: dispName.value, badge: dispBadge.value });
+        dispName.addEventListener("input", onDisp);
+        dispBadge.addEventListener("input", onDisp);
 
+        // unit input events
         root.querySelectorAll("input[data-officer]").forEach(inp => {
           inp.addEventListener("input", () => {
             const id = inp.getAttribute("data-officer");
-            const u = st.units.find(x => x.id === id);
-            if (!u) return;
-            u.officer = inp.value;
-            saveState(st);
-            // Listen aktualisieren ohne full re-render wäre möglich, aber so bleibt’s robust:
-            render();
+            send({ type: "update_unit", id, officer: inp.value });
           });
         });
 
         root.querySelectorAll("input[data-call]").forEach(inp => {
           inp.addEventListener("input", () => {
             const id = inp.getAttribute("data-call");
-            const u = st.units.find(x => x.id === id);
-            if (!u) return;
-            u.callSign = inp.value;
-            saveState(st);
-            render();
+            send({ type: "update_unit", id, callSign: inp.value });
           });
         });
 
         root.querySelectorAll("input[data-note]").forEach(inp => {
           inp.addEventListener("input", () => {
             const id = inp.getAttribute("data-note");
-            const u = st.units.find(x => x.id === id);
-            if (!u) return;
-            u.note = inp.value;
-            saveState(st);
+            send({ type: "update_unit", id, note: inp.value });
           });
         });
 
         root.querySelectorAll("button[data-st]").forEach(btn => {
           btn.addEventListener("click", () => {
             const id = btn.getAttribute("data-st");
-            const val = btn.getAttribute("data-val");
-            const u = st.units.find(x => x.id === id);
-            if (!u) return;
-            u.status = val;
-            saveState(st);
-            render();
+            const status = btn.getAttribute("data-val");
+            send({ type: "update_unit", id, status });
           });
         });
 
         root.querySelectorAll("button[data-clear]").forEach(btn => {
           btn.addEventListener("click", () => {
             const id = btn.getAttribute("data-clear");
-            const u = st.units.find(x => x.id === id);
-            if (!u) return;
-            u.officer = "";
-            u.callSign = "";
-            u.note = "";
-            u.status = "Standby";
-            saveState(st);
-            render();
+            send({ type: "clear_unit", id });
           });
         });
 
         root.querySelector("#btnResetLST").onclick = () => {
-          localStorage.removeItem(LS_KEY);
-          st = loadState();
-          render();
+          send({ type: "reset_leitstelle" });
         };
       }
 
-      render();
+      // WS connect
+      function connect() {
+        live = { ok: false, text: "Verbinde..." };
+        render();
+
+        try {
+          socket = new WebSocket(wsUrl());
+        } catch {
+          live = { ok: false, text: "WS Fehler" };
+          render();
+          return;
+        }
+
+        socket.addEventListener("open", () => {
+          live = { ok: true, text: "Verbunden" };
+          render();
+        });
+
+        socket.addEventListener("close", () => {
+          live = { ok: false, text: "Getrennt" };
+          render();
+          // reconnect
+          setTimeout(connect, 1500);
+        });
+
+        socket.addEventListener("error", () => {
+          live = { ok: false, text: "Fehler" };
+          render();
+          try { socket.close(); } catch {}
+        });
+
+        socket.addEventListener("message", (ev) => {
+          let msg;
+          try { msg = JSON.parse(ev.data); } catch { return; }
+          if (msg.type === "state" && msg.leitstelle) {
+            st = msg.leitstelle;
+            render();
+          }
+        });
+      }
+
+      connect();
     }
   };
 })();
