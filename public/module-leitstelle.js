@@ -13,16 +13,25 @@
     return `<span class="badge b-green">${esc(s)}</span>`;
   }
 
-  function isInDienst(s) { return s === "Standby" || s === "Streife"; }
-
   function wsUrl() {
     const proto = location.protocol === "https:" ? "wss:" : "ws:";
-    return `${proto}//${location.host}/ws`;
+    const token = encodeURIComponent(window.SESSION_TOKEN || "");
+    return `${proto}//${location.host}/ws?token=${token}`;
+  }
+
+  function debounce(fn, ms) {
+    let t = null;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(...args), ms);
+    };
   }
 
   window.Leitstelle = {
     mount(root) {
       if (!root) return;
+
+      const isAdmin = (window.SESSION_ROLE === "admin");
 
       let st = {
         dispatcher: { name: "", badge: "" },
@@ -31,6 +40,14 @@
 
       let socket = null;
       let live = { ok: false, text: "Verbinde..." };
+
+      function send(msg) {
+        try {
+          if (socket && socket.readyState === 1) socket.send(JSON.stringify(msg));
+        } catch {}
+      }
+
+      const sendDebounced = debounce(send, 250);
 
       function counts() {
         let inDienst = 0, streife = 0, ausser = 0, afk = 0;
@@ -45,18 +62,34 @@
         return { inDienst, streife, ausser, afk };
       }
 
-      function send(msg) {
+      function rememberFocus() {
+        const a = document.activeElement;
+        if (!a) return null;
+        const key =
+          a.getAttribute?.("data-officer") ||
+          a.getAttribute?.("data-call") ||
+          a.getAttribute?.("data-note") ||
+          a.id;
+        if (!key) return null;
+        return { key, start: a.selectionStart ?? null, end: a.selectionEnd ?? null };
+      }
+
+      function restoreFocus(mem) {
+        if (!mem) return;
+        let el = root.querySelector(`input[data-officer="${CSS.escape(mem.key)}"]`)
+          || root.querySelector(`input[data-call="${CSS.escape(mem.key)}"]`)
+          || root.querySelector(`input[data-note="${CSS.escape(mem.key)}"]`)
+          || root.querySelector(`#${CSS.escape(mem.key)}`);
+        if (!el) return;
+        el.focus({ preventScroll: true });
         try {
-          if (socket && socket.readyState === 1) socket.send(JSON.stringify(msg));
-        } catch { /* ignore */ }
+          if (mem.start != null && mem.end != null) el.setSelectionRange(mem.start, mem.end);
+        } catch {}
       }
 
       function render() {
+        const mem = rememberFocus();
         const c = counts();
-
-        const inDienstList = st.units.filter(u => isInDienst(u.status) && (u.officer || u.callSign));
-        const ausserList = st.units.filter(u => u.status === "Außer Dienst" && (u.officer || u.callSign));
-        const afkList = st.units.filter(u => u.status === "AFK" && (u.officer || u.callSign));
 
         root.innerHTML = `
           <div class="panel">
@@ -70,7 +103,7 @@
                 <span class="badge" style="border-color:${live.ok ? "rgba(50,255,90,.35)" : "rgba(255,70,70,.35)"}; background:${live.ok ? "rgba(50,255,90,.08)" : "rgba(255,70,70,.08)"}">
                   Live: ${esc(live.text)}
                 </span>
-                <button class="btnMini" id="btnResetLST">Reset</button>
+                <button class="btnMini" id="btnResetLST" ${isAdmin ? "" : "disabled"} style="${isAdmin ? "" : "opacity:.5; cursor:not-allowed"}">Reset</button>
               </div>
             </div>
 
@@ -106,76 +139,43 @@
 
             <div class="row">
               <div class="col">
-                <div class="small">Verantwortlicher für die Leitstelle</div>
+                <div class="small">Verantwortlicher für die Leitstelle (nur Admin)</div>
                 <div class="row" style="margin-top:10px; gap:10px">
                   <div class="col">
-                    <input id="dispName" placeholder="Name" value="${esc(st.dispatcher.name)}"/>
+                    <input id="dispName" placeholder="Name" value="${esc(st.dispatcher.name)}" ${isAdmin ? "" : "disabled"} style="${isAdmin ? "" : "opacity:.5"}"/>
                   </div>
                   <div class="col">
-                    <input id="dispBadge" placeholder="Dienstnummer" value="${esc(st.dispatcher.badge)}"/>
+                    <input id="dispBadge" placeholder="Dienstnummer" value="${esc(st.dispatcher.badge)}" ${isAdmin ? "" : "disabled"} style="${isAdmin ? "" : "opacity:.5"}"/>
                   </div>
                 </div>
               </div>
 
               <div class="col">
-                <div class="small">Live-Listen</div>
-                <div class="row" style="margin-top:10px; gap:10px">
-                  <div class="col">
-                    <div class="small">Im Dienst</div>
-                    <div id="listIn" style="margin-top:8px"></div>
-                  </div>
-                  <div class="col">
-                    <div class="small">Außer Dienst</div>
-                    <div id="listOut" style="margin-top:8px"></div>
-                  </div>
-                  <div class="col">
-                    <div class="small">AFK</div>
-                    <div id="listAfk" style="margin-top:8px"></div>
-                  </div>
-                </div>
+                <div class="small">Funkcodes (Kurz)</div>
+                <table class="table" style="margin-top:10px">
+                  <tr><th>Code</th><th>Bedeutung</th></tr>
+                  <tr><td>10-01</td><td>Dienstantritt</td></tr>
+                  <tr><td>10-02</td><td>Dienstende</td></tr>
+                  <tr><td>10-04</td><td>Verstanden</td></tr>
+                  <tr><td>10-20</td><td>Standortabfrage</td></tr>
+                  <tr><td>10-30</td><td>Statusabfrage</td></tr>
+                  <tr><td>10-50</td><td>Verstärkung benötigt</td></tr>
+                </table>
               </div>
             </div>
 
             <hr/>
 
-            <div class="small">Streifen (Eintragen / Status)</div>
+            <div class="small">Streifen</div>
             <div id="unitGrid" style="
               margin-top:10px;
               display:grid;
               grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
               gap:12px;
             "></div>
-
-            <hr/>
-
-            <div class="small">Funkcodes (Kurz)</div>
-            <table class="table" style="margin-top:10px">
-              <tr><th>Code</th><th>Bedeutung</th></tr>
-              <tr><td>10-01</td><td>Dienstantritt</td></tr>
-              <tr><td>10-02</td><td>Dienstende</td></tr>
-              <tr><td>10-04</td><td>Verstanden</td></tr>
-              <tr><td>10-20</td><td>Standortabfrage</td></tr>
-              <tr><td>10-30</td><td>Statusabfrage</td></tr>
-              <tr><td>10-50</td><td>Verstärkung benötigt</td></tr>
-              <tr><td>10-60</td><td>Nicht verfügbar</td></tr>
-              <tr><td>10-70</td><td>Im Dienst / Einteilung benötigt</td></tr>
-            </table>
           </div>
         `;
 
-        // lists
-        const cardMini = (u) => `
-          <div style="border:1px solid #1f2430; background:#0a0c10; border-radius:12px; padding:8px; margin-bottom:8px">
-            <div style="font-weight:900; font-size:12px">${esc(u.id)}</div>
-            <div class="small">${esc(u.officer || "-")} ${u.callSign ? " • " + esc(u.callSign) : ""}</div>
-          </div>
-        `;
-
-        root.querySelector("#listIn").innerHTML = inDienstList.length ? inDienstList.map(cardMini).join("") : `<div class="small">-</div>`;
-        root.querySelector("#listOut").innerHTML = ausserList.length ? ausserList.map(cardMini).join("") : `<div class="small">-</div>`;
-        root.querySelector("#listAfk").innerHTML = afkList.length ? afkList.map(cardMini).join("") : `<div class="small">-</div>`;
-
-        // grid
         const grid = root.querySelector("#unitGrid");
         grid.innerHTML = st.units.map(u => `
           <div style="border:1px solid #1f2430; background:#0a0c10; border-radius:14px; padding:12px">
@@ -215,32 +215,32 @@
           </div>
         `).join("");
 
-        // dispatcher events
+        // admin-only dispatcher
         const dispName = root.querySelector("#dispName");
         const dispBadge = root.querySelector("#dispBadge");
-        const onDisp = () => send({ type: "set_dispatcher", name: dispName.value, badge: dispBadge.value });
-        dispName.addEventListener("input", onDisp);
-        dispBadge.addEventListener("input", onDisp);
+        if (isAdmin) {
+          const onDisp = () => sendDebounced({ type: "set_dispatcher", name: dispName.value, badge: dispBadge.value });
+          dispName.addEventListener("input", onDisp);
+          dispBadge.addEventListener("input", onDisp);
+        }
 
-        // unit input events
+        // unit inputs -> debounce (fix 1-char kick)
         root.querySelectorAll("input[data-officer]").forEach(inp => {
           inp.addEventListener("input", () => {
             const id = inp.getAttribute("data-officer");
-            send({ type: "update_unit", id, officer: inp.value });
+            sendDebounced({ type: "update_unit", id, officer: inp.value });
           });
         });
-
         root.querySelectorAll("input[data-call]").forEach(inp => {
           inp.addEventListener("input", () => {
             const id = inp.getAttribute("data-call");
-            send({ type: "update_unit", id, callSign: inp.value });
+            sendDebounced({ type: "update_unit", id, callSign: inp.value });
           });
         });
-
         root.querySelectorAll("input[data-note]").forEach(inp => {
           inp.addEventListener("input", () => {
             const id = inp.getAttribute("data-note");
-            send({ type: "update_unit", id, note: inp.value });
+            sendDebounced({ type: "update_unit", id, note: inp.value });
           });
         });
 
@@ -259,12 +259,12 @@
           });
         });
 
-        root.querySelector("#btnResetLST").onclick = () => {
-          send({ type: "reset_leitstelle" });
-        };
+        const btnReset = root.querySelector("#btnResetLST");
+        if (isAdmin) btnReset.onclick = () => send({ type: "reset_leitstelle" });
+
+        restoreFocus(mem);
       }
 
-      // WS connect
       function connect() {
         live = { ok: false, text: "Verbinde..." };
         render();
@@ -285,7 +285,6 @@
         socket.addEventListener("close", () => {
           live = { ok: false, text: "Getrennt" };
           render();
-          // reconnect
           setTimeout(connect, 1500);
         });
 
@@ -298,6 +297,11 @@
         socket.addEventListener("message", (ev) => {
           let msg;
           try { msg = JSON.parse(ev.data); } catch { return; }
+          if (msg.type === "error" && msg.reason === "unauthorized") {
+            live = { ok: false, text: "Nicht autorisiert" };
+            render();
+            return;
+          }
           if (msg.type === "state" && msg.leitstelle) {
             st = msg.leitstelle;
             render();
