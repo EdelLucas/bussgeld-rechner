@@ -1,3 +1,7 @@
+window.addEventListener("error", (e) => {
+  console.log("SCRIPT ERROR:", e.message, e.filename, e.lineno);
+});
+console.log("app.js geladen OK");
 const loginView = document.getElementById("loginView");
 const appView = document.getElementById("appView");
 const inUser = document.getElementById("inUser");
@@ -107,3 +111,4 @@ async function doLogin(){
     }
   }catch{}
 })();
+
