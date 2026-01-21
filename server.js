@@ -4,11 +4,10 @@ const path = require("path");
 const app = express();
 app.use(express.json());
 
-// Static Frontend
 const PUBLIC_DIR = path.join(__dirname, "public");
-app.use(express.static(PUBLIC_DIR, {
-  extensions: ["html"]
-}));
+
+// Static zuerst
+app.use(express.static(PUBLIC_DIR));
 
 // Login
 const users = [
@@ -23,12 +22,9 @@ app.post("/api/login", (req, res) => {
   res.json({ ok: true, user: user.u, role: user.role });
 });
 
-// IMPORTANT: SPA Fallback nur für echte Seiten, nicht für Dateien
+// SPA-Fallback NUR für Seiten ohne Dateiendung
 app.get("*", (req, res) => {
-  // Wenn der Request nach einer Datei aussieht (.js .css .png etc), dann 404 statt index.html
-  if (path.extname(req.path)) {
-    return res.status(404).send("Not found");
-  }
+  if (path.extname(req.path)) return res.status(404).send("Not found");
   res.sendFile(path.join(PUBLIC_DIR, "index.html"));
 });
 
