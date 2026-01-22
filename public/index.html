@@ -9,47 +9,76 @@
 <body>
 
 <!-- LOGIN -->
-<div id="loginView" class="center">
-  <div class="card">
-    <div class="brand">Grand LST</div>
-    <div class="sub">Login erforderlich</div>
+<div id="loginView" class="loginWrap">
+  <div class="loginCard glass">
+    <div class="loginBrand">
+      <div class="brandIcon"></div>
+      <div>
+        <div class="brandTitle">Grand LST</div>
+        <div class="brandSub">Login erforderlich</div>
+      </div>
+    </div>
 
     <label class="lbl">E-Mail</label>
     <input id="inUser" autocomplete="username" placeholder="name@orga.de"/>
 
-    <label class="lbl">Passwort</label>
+    <label class="lbl" style="margin-top:10px">Passwort</label>
     <input id="inPass" type="password" autocomplete="current-password" placeholder="••••••••"/>
 
-    <button id="btnLogin" class="btn">Anmelden</button>
+    <button id="btnLogin" class="btnPrimary">Anmelden</button>
     <div id="loginMsg" class="msg"></div>
   </div>
 </div>
 
 <!-- APP -->
-<div id="appView" class="app" style="display:none">
-  <header class="topbar">
-    <div class="top-left">
-      <div class="logoDot"></div>
-      <div>
-        <div class="topTitle">Grand Leitstellen System</div>
-        <div id="who" class="topSub"></div>
+<div id="appView" class="appShell" style="display:none">
+  <aside class="sidebar glass">
+    <div class="sideTop">
+      <div class="sideLogo">
+        <div class="dot"></div>
+        <div>
+          <div class="sideTitle">ADMIN Dashboard</div>
+          <div class="sideSub" id="orgLine">—</div>
+        </div>
       </div>
     </div>
 
-    <nav class="tabs" id="tabs"></nav>
+    <nav class="sideNav" id="sideNav"></nav>
 
-    <div class="top-right">
-      <button id="btnLogout" class="btn ghost">Logout</button>
+    <div class="sideBottom">
+      <div class="sideHint">System • Web</div>
     </div>
-  </header>
+  </aside>
 
-  <main class="main">
-    <section id="view-leitstelle" class="view"></section>
-    <section id="view-rechner" class="view" style="display:none"></section>
-    <section id="view-personen" class="view" style="display:none"></section>
-    <section id="view-fahrzeuge" class="view" style="display:none"></section>
-    <section id="view-hr" class="view" style="display:none"></section>
-    <section id="view-admin" class="view" style="display:none"></section>
+  <main class="mainArea">
+    <header class="topbar glass">
+      <div class="topLeft">
+        <div class="topCrumb" id="crumb">Dashboard</div>
+      </div>
+
+      <div class="topRight">
+        <div class="userPill glass" id="userPill">
+          <div class="avatar"></div>
+          <div class="userMeta">
+            <div class="userName" id="whoName">—</div>
+            <div class="userRole" id="whoRole">—</div>
+          </div>
+          <button class="btnGhost" id="btnLogout">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="content">
+      <!-- Optional: Dashboard Platzhalter (kannst du später füllen) -->
+      <section id="view-dashboard" class="view"></section>
+
+      <section id="view-leitstelle" class="view" style="display:none"></section>
+      <section id="view-rechner" class="view" style="display:none"></section>
+      <section id="view-personen" class="view" style="display:none"></section>
+      <section id="view-fahrzeuge" class="view" style="display:none"></section>
+      <section id="view-hr" class="view" style="display:none"></section>
+      <section id="view-admin" class="view" style="display:none"></section>
+    </section>
   </main>
 </div>
 
