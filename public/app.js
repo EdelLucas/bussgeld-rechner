@@ -12,26 +12,27 @@ let SESSION = { user: null, role: null, token: null };
 
 btnLogin.addEventListener("click", doLogin);
 btnLogout.addEventListener("click", () => location.reload());
+[inUser, inPass].forEach(el => el.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); }));
 
-[inUser, inPass].forEach(el => el.addEventListener("keydown", e => {
-  if (e.key === "Enter") doLogin();
-}));
-
-function setView(v) {
+function setView(v){
   document.querySelectorAll(".view").forEach(s => s.style.display = "none");
   const el = document.getElementById("view-" + v);
   if (el) el.style.display = "block";
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.view === v));
 }
 
-function buildTabs() {
+function buildTabs(){
   const base = [
-    { id: "leitstelle", label: "Leitstelle" },
-    { id: "rechner", label: "Strafrechner" },
-    { id: "personen", label: "Personen" },
-    { id: "fahrzeuge", label: "Fahrzeuge" },
+    { id:"leitstelle", label:"Leitstelle" },
+    { id:"rechner", label:"Strafkatalog" },
+    { id:"personen", label:"Personen" },
+    { id:"fahrzeuge", label:"Fahrzeuge" },
   ];
-  if (SESSION.role === "admin") base.push({ id: "admin", label: "Admin" });
+
+  if (SESSION.role === "admin") {
+    base.push({ id:"hr", label:"HR" });
+    base.push({ id:"admin", label:"Admin" });
+  }
 
   tabsEl.innerHTML = "";
   base.forEach(t => {
@@ -46,31 +47,27 @@ function buildTabs() {
   setView("leitstelle");
 }
 
-async function doLogin() {
+async function doLogin(){
   loginMsg.textContent = "";
   const u = inUser.value.trim();
   const p = inPass.value.trim();
-
-  if (!u || !p) {
-    loginMsg.textContent = "Bitte Benutzer und Passwort eingeben.";
-    return;
-  }
+  if(!u || !p){ loginMsg.textContent = "Bitte Benutzer und Passwort eingeben."; return; }
 
   let res, data;
-  try {
+  try{
     res = await fetch("/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({ u, p })
     });
-    data = await res.json().catch(() => ({}));
-  } catch (e) {
+    data = await res.json().catch(()=>({}));
+  }catch{
     loginMsg.textContent = "Backend nicht erreichbar.";
     return;
   }
 
-  if (!res.ok || !data.ok) {
-    loginMsg.textContent = "Login fehlgeschlagen: " + (data.reason || "unknown");
+  if(!res.ok || !data.ok){
+    loginMsg.textContent = "Login fehlgeschlagen.";
     return;
   }
 
@@ -78,9 +75,9 @@ async function doLogin() {
   SESSION.role = data.role;
   SESSION.token = data.token;
 
-  window.SESSION_TOKEN = data.token;
-  window.SESSION_ROLE = data.role;
   window.SESSION_USER = data.user;
+  window.SESSION_ROLE = data.role;
+  window.SESSION_TOKEN = data.token;
 
   loginView.style.display = "none";
   appView.style.display = "block";
@@ -88,10 +85,10 @@ async function doLogin() {
 
   buildTabs();
 
-  // mount modules (wenn vorhanden)
-  if (window.Leitstelle) window.Leitstelle.mount(document.getElementById("view-leitstelle"));
-  if (window.Rechner) window.Rechner.mount(document.getElementById("view-rechner"));
-  if (window.Personen) window.Personen.mount(document.getElementById("view-personen"));
-  if (window.Fahrzeuge) window.Fahrzeuge.mount(document.getElementById("view-fahrzeuge"));
-  if (SESSION.role === "admin" && window.Admin) window.Admin.mount(document.getElementById("view-admin"));
+  if (window.Leitstelle) Leitstelle.mount(document.getElementById("view-leitstelle"));
+  if (window.Rechner) Rechner.mount(document.getElementById("view-rechner"));
+  if (window.Personen) Personen.mount(document.getElementById("view-personen"));
+  if (window.Fahrzeuge) Fahrzeuge.mount(document.getElementById("view-fahrzeuge"));
+  if (SESSION.role === "admin" && window.HR) HR.mount(document.getElementById("view-hr"));
+  if (SESSION.role === "admin" && window.Admin) Admin.mount(document.getElementById("view-admin"));
 }
