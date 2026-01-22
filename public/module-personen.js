@@ -1,27 +1,38 @@
 window.Personen = {
-  async mount(root, SESSION){
+  async mount(root, ctx){
     root.innerHTML = `
       <div class="panel">
         <div class="title">👤 Personen (Übersicht)</div>
-        <div class="small">Aktuell nur Übersicht. Eintragen kommt später über HR/Orga-Workflows.</div>
-        <div class="hr"></div>
-        <div id="box" class="small"></div>
+        <div class="small">Nur Anzeige. Eintragen kommt später über Rollen/HR.</div>
+        <hr/>
+        <div id="list"></div>
       </div>
     `;
 
-    const box = root.querySelector("#box");
-    try{
-      const res = await fetch("/api/org/overview", { headers: { Authorization: "Bearer " + SESSION.token }});
-      const data = await res.json();
-      if (data.ok) {
-        box.innerHTML = `
-          <div>Einträge Personen: <b>${data.overview.persons}</b></div>
-        `;
-      } else {
-        box.textContent = "Keine Daten.";
-      }
-    }catch{
-      box.textContent = "Server nicht erreichbar.";
+    const list = root.querySelector("#list");
+
+    const { res, data } = await ctx.api("/api/persons");
+    if(!res.ok || !data.ok){
+      list.innerHTML = `<div class="small">Fehler beim Laden.</div>`;
+      return;
+    }
+
+    if(!data.persons.length){
+      list.innerHTML = `<div class="small">Keine Einträge.</div>`;
+      return;
+    }
+
+    list.innerHTML = data.persons.map(p=>`
+      <div class="cardListItem">
+        <div style="font-weight:900; font-size:15px">${escapeHtml(p.name)}</div>
+        <div class="small" style="margin-top:6px">${escapeHtml(p.note || "")}</div>
+      </div>
+    `).join("");
+
+    function escapeHtml(s){
+      return String(s||"")
+        .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;").replaceAll("'","&#039;");
     }
   }
 };
