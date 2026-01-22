@@ -1,29 +1,31 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Grand LST</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
+<!-- LOGIN -->
 <div id="loginView" class="center">
   <div class="card">
     <div class="brand">Grand LST</div>
     <div class="sub">Login erforderlich</div>
 
-    <label class="lbl">Benutzer</label>
-    <input id="inUser" autocomplete="username"/>
+    <label class="lbl">E-Mail</label>
+    <input id="inEmail" autocomplete="username" placeholder="name@orga.de"/>
 
     <label class="lbl">Passwort</label>
-    <input id="inPass" type="password" autocomplete="current-password"/>
+    <input id="inPass" type="password" autocomplete="current-password" placeholder="Passwort"/>
 
     <button id="btnLogin" class="btn">Anmelden</button>
     <div id="loginMsg" class="msg"></div>
   </div>
 </div>
 
+<!-- APP -->
 <div id="appView" class="app" style="display:none">
   <header class="topbar">
     <div class="top-left">
@@ -44,7 +46,7 @@
     <section id="view-rechner" class="view" style="display:none"></section>
     <section id="view-personen" class="view" style="display:none"></section>
     <section id="view-fahrzeuge" class="view" style="display:none"></section>
-    <section id="view-hr" class="view" style="display:none"></section>
+    <section id="view-profil" class="view" style="display:none"></section>
     <section id="view-admin" class="view" style="display:none"></section>
   </main>
 </div>
@@ -54,7 +56,7 @@
 <script src="module-rechner.js"></script>
 <script src="module-personen.js"></script>
 <script src="module-fahrzeuge.js"></script>
-<script src="module-hr.js"></script>
+<script src="module-profil.js"></script>
 <script src="module-admin.js"></script>
 <script src="app.js"></script>
 </body>
