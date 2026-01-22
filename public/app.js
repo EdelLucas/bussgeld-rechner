@@ -2,7 +2,7 @@
 
 const loginView = document.getElementById("loginView");
 const appView = document.getElementById("appView");
-const inUser = document.getElementById("inUser");
+const inEmail = document.getElementById("inEmail");
 const inPass = document.getElementById("inPass");
 const btnLogin = document.getElementById("btnLogin");
 const btnLogout = document.getElementById("btnLogout");
@@ -10,13 +10,12 @@ const loginMsg = document.getElementById("loginMsg");
 const who = document.getElementById("who");
 const tabsEl = document.getElementById("tabs");
 
-// Globale Session (Multi-Orga)
 let SESSION = {
   user: null,
   role: null,
   token: null,
   org: null,
-  orgName: null,
+  email: null,
   ws: null
 };
 
@@ -37,8 +36,7 @@ btnLogout.addEventListener("click", () => {
   location.reload();
 });
 
-// Enter-Handling
-[inUser, inPass].forEach(el => el.addEventListener("keydown", e => {
+[inEmail, inPass].forEach(el => el.addEventListener("keydown", e => {
   if (e.key === "Enter") doLogin();
 }));
 
@@ -50,22 +48,15 @@ function setView(v) {
 }
 
 function buildTabs() {
-  // Tabs für alle
   const base = [
     { id: "leitstelle", label: "Leitstelle" },
     { id: "rechner", label: "Strafkatalog" },
     { id: "personen", label: "Personen" },
     { id: "fahrzeuge", label: "Fahrzeuge" },
+    { id: "profil", label: "Profil" },
   ];
 
-  // Admin-only (global)
-  if (SESSION.role === "admin") {
-    base.push({ id: "hr", label: "HR" });
-    base.push({ id: "admin", label: "Admin" });
-  }
-
-  // Leader optional: Wenn du HR auch für Leader willst, hier aktivieren:
-  // if (SESSION.role === "leader") base.push({ id: "hr", label: "HR" });
+  if (SESSION.role === "admin") base.push({ id: "admin", label: "Admin" });
 
   tabsEl.innerHTML = "";
   base.forEach(t => {
@@ -82,55 +73,35 @@ function buildTabs() {
 
 function connectWS() {
   if (!SESSION.token) return;
-
   try {
     const proto = location.protocol === "https:" ? "wss" : "ws";
     const wsUrl = `${proto}://${location.host}/ws?token=${encodeURIComponent(SESSION.token)}`;
     const ws = new WebSocket(wsUrl);
     SESSION.ws = ws;
 
-    ws.onopen = () => {
-      // ok
-    };
-
     ws.onmessage = (ev) => {
       let msg;
       try { msg = JSON.parse(ev.data); } catch { return; }
 
-      // Debug (optional)
-      // console.log("WS:", msg);
-
-      // Orga-spezifische Live Updates (wenn du Module später daran anschließt)
-      if (msg.type === "units") {
-        window.dispatchEvent(new CustomEvent("ws:units", { detail: msg.units }));
-      }
-      if (msg.type === "persons") {
-        window.dispatchEvent(new CustomEvent("ws:persons", { detail: msg.persons }));
-      }
-      if (msg.type === "vehicles") {
-        window.dispatchEvent(new CustomEvent("ws:vehicles", { detail: msg.vehicles }));
-      }
+      if (msg.type === "units") window.dispatchEvent(new CustomEvent("ws:units", { detail: msg.units }));
+      if (msg.type === "persons") window.dispatchEvent(new CustomEvent("ws:persons", { detail: msg.persons }));
+      if (msg.type === "vehicles") window.dispatchEvent(new CustomEvent("ws:vehicles", { detail: msg.vehicles }));
     };
 
     ws.onclose = () => {
-      // Reconnect light (optional)
-      // Falls du keinen Reconnect willst: rausnehmen
-      setTimeout(() => {
-        if (SESSION.token) connectWS();
-      }, 2000);
+      setTimeout(() => { if (SESSION.token) connectWS(); }, 2000);
     };
-  } catch {
-    // WS optional, kein harter Fehler
-  }
+  } catch {}
 }
 
 async function doLogin() {
   loginMsg.textContent = "";
-  const u = (inUser.value || "").trim();
-  const p = (inPass.value || "").trim();
 
-  if (!u || !p) {
-    loginMsg.textContent = "Bitte Benutzer und Passwort eingeben.";
+  const email = (inEmail.value || "").trim();
+  const password = (inPass.value || "").trim();
+
+  if (!email || !password) {
+    loginMsg.textContent = "Bitte E-Mail und Passwort eingeben.";
     return;
   }
 
@@ -138,7 +109,7 @@ async function doLogin() {
   try {
     ({ res, data } = await window.apiFetch("/api/login", {
       method: "POST",
-      body: JSON.stringify({ u, p })
+      body: JSON.stringify({ email, password })
     }));
   } catch {
     loginMsg.textContent = "Backend nicht erreichbar.";
@@ -153,35 +124,27 @@ async function doLogin() {
   SESSION.user = data.user;
   SESSION.role = data.role;
   SESSION.token = data.token;
-  SESSION.org = data.org || null;
-  SESSION.orgName = data.orgName || data.org || null;
+  SESSION.org = data.org;
+  SESSION.email = data.email;
 
-  // global verfügbar (für Module falls nötig)
   window.SESSION_USER = SESSION.user;
   window.SESSION_ROLE = SESSION.role;
   window.SESSION_TOKEN = SESSION.token;
   window.SESSION_ORG = SESSION.org;
-  window.SESSION_ORG_NAME = SESSION.orgName;
+  window.SESSION_EMAIL = SESSION.email;
 
-  // UI wechseln
   loginView.style.display = "none";
   appView.style.display = "block";
-  who.textContent = `Angemeldet als ${SESSION.user} (${SESSION.role}) • ${SESSION.orgName || SESSION.org || "-"}`;
+  who.textContent = `Angemeldet als ${SESSION.user} (${SESSION.role}) • ${SESSION.org}`;
 
-  // Tabs & Views
   buildTabs();
 
-  // Module mounten (nur wenn vorhanden)
   if (window.Leitstelle) window.Leitstelle.mount(document.getElementById("view-leitstelle"));
   if (window.Rechner) window.Rechner.mount(document.getElementById("view-rechner"));
   if (window.Personen) window.Personen.mount(document.getElementById("view-personen"));
   if (window.Fahrzeuge) window.Fahrzeuge.mount(document.getElementById("view-fahrzeuge"));
+  if (window.Profil) window.Profil.mount(document.getElementById("view-profil"));
+  if (SESSION.role === "admin" && window.Admin) window.Admin.mount(document.getElementById("view-admin"));
 
-  if (SESSION.role === "admin") {
-    if (window.HR) window.HR.mount(document.getElementById("view-hr"));
-    if (window.Admin) window.Admin.mount(document.getElementById("view-admin"));
-  }
-
-  // WebSocket Live-Sync (optional)
   connectWS();
 }
