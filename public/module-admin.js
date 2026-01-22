@@ -1,166 +1,128 @@
-// public/module-admin.js
 window.Admin = {
-  async mount(root){
+  onAudit: null,
+
+  async mount(root, SESSION){
     root.innerHTML = `
       <div class="panel">
         <div class="title">🔐 Admin</div>
-        <div class="small">Leader pro Orga anlegen (Login über E-Mail + generiertes Passwort)</div>
-        <hr/>
+        <div class="small">Admin kann alle Orgas verwalten. Jede Orga ist strikt getrennt (User sehen nur eigene Orga).</div>
+        <div class="hr"></div>
 
         <div class="row">
           <div class="col">
             <div class="panel" style="box-shadow:none">
-              <div class="title" style="font-size:16px; margin-bottom:6px">Leader erstellen</div>
+              <div class="title" style="font-size:14px">Strafenkatalog pro Orga (JSON)</div>
 
-              <label class="lbl">Orga</label>
-              <select id="orgSel" class="sel"></select>
+              <div class="small">Orga auswählen</div>
+              <select id="orgPick" style="width:100%; padding:12px; border-radius:12px; border:1px solid #2a2f38; background:#0a0c10; color:#fff; outline:none;">
+                ${["LSPD","FIB","NG","LI","EMS","GOV","SAHP"].map(o=>`<option value="${o}">${o}</option>`).join("")}
+              </select>
 
-              <label class="lbl">Name</label>
-              <input id="inName" placeholder="Vorname Nachname"/>
+              <textarea id="lawsJson" style="margin-top:10px; width:100%; height:360px; background:#0a0c10; color:#fff; border:1px solid #2a2f38; border-radius:12px; padding:10px; font-family:ui-monospace,Consolas; font-size:12px;"></textarea>
 
-              <label class="lbl">Telefon</label>
-              <input id="inPhone" placeholder="+49 ..."/>
-
-              <label class="lbl">E-Mail</label>
-              <input id="inEmail" placeholder="leader@orga.de"/>
-
-              <button id="btnCreate" class="btnMini" style="margin-top:12px">Leader anlegen</button>
-
-              <div id="outPwBox" style="display:none; margin-top:12px; padding:12px; border:1px solid #2a2f38; border-radius:14px; background:#0a0c10">
-                <div class="small" style="color:var(--accent); font-weight:900">Generiertes Passwort (nur jetzt sichtbar)</div>
-                <div style="display:flex; gap:10px; align-items:center; margin-top:8px; flex-wrap:wrap">
-                  <div id="outPw" style="font-size:18px; font-weight:900; letter-spacing:.5px"></div>
-                  <button id="btnCopyPw" class="btnMini">Kopieren</button>
-                </div>
-                <div id="outPwMeta" class="small" style="margin-top:8px"></div>
+              <div class="row" style="margin-top:10px">
+                <button id="lawsLoad" class="btnMini">Laden</button>
+                <button id="lawsSave" class="btnMini">Speichern</button>
+                <button id="lawsReset" class="btnMini">Default</button>
               </div>
 
-              <div id="msg" class="small" style="margin-top:10px"></div>
+              <div id="adminMsg" class="small" style="margin-top:8px;"></div>
             </div>
           </div>
 
           <div class="col">
             <div class="panel" style="box-shadow:none">
-              <div class="title" style="font-size:16px; margin-bottom:6px">Leader Übersicht</div>
-              <div id="leaderList" style="margin-top:8px"></div>
+              <div class="title" style="font-size:14px">Audit-Log (serverseitig)</div>
+              <div class="small">Zeigt Änderungen & Logins für die ausgewählte Orga.</div>
+              <div class="hr"></div>
+              <div id="audit" class="small" style="max-height:420px; overflow:auto"></div>
             </div>
           </div>
         </div>
       </div>
     `;
 
-    const orgSel = root.querySelector("#orgSel");
-    const inName = root.querySelector("#inName");
-    const inPhone = root.querySelector("#inPhone");
-    const inEmail = root.querySelector("#inEmail");
-    const btnCreate = root.querySelector("#btnCreate");
-    const msg = root.querySelector("#msg");
-
-    const outPwBox = root.querySelector("#outPwBox");
-    const outPw = root.querySelector("#outPw");
-    const outPwMeta = root.querySelector("#outPwMeta");
-    const btnCopyPw = root.querySelector("#btnCopyPw");
-
-    const leaderList = root.querySelector("#leaderList");
+    const orgPick = root.querySelector("#orgPick");
+    const ta = root.querySelector("#lawsJson");
+    const msg = root.querySelector("#adminMsg");
+    const auditBox = root.querySelector("#audit");
 
     function setMsg(t, bad=false){
       msg.style.color = bad ? "#ff6b6b" : "var(--muted)";
-      msg.textContent = t || "";
+      msg.textContent = t;
     }
 
-    // Load Orgs
-    {
-      const { res, data } = await window.apiFetch("/api/admin/orgs");
-      if(!res.ok || !data?.ok){
-        setMsg("Orgs konnten nicht geladen werden.", true);
-        return;
-      }
-      orgSel.innerHTML = data.orgs.map(o=>`<option value="${o}">${o}</option>`).join("");
-    }
-
-    async function refreshLeaders(){
-      leaderList.innerHTML = `<div class="small">Lade...</div>`;
-      const { res, data } = await window.apiFetch("/api/admin/leaders");
-      if(!res.ok || !data?.ok){
-        leaderList.innerHTML = `<div class="small" style="color:#ff6b6b">Konnte Leader nicht laden.</div>`;
-        return;
-      }
-
-      const leaders = data.leaders || [];
-      if(!leaders.length){
-        leaderList.innerHTML = `<div class="small">Noch keine Leader angelegt.</div>`;
-        return;
-      }
-
-      leaderList.innerHTML = leaders
-        .sort((a,b)=>String(a.org).localeCompare(String(b.org)))
-        .map(l=>`
-          <div style="border:1px solid #1f2430; background:#0a0c10; border-radius:14px; padding:12px; margin-bottom:10px">
-            <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap">
-              <div style="font-weight:900">${escapeHtml(l.name)}</div>
-              <div class="badge ${l.active ? "b-green":"b-red"}">${l.active ? "Aktiv" : "Inaktiv"}</div>
-            </div>
-            <div class="small" style="margin-top:6px">
-              <b>${escapeHtml(l.org)}</b> • ${escapeHtml(l.email)} • ${escapeHtml(l.phone || "-")}
-            </div>
-          </div>
-        `).join("");
-    }
-
-    await refreshLeaders();
-
-    btnCopyPw.onclick = async ()=>{
-      try{
-        await navigator.clipboard.writeText(outPw.textContent || "");
-        setMsg("Passwort kopiert.");
-      }catch{
-        setMsg("Kopieren nicht möglich.", true);
-      }
-    };
-
-    btnCreate.onclick = async ()=>{
-      outPwBox.style.display = "none";
-      setMsg("");
-
-      const org = String(orgSel.value || "").trim();
-      const name = String(inName.value || "").trim();
-      const phone = String(inPhone.value || "").trim();
-      const email = String(inEmail.value || "").trim().toLowerCase();
-
-      if(!org || !name || !email){
-        setMsg("Orga, Name und E-Mail sind Pflicht.", true);
-        return;
-      }
-
-      const { res, data } = await window.apiFetch("/api/admin/create-leader", {
-        method:"POST",
-        body: JSON.stringify({ org, name, phone, email })
+    async function loadLaws(){
+      const org = orgPick.value;
+      const res = await fetch("/api/laws?org=" + encodeURIComponent(org), {
+        headers:{ Authorization:"Bearer " + SESSION.token }
       });
+      const data = await res.json().catch(()=>({}));
+      const laws = data.ok && data.laws ? data.laws : window.DEFAULT_LAWS;
+      ta.value = JSON.stringify(laws, null, 2);
+      setMsg("Geladen.");
+    }
 
-      if(!res.ok || !data?.ok){
-        const reason = data?.reason || "unbekannt";
-        if(reason === "email_exists") setMsg("E-Mail existiert bereits.", true);
-        else if(reason === "invalid_org") setMsg("Ungültige Orga.", true);
-        else setMsg("Leader anlegen fehlgeschlagen.", true);
-        return;
-      }
+    async function saveLaws(){
+      const org = orgPick.value;
+      let parsed;
+      try{ parsed = JSON.parse(ta.value); }
+      catch { setMsg("JSON ungültig.", true); return; }
 
-      outPw.textContent = data.generatedPassword || "";
-      outPwMeta.textContent = `Login: ${data.leader.email} • Orga: ${data.leader.org}`;
-      outPwBox.style.display = "block";
+      const res = await fetch("/api/laws", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json", "Authorization":"Bearer " + SESSION.token },
+        body: JSON.stringify({ org, laws: parsed })
+      });
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) { setMsg("Speichern fehlgeschlagen.", true); return; }
+      setMsg("Gespeichert. (Rechner aktualisiert live)");
+    }
 
-      inName.value = "";
-      inPhone.value = "";
-      inEmail.value = "";
-      setMsg("Leader erstellt.");
+    function resetDefault(){
+      ta.value = JSON.stringify(window.DEFAULT_LAWS, null, 2);
+      setMsg("Default in Textfeld geladen. Speichern drücken um zu übernehmen.");
+    }
 
-      await refreshLeaders();
+    root.querySelector("#lawsLoad").onclick = loadLaws;
+    root.querySelector("#lawsSave").onclick = saveLaws;
+    root.querySelector("#lawsReset").onclick = resetDefault;
+    orgPick.onchange = ()=>{ loadLaws(); loadAudit(); };
+
+    async function loadAudit(){
+      auditBox.textContent = "Lade…";
+      const org = orgPick.value;
+      const res = await fetch("/api/audit?org=" + encodeURIComponent(org), {
+        headers:{ Authorization:"Bearer " + SESSION.token }
+      });
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok || !data.ok) { auditBox.textContent = "Fehler."; return; }
+
+      const audit = data.audit || [];
+      auditBox.innerHTML = audit.map(a=>`
+        <div style="padding:10px; border:1px solid #1f2430; background:#0a0c10; border-radius:12px; margin-bottom:8px">
+          <div style="font-weight:900">${escapeHtml(a.action)}</div>
+          <div class="small">${new Date(a.ts).toLocaleString("de-DE")} • ${escapeHtml(a.actor)}</div>
+          <div class="small">${escapeHtml(JSON.stringify(a.meta || {}))}</div>
+        </div>
+      `).join("");
+    }
+
+    // live audit push via WS
+    Admin.onAudit = (entry)=>{
+      // only if org matches current selection
+      const org = orgPick.value;
+      // server pushes only org room; admin is SYSTEM org, but WS room = SYSTEM => no audit pushes.
+      // keep simple: just refresh when needed (or later implement admin-room)
     };
+
+    function escapeHtml(s){
+      return String(s ?? "").replace(/[&<>"']/g, m => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"
+      }[m]));
+    }
+
+    await loadLaws();
+    await loadAudit();
   }
 };
-
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, m => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-  }[m]));
-}
