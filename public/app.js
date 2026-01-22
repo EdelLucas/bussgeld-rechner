@@ -1,63 +1,39 @@
 const loginView = document.getElementById("loginView");
 const appView = document.getElementById("appView");
-
-const inEmail = document.getElementById("inEmail");
+const inUser = document.getElementById("inUser");
 const inPass = document.getElementById("inPass");
 const btnLogin = document.getElementById("btnLogin");
 const btnLogout = document.getElementById("btnLogout");
 const loginMsg = document.getElementById("loginMsg");
-
 const who = document.getElementById("who");
 const tabsEl = document.getElementById("tabs");
 
-const pwModal = document.getElementById("pwModal");
-const pwClose = document.getElementById("pwClose");
-const oldPw = document.getElementById("oldPw");
-const newPw = document.getElementById("newPw");
-const pwSave = document.getElementById("pwSave");
-const pwMsg = document.getElementById("pwMsg");
-
-let SESSION = {
-  token: null,
-  user: null
-};
-
+let SESSION = null;
 let WS = null;
 
 btnLogin.addEventListener("click", doLogin);
 btnLogout.addEventListener("click", doLogout);
+[inUser, inPass].forEach(el => el.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); }));
 
-[inEmail, inPass].forEach(el => el.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") doLogin();
-}));
-
-pwClose.onclick = () => (pwModal.style.display = "none");
-pwModal.onclick = (e) => { if (e.target === pwModal) pwModal.style.display = "none"; };
-pwSave.onclick = doChangePassword;
-
-function setView(v) {
-  document.querySelectorAll(".view").forEach(s => (s.style.display = "none"));
+function setView(v){
+  document.querySelectorAll(".view").forEach(s => s.style.display = "none");
   const el = document.getElementById("view-" + v);
   if (el) el.style.display = "block";
-
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.view === v));
 }
 
-function buildTabs() {
-  const role = SESSION.user.role;
+function buildTabs(){
+  const role = SESSION?.user?.role;
 
   const base = [
-    { id: "profil", label: "Profil" },
-    { id: "rechner", label: "Strafrechner" },
-    { id: "personen", label: "Personen" },
-    { id: "fahrzeuge", label: "Fahrzeuge" },
+    { id:"leitstelle", label:"Leitstelle" },
+    { id:"rechner", label:"Strafrechner" },
+    { id:"personen", label:"Personen" },
+    { id:"fahrzeuge", label:"Fahrzeuge" }
   ];
 
-  // Leader + Admin can see HR to manage users in org
-  if (role === "leader" || role === "admin") base.push({ id: "hr", label: "HR" });
-
-  // Admin only
-  if (role === "admin") base.push({ id: "admin", label: "Admin" });
+  if (role === "ORG_LEADER" || role === "SUPER_ADMIN") base.push({ id:"hr", label:"HR" });
+  if (role === "SUPER_ADMIN") base.push({ id:"admin", label:"Admin" });
 
   tabsEl.innerHTML = "";
   base.forEach(t => {
@@ -69,157 +45,133 @@ function buildTabs() {
     tabsEl.appendChild(b);
   });
 
-  setView("profil");
+  setView("leitstelle");
 }
 
-async function api(path, opts = {}) {
-  const headers = opts.headers || {};
-  if (SESSION.token) headers["Authorization"] = "Bearer " + SESSION.token;
-  headers["Content-Type"] = "application/json";
-  const res = await fetch(path, { ...opts, headers });
-  let data = null;
-  try { data = await res.json(); } catch {}
+async function api(url, options){
+  const res = await fetch(url, options);
+  const data = await res.json().catch(()=>({}));
   return { res, data };
 }
 
-async function doLogin() {
+async function doLogin(){
   loginMsg.textContent = "";
 
-  const email = (inEmail.value || "").trim();
-  const pass = (inPass.value || "").trim();
+  const email = inUser.value.trim();
+  const password = inPass.value;
 
-  if (!email) {
-    loginMsg.textContent = "Bitte E-Mail eingeben.";
+  if (!email || !password) {
+    loginMsg.textContent = "Bitte E-Mail und Passwort eingeben.";
     return;
   }
 
   const { res, data } = await api("/api/login", {
-    method: "POST",
-    body: JSON.stringify({ email, pass })
-  }).catch(() => ({ res: null, data: null }));
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ email, password })
+  });
 
-  if (!res || !res.ok || !data?.ok) {
+  if (!res.ok || !data.ok) {
     loginMsg.textContent = "Login fehlgeschlagen.";
     return;
   }
 
-  SESSION.token = data.token;
-  SESSION.user = data.user;
+  // load session
+  const me = await api("/api/me");
+  if (!me.res.ok || !me.data.ok) {
+    loginMsg.textContent = "Session konnte nicht geladen werden.";
+    return;
+  }
 
-  localStorage.setItem("SESSION_TOKEN", SESSION.token);
-
+  SESSION = me.data;
   loginView.style.display = "none";
   appView.style.display = "block";
 
-  who.textContent = `${SESSION.user.name || SESSION.user.email} • ${SESSION.user.org} • ${SESSION.user.role}`;
+  const u = SESSION.user;
+  who.textContent = `${u.email} • Rolle: ${u.role}`;
 
+  connectWS();
   buildTabs();
 
-  // mount modules
-  Profile.mount(document.getElementById("view-profil"), SESSION);
-  Rechner.mount(document.getElementById("view-rechner"), SESSION);
-  Personen.mount(document.getElementById("view-personen"), SESSION);
-  Fahrzeuge.mount(document.getElementById("view-fahrzeuge"), SESSION);
-  if (SESSION.user.role === "leader" || SESSION.user.role === "admin") HR.mount(document.getElementById("view-hr"), SESSION);
-  if (SESSION.user.role === "admin") Admin.mount(document.getElementById("view-admin"), SESSION);
+  Leitstelle.mount(document.getElementById("view-leitstelle"), { api, getWS:()=>WS });
+  Rechner.mount(document.getElementById("view-rechner"), { api });
+  Personen.mount(document.getElementById("view-personen"), { api });
+  Fahrzeuge.mount(document.getElementById("view-fahrzeuge"), { api });
+  if (u.role === "ORG_LEADER" || u.role === "SUPER_ADMIN") HR.mount(document.getElementById("view-hr"), { api, session: SESSION });
+  if (u.role === "SUPER_ADMIN") Admin.mount(document.getElementById("view-admin"), { api });
 
-  // websocket
-  connectWS();
-
-  // If generated password returned -> show it once and force change
-  if (data.generatedPass) {
-    pwModal.style.display = "flex";
-    pwMsg.style.color = "var(--muted)";
-    pwMsg.textContent = `Generiertes Passwort (einmalig): ${data.generatedPass}  —  Jetzt bitte ändern.`;
-    oldPw.value = data.generatedPass;
-    newPw.value = "";
-  } else if (data.mustChangePass) {
-    pwModal.style.display = "flex";
-    pwMsg.style.color = "var(--muted)";
-    pwMsg.textContent = "Bitte Passwort ändern.";
-    oldPw.value = "";
-    newPw.value = "";
+  // Must change password flow
+  if (u.mustChangePw) {
+    showMustChangePassword();
   }
 }
 
-async function doChangePassword() {
-  pwMsg.textContent = "";
-
-  const oldPass = (oldPw.value || "").trim();
-  const newPass = (newPw.value || "").trim();
-
-  if (!newPass || newPass.length < 6) {
-    pwMsg.textContent = "Neues Passwort ist zu kurz.";
-    return;
-  }
-
-  const { res, data } = await api("/api/change-password", {
-    method: "POST",
-    body: JSON.stringify({ oldPass, newPass })
-  });
-
-  if (!res.ok || !data?.ok) {
-    pwMsg.textContent = "Passwort konnte nicht geändert werden.";
-    return;
-  }
-
-  pwMsg.style.color = "var(--muted)";
-  pwMsg.textContent = "Passwort geändert.";
-  setTimeout(() => (pwModal.style.display = "none"), 500);
-}
-
-async function doLogout() {
-  try { await api("/api/logout", { method: "POST", body: "{}" }); } catch {}
-  localStorage.removeItem("SESSION_TOKEN");
+async function doLogout(){
+  await api("/api/logout", { method:"POST" }).catch(()=>{});
   location.reload();
 }
 
-// Auto-login if token exists (best-effort)
-(async function bootstrap() {
-  const t = localStorage.getItem("SESSION_TOKEN");
-  if (!t) return;
-  SESSION.token = t;
+function connectWS(){
+  const proto = location.protocol === "https:" ? "wss" : "ws";
+  WS = new WebSocket(`${proto}://${location.host}`);
 
-  // token is only server-memory; on restart it will fail => go back to login
-  const { res, data } = await api("/api/org/overview").catch(() => ({ res: null, data: null }));
-  if (!res || !res.ok || !data?.ok) {
-    localStorage.removeItem("SESSION_TOKEN");
-    return;
-  }
+  WS.addEventListener("open", () => {
+    WS.send(JSON.stringify({ type:"auth" }));
+  });
+}
 
-  // no user info from that endpoint; re-login silently not possible.
-  // Keep it simple: force login screen.
-  localStorage.removeItem("SESSION_TOKEN");
-})();
+function showMustChangePassword(){
+  const overlay = document.createElement("div");
+  overlay.className = "modalOverlay";
+  overlay.style.display = "flex";
 
-function connectWS() {
-  try {
-    const proto = location.protocol === "https:" ? "wss" : "ws";
-    WS = new WebSocket(`${proto}://${location.host}`);
-  } catch {
-    return;
-  }
+  overlay.innerHTML = `
+    <div class="modalBox">
+      <div class="modalHead">
+        <div class="modalTitle">Passwort ändern</div>
+        <button class="btnMini" id="xClose">Schließen</button>
+      </div>
+      <div class="modalBody">
+        <div class="small" style="margin-bottom:10px;">
+          Du musst dein temporäres Passwort ändern.
+        </div>
 
-  WS.onopen = () => {
-    WS.send(JSON.stringify({ type: "auth", token: SESSION.token }));
-  };
+        <label class="lbl">Altes Passwort</label>
+        <input id="oldPw" type="password"/>
 
-  WS.onmessage = (ev) => {
-    let msg;
-    try { msg = JSON.parse(ev.data); } catch { return; }
+        <label class="lbl" style="margin-top:10px;">Neues Passwort (min. 6 Zeichen)</label>
+        <input id="newPw" type="password"/>
 
-    if (msg.type === "laws") {
-      // update local cache
-      localStorage.setItem("LAWS_CACHE", JSON.stringify(msg.laws));
-      Rechner.onLawsUpdate?.(msg.laws);
+        <button class="btn" id="savePw">Speichern</button>
+        <div id="pwMsg" class="msg"></div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  overlay.querySelector("#xClose").onclick = () => overlay.remove();
+
+  overlay.querySelector("#savePw").onclick = async () => {
+    const oldPassword = overlay.querySelector("#oldPw").value;
+    const newPassword = overlay.querySelector("#newPw").value;
+
+    const { res, data } = await api("/api/change-password", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ oldPassword, newPassword })
+    });
+
+    if (!res.ok || !data.ok) {
+      overlay.querySelector("#pwMsg").textContent = "Fehler beim Speichern.";
+      return;
     }
 
-    if (msg.type === "audit") {
-      Admin.onAudit?.(msg.entry);
-    }
-  };
+    overlay.remove();
 
-  WS.onclose = () => {
-    // optional reconnect
+    // refresh session to clear mustChangePw
+    const me = await api("/api/me");
+    if (me.data?.ok) SESSION = me.data;
+    who.textContent = `${SESSION.user.email} • Rolle: ${SESSION.user.role}`;
   };
 }
