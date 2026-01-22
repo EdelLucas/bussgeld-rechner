@@ -10,22 +10,33 @@ const loginMsg = document.getElementById("loginMsg");
 const who = document.getElementById("who");
 const tabsEl = document.getElementById("tabs");
 
-let SESSION = { user:null, role:null, org:null, email:null, token:null };
-let CURRENT_VIEW = "profil";
+let SESSION = { token:null, email:null, user:null, org:null, role:null };
+let WS = null;
+
+window.SESSION = SESSION;
+window.WS = null;
 
 btnLogin.addEventListener("click", doLogin);
 btnLogout.addEventListener("click", () => {
   try { localStorage.removeItem("TOKEN"); } catch {}
   location.reload();
 });
-[inEmail,inPass].forEach(el => el.addEventListener("keydown", e => { if(e.key==="Enter") doLogin(); }));
+[inEmail,inPass].forEach(el => el.addEventListener("keydown", e => {
+  if (e.key === "Enter") doLogin();
+}));
 
 function setView(v){
-  CURRENT_VIEW = v;
   document.querySelectorAll(".view").forEach(s => s.style.display = "none");
   const el = document.getElementById("view-"+v);
-  if(el) el.style.display = "block";
+  if (el) el.style.display = "block";
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.view === v));
+}
+
+function canSeeAdmin(){
+  return SESSION.role === "admin";
+}
+function canSeeHR(){
+  return SESSION.role === "admin" || SESSION.role === "hr" || SESSION.role === "leader";
 }
 
 function buildTabs(){
@@ -34,8 +45,10 @@ function buildTabs(){
     { id:"rechner", label:"Strafrechner" },
     { id:"personen", label:"Personen" },
     { id:"fahrzeuge", label:"Fahrzeuge" },
+    { id:"einsaetze", label:"Einsätze (Live)" },
   ];
-  if(SESSION.role === "admin") base.push({ id:"admin", label:"Admin" });
+  if (canSeeHR()) base.push({ id:"hr", label:"HR" });
+  if (canSeeAdmin()) base.push({ id:"admin", label:"Admin" });
 
   tabsEl.innerHTML = "";
   base.forEach(t => {
@@ -49,11 +62,29 @@ function buildTabs(){
   setView("profil");
 }
 
+function setLoggedInUI(){
+  loginView.style.display = "none";
+  appView.style.display = "block";
+  who.textContent = `Angemeldet als ${SESSION.user} (${SESSION.role}) — ${SESSION.org}`;
+  buildTabs();
+
+  Profil.mount(document.getElementById("view-profil"));
+  Rechner.mount(document.getElementById("view-rechner"));
+  Personen.mount(document.getElementById("view-personen"));
+  Fahrzeuge.mount(document.getElementById("view-fahrzeuge"));
+  Einsaetze.mount(document.getElementById("view-einsaetze"));
+
+  if (canSeeHR()) HR.mount(document.getElementById("view-hr"));
+  if (canSeeAdmin()) Admin.mount(document.getElementById("view-admin"));
+
+  connectWS();
+}
+
 async function doLogin(){
   loginMsg.textContent = "";
   const email = (inEmail.value || "").trim();
   const password = (inPass.value || "").trim();
-  if(!email || !password){
+  if (!email || !password){
     loginMsg.textContent = "Bitte E-Mail und Passwort eingeben.";
     return;
   }
@@ -71,37 +102,78 @@ async function doLogin(){
     return;
   }
 
-  if(!res.ok || !data.ok){
+  if (!res.ok || !data.ok){
     loginMsg.textContent = "Login fehlgeschlagen.";
     return;
   }
 
-  SESSION = {
-    user: data.user,
-    role: data.role,
-    org: data.org,
-    email: data.email || email,
-    token: data.token
-  };
+  SESSION.token = data.token;
+  SESSION.email = data.email;
+  SESSION.user = data.user;
+  SESSION.org = data.org;
+  SESSION.role = data.role;
 
-  // global für Module
   window.SESSION = SESSION;
-
   try { localStorage.setItem("TOKEN", SESSION.token); } catch {}
 
-  loginView.style.display = "none";
-  appView.style.display = "block";
-  who.textContent = `Angemeldet als ${SESSION.user} (${SESSION.role}) — ${SESSION.org}`;
-
-  buildTabs();
-
-  // mount modules
-  Profil.mount(document.getElementById("view-profil"));
-  Rechner.mount(document.getElementById("view-rechner"));
-  Personen.mount(document.getElementById("view-personen"));
-  Fahrzeuge.mount(document.getElementById("view-fahrzeuge"));
-  if(SESSION.role === "admin") Admin.mount(document.getElementById("view-admin"));
+  setLoggedInUI();
 }
 
-// optional: auto-login mit Token (wenn du später /api/me baust)
-// aktuell lassen wir es bewusst simpel (kein Auto-Login)
+async function tryAutoLogin(){
+  const token = (() => { try { return localStorage.getItem("TOKEN") || ""; } catch { return ""; } })();
+  if (!token) return;
+
+  let res, data;
+  try{
+    res = await fetch("/api/me", { headers: { Authorization: `Bearer ${token}` }});
+    data = await res.json().catch(()=>({}));
+  }catch{
+    return;
+  }
+  if (!res.ok || !data.ok) return;
+
+  SESSION.token = token;
+  SESSION.email = data.profile.email;
+  SESSION.user = data.profile.name;
+  SESSION.org = data.profile.org;
+  SESSION.role = data.profile.role;
+
+  window.SESSION = SESSION;
+  setLoggedInUI();
+}
+
+function connectWS(){
+  try{
+    if (WS && (WS.readyState === 0 || WS.readyState === 1)) return;
+  }catch{}
+
+  const token = SESSION.token;
+  if (!token) return;
+
+  const proto = location.protocol === "https:" ? "wss" : "ws";
+  const url = `${proto}://${location.host}/?token=${encodeURIComponent(token)}`;
+
+  WS = new WebSocket(url);
+  window.WS = WS;
+
+  WS.onopen = () => {
+    // optional
+  };
+
+  WS.onmessage = (ev) => {
+    let msg;
+    try { msg = JSON.parse(ev.data); } catch { return; }
+    // Dispatch to modules
+    if (msg.type === "incidents:update") {
+      window.__INCIDENTS = msg.payload || [];
+      if (window.Einsaetze && window.Einsaetze.onIncidents) window.Einsaetze.onIncidents(window.__INCIDENTS);
+    }
+  };
+
+  WS.onclose = () => {
+    // reconnect
+    setTimeout(() => connectWS(), 1200);
+  };
+}
+
+tryAutoLogin();
