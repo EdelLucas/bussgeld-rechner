@@ -15,42 +15,13 @@
     <div class="sub">Login erforderlich</div>
 
     <label class="lbl">E-Mail</label>
-    <input id="inEmail" autocomplete="username" placeholder="name@orga.de"/>
+    <input id="inUser" autocomplete="username" placeholder="name@orga.de"/>
 
     <label class="lbl">Passwort</label>
     <input id="inPass" type="password" autocomplete="current-password" placeholder="••••••••"/>
 
     <button id="btnLogin" class="btn">Anmelden</button>
     <div id="loginMsg" class="msg"></div>
-
-    <div class="smallHint">
-      Wenn dein Account neu ist: <b>nur E-Mail eingeben</b> → Passwort wird generiert (einmalig angezeigt).
-    </div>
-  </div>
-</div>
-
-<!-- FORCE CHANGE PASSWORD MODAL -->
-<div id="pwModal" class="modal" style="display:none">
-  <div class="modalBox" style="max-width:520px">
-    <div class="modalHead">
-      <div class="modalTitle">Passwort setzen</div>
-      <button id="pwClose" class="btnMini">Schließen</button>
-    </div>
-    <div class="modalBody">
-      <div class="small">
-        Dein Account hat gerade ein Passwort bekommen. Du solltest es jetzt sofort ändern.
-      </div>
-      <div style="margin-top:10px">
-        <div class="small">Altes Passwort</div>
-        <input id="oldPw" type="password" placeholder="altes Passwort"/>
-      </div>
-      <div style="margin-top:10px">
-        <div class="small">Neues Passwort (min. 6 Zeichen)</div>
-        <input id="newPw" type="password" placeholder="neues Passwort"/>
-      </div>
-      <div id="pwMsg" class="msg" style="margin-top:10px"></div>
-      <button id="pwSave" class="btn">Speichern</button>
-    </div>
   </div>
 </div>
 
@@ -73,7 +44,7 @@
   </header>
 
   <main class="main">
-    <section id="view-profil" class="view"></section>
+    <section id="view-leitstelle" class="view"></section>
     <section id="view-rechner" class="view" style="display:none"></section>
     <section id="view-personen" class="view" style="display:none"></section>
     <section id="view-fahrzeuge" class="view" style="display:none"></section>
@@ -82,8 +53,9 @@
   </main>
 </div>
 
+<!-- Modules -->
 <script src="data-laws.js"></script>
-<script src="module-profile.js"></script>
+<script src="module-leitstelle.js"></script>
 <script src="module-rechner.js"></script>
 <script src="module-personen.js"></script>
 <script src="module-fahrzeuge.js"></script>
