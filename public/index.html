@@ -8,22 +8,53 @@
 </head>
 <body>
 
+<!-- LOGIN -->
 <div id="loginView" class="center">
   <div class="card">
     <div class="brand">Grand LST</div>
     <div class="sub">Login erforderlich</div>
 
     <label class="lbl">E-Mail</label>
-    <input id="inEmail" autocomplete="username" />
+    <input id="inEmail" autocomplete="username" placeholder="name@orga.de"/>
 
     <label class="lbl">Passwort</label>
-    <input id="inPass" type="password" autocomplete="current-password" />
+    <input id="inPass" type="password" autocomplete="current-password" placeholder="••••••••"/>
 
     <button id="btnLogin" class="btn">Anmelden</button>
     <div id="loginMsg" class="msg"></div>
+
+    <div class="smallHint">
+      Wenn dein Account neu ist: <b>nur E-Mail eingeben</b> → Passwort wird generiert (einmalig angezeigt).
+    </div>
   </div>
 </div>
 
+<!-- FORCE CHANGE PASSWORD MODAL -->
+<div id="pwModal" class="modal" style="display:none">
+  <div class="modalBox" style="max-width:520px">
+    <div class="modalHead">
+      <div class="modalTitle">Passwort setzen</div>
+      <button id="pwClose" class="btnMini">Schließen</button>
+    </div>
+    <div class="modalBody">
+      <div class="small">
+        Dein Account hat gerade ein Passwort bekommen. Du solltest es jetzt sofort ändern.
+      </div>
+      <div style="margin-top:10px">
+        <div class="small">Altes Passwort</div>
+        <input id="oldPw" type="password" placeholder="altes Passwort"/>
+      </div>
+      <div style="margin-top:10px">
+        <div class="small">Neues Passwort (min. 6 Zeichen)</div>
+        <input id="newPw" type="password" placeholder="neues Passwort"/>
+      </div>
+      <div id="pwMsg" class="msg" style="margin-top:10px"></div>
+      <button id="pwSave" class="btn">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
 <div id="appView" class="app" style="display:none">
   <header class="topbar">
     <div class="top-left">
@@ -36,7 +67,9 @@
 
     <nav class="tabs" id="tabs"></nav>
 
-    <button id="btnLogout" class="btn ghost">Logout</button>
+    <div class="top-right">
+      <button id="btnLogout" class="btn ghost">Logout</button>
+    </div>
   </header>
 
   <main class="main">
@@ -44,7 +77,6 @@
     <section id="view-rechner" class="view" style="display:none"></section>
     <section id="view-personen" class="view" style="display:none"></section>
     <section id="view-fahrzeuge" class="view" style="display:none"></section>
-    <section id="view-einsaetze" class="view" style="display:none"></section>
     <section id="view-hr" class="view" style="display:none"></section>
     <section id="view-admin" class="view" style="display:none"></section>
   </main>
@@ -55,7 +87,6 @@
 <script src="module-rechner.js"></script>
 <script src="module-personen.js"></script>
 <script src="module-fahrzeuge.js"></script>
-<script src="module-einsaetze.js"></script>
 <script src="module-hr.js"></script>
 <script src="module-admin.js"></script>
 <script src="app.js"></script>
