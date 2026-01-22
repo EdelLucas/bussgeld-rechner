@@ -1,177 +1,143 @@
 window.HR = {
-  async mount(root, SESSION){
-    const role = SESSION.user.role;
-
+  async mount(root, ctx){
     root.innerHTML = `
       <div class="panel">
-        <div class="title">🧩 HR</div>
-        <div class="small">Hier werden Leute für die Webseite freigeschaltet (Name, Orga, Telefon, E-Mail). Passwort wird beim ersten Login durch E-Mail-only erzeugt.</div>
-        <div class="hr"></div>
+        <div class="title">🧑‍💼 HR</div>
+        <div class="small">User freischalten (Temp-Passwort wird einmal angezeigt; User muss es danach ändern).</div>
 
-        <div class="row">
+        <div class="row" style="margin-top:12px">
           <div class="col">
-            <div class="panel" style="box-shadow:none">
-              <div class="title" style="font-size:14px">Neuen Account freischalten</div>
+            <div class="small">Neuen User erstellen</div>
+            <label class="lbl">Orga</label>
+            <select id="orgCode"></select>
 
-              <div class="small">Name</div>
-              <input id="nName" placeholder="Vorname Nachname"/>
+            <label class="lbl" style="margin-top:10px">Rolle</label>
+            <select id="role">
+              <option value="MEMBER">MEMBER</option>
+              <option value="ORG_LEADER">ORG_LEADER</option>
+            </select>
 
-              <div class="small" style="margin-top:10px">Telefon</div>
-              <input id="nPhone" placeholder="00-00-000"/>
+            <label class="lbl" style="margin-top:10px">Name</label>
+            <input id="name" placeholder="Vorname Nachname"/>
 
-              <div class="small" style="margin-top:10px">E-Mail</div>
-              <input id="nEmail" placeholder="name@orga.de"/>
+            <label class="lbl" style="margin-top:10px">Telefon</label>
+            <input id="phone" placeholder="+49..."/>
 
-              <div class="small" style="margin-top:10px">Orga</div>
-              <select id="nOrg" style="width:100%; padding:12px; border-radius:12px; border:1px solid #2a2f38; background:#0a0c10; color:#fff; outline:none;">
-                ${["LSPD","FIB","NG","LI","EMS","GOV","SAHP"].map(o=>`<option value="${o}">${o}</option>`).join("")}
-              </select>
+            <label class="lbl" style="margin-top:10px">E-Mail</label>
+            <input id="email" placeholder="user@orga.de"/>
 
-              <div class="small" style="margin-top:10px">Rolle</div>
-              <select id="nRole" style="width:100%; padding:12px; border-radius:12px; border:1px solid #2a2f38; background:#0a0c10; color:#fff; outline:none;">
-                <option value="user">User</option>
-                <option value="leader">Leader</option>
-              </select>
-
-              <div id="hrMsg" class="msg"></div>
-              <button id="btnCreate" class="btnMini" style="width:100%">Freischalten</button>
-
-              <div class="small" style="margin-top:10px">
-                Leader/Admin kann Passwort zurücksetzen → User loggt wieder nur mit E-Mail ein.
-              </div>
-            </div>
+            <button id="create" class="btn">User erstellen</button>
+            <div id="msg" class="msg"></div>
+            <div id="tempBox" class="cardListItem" style="display:none; margin-top:12px"></div>
           </div>
 
           <div class="col">
-            <div class="panel" style="box-shadow:none">
-              <div class="title" style="font-size:14px">Orga-Accounts</div>
-              <div class="small">Du siehst nur deine Orga (Admin sieht später alles im Admin-Panel).</div>
-              <div class="hr"></div>
-              <div id="list" class="small">Lade…</div>
-            </div>
+            <div class="small">User-Liste</div>
+            <div id="list" style="margin-top:10px"></div>
           </div>
         </div>
       </div>
     `;
 
-    // leaders should only create within their org:
-    const orgSelect = root.querySelector("#nOrg");
-    if (role !== "admin") {
-      orgSelect.value = SESSION.user.org;
-      orgSelect.disabled = true;
+    const $ = (id)=>root.querySelector(id);
+    const msg = $("#msg");
+    const tempBox = $("#tempBox");
+    const list = $("#list");
+    const orgSelect = $("#orgCode");
+    const roleSelect = $("#role");
+
+    // Leaders dürfen nur MEMBER/ORG_LEADER? (server blockt sowieso)
+    if (ctx.session.user.role !== "SUPER_ADMIN") {
+      // Leader soll in HR nicht sich selbst Super-Rechte basteln
+      // ORG_LEADER bleibt aber erlaubt (für Org-Subleader).
     }
 
-    const roleSelect = root.querySelector("#nRole");
-    if (role !== "admin") {
-      // leader cannot create other leaders
-      roleSelect.value = "user";
-      roleSelect.disabled = true;
+    const orgsRes = await ctx.api("/api/hr/orgs");
+    if(orgsRes.data?.ok){
+      orgSelect.innerHTML = orgsRes.data.orgs.map(o=>`<option value="${o.code}">${o.code}</option>`).join("");
     }
 
-    root.querySelector("#btnCreate").onclick = async ()=>{
-      const msg = root.querySelector("#hrMsg");
-      msg.textContent = "";
-
-      const name = root.querySelector("#nName").value.trim();
-      const phone = root.querySelector("#nPhone").value.trim();
-      const email = root.querySelector("#nEmail").value.trim();
-      const org = root.querySelector("#nOrg").value;
-      const r = root.querySelector("#nRole").value;
-
-      if (!email || !email.includes("@")) { msg.textContent = "E-Mail ungültig."; return; }
-      if (!name) { msg.textContent = "Name fehlt."; return; }
-
-      // Admin endpoint used for creation (simpler). Leader currently uses admin? -> not allowed.
-      // So: only Admin creates users. Leader can only list + reset/disable.
-      if (role !== "admin") {
-        msg.textContent = "Nur Admin kann neue Accounts anlegen. (Leader nur verwalten)";
+    async function loadUsers(){
+      const r = await ctx.api("/api/hr/users");
+      if(!r.data?.ok){
+        list.innerHTML = `<div class="small">Fehler.</div>`;
         return;
       }
-
-      const res = await fetch("/api/admin/create-user", {
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          "Authorization":"Bearer " + SESSION.token
-        },
-        body: JSON.stringify({ name, phone, email, org, role: r })
-      });
-      const data = await res.json().catch(()=>({}));
-      if (!res.ok || !data.ok) {
-        msg.textContent = "Konnte nicht erstellt werden (E-Mail evtl. schon vorhanden).";
+      const users = r.data.users || [];
+      if(!users.length){
+        list.innerHTML = `<div class="small">Keine User.</div>`;
         return;
       }
-
-      msg.style.color = "var(--muted)";
-      msg.textContent = "Account erstellt. Nutzer loggt sich nur mit E-Mail ein → Passwort wird generiert.";
-      root.querySelector("#nEmail").value = "";
-      loadList();
-    };
-
-    async function loadList(){
-      const list = root.querySelector("#list");
-      list.textContent = "Lade…";
-      const url = (role === "admin") ? "/api/admin/users" : "/api/org/users";
-      const res = await fetch(url + (role === "admin" ? "" : ""), {
-        headers:{ "Authorization":"Bearer " + SESSION.token }
-      });
-      const data = await res.json().catch(()=>({}));
-      if (!res.ok || !data.ok) { list.textContent = "Fehler."; return; }
-
-      let users = data.users || [];
-
-      // if admin: show all except admin itself
-      if (role === "admin") {
-        users = users.filter(u => u.role !== "admin");
-      } else {
-        users = users.filter(u => u.org === SESSION.user.org);
-      }
-
       list.innerHTML = users.map(u=>`
-        <div style="border:1px solid #1f2430; background:#0a0c10; border-radius:12px; padding:10px; margin-bottom:8px">
-          <div style="font-weight:900">${escapeHtml(u.name || u.email)}</div>
-          <div class="small">${escapeHtml(u.email)} • ${escapeHtml(u.org)} • ${escapeHtml(u.role)}</div>
-          <div class="small">Telefon: ${escapeHtml(u.phone || "-")}</div>
-          <div class="small">Letzter Login: ${u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString("de-DE") : "-"}</div>
-
-          <div class="row" style="margin-top:8px">
-            <button class="btnMini" data-reset="${u.id}">Passwort reset</button>
-            <button class="btnMini" data-disable="${u.id}">Deaktivieren</button>
+        <div class="cardListItem">
+          <div style="font-weight:900; font-size:14px">${escapeHtml(u.email)}</div>
+          <div class="small" style="margin-top:6px">${escapeHtml(u.name || "")} • ${escapeHtml(u.phone || "")}</div>
+          <div class="small" style="margin-top:6px">Rolle: <b>${escapeHtml(u.role)}</b> • Active: <b>${u.isActive ? "JA" : "NEIN"}</b> • PW-Wechsel: <b>${u.mustChangePw ? "JA" : "NEIN"}</b></div>
+          <div class="row" style="margin-top:10px">
+            <button class="btnMini" data-act="${u.id}" data-on="1">Aktiv</button>
+            <button class="btnMini danger" data-act="${u.id}" data-on="0">Deaktiv</button>
           </div>
         </div>
       `).join("");
 
-      list.querySelectorAll("[data-reset]").forEach(b=>{
+      list.querySelectorAll("[data-act]").forEach(b=>{
         b.onclick = async ()=>{
-          const id = b.getAttribute("data-reset");
-          await fetch("/api/org/reset-pass", {
+          const userId = b.getAttribute("data-act");
+          const active = b.getAttribute("data-on") === "1";
+          await ctx.api("/api/hr/set-active", {
             method:"POST",
-            headers:{ "Content-Type":"application/json", "Authorization":"Bearer " + SESSION.token },
-            body: JSON.stringify({ userId:id })
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({ userId, active })
           });
-          loadList();
-        };
-      });
-
-      list.querySelectorAll("[data-disable]").forEach(b=>{
-        b.onclick = async ()=>{
-          const id = b.getAttribute("data-disable");
-          await fetch("/api/org/disable-user", {
-            method:"POST",
-            headers:{ "Content-Type":"application/json", "Authorization":"Bearer " + SESSION.token },
-            body: JSON.stringify({ userId:id })
-          });
-          loadList();
+          loadUsers();
         };
       });
     }
+
+    $("#create").onclick = async ()=>{
+      msg.textContent = "";
+      tempBox.style.display = "none";
+      tempBox.innerHTML = "";
+
+      const payload = {
+        orgCode: orgSelect.value,
+        role: roleSelect.value,
+        name: $("#name").value.trim(),
+        phone: $("#phone").value.trim(),
+        email: $("#email").value.trim()
+      };
+
+      const r = await ctx.api("/api/hr/create-user", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if(!r.res.ok || !r.data.ok){
+        msg.textContent = "Fehler beim Erstellen.";
+        return;
+      }
+
+      tempBox.style.display = "block";
+      tempBox.innerHTML = `
+        <div style="font-weight:900">Temporäres Passwort</div>
+        <div class="small" style="margin-top:6px">Nur jetzt sichtbar:</div>
+        <div style="margin-top:10px; font-size:18px; font-weight:900; color:var(--accent)">${escapeHtml(r.data.tempPassword)}</div>
+        <div class="small" style="margin-top:10px">User muss nach Login sein Passwort ändern.</div>
+      `;
+
+      $("#name").value = "";
+      $("#phone").value = "";
+      $("#email").value = "";
+      loadUsers();
+    };
 
     function escapeHtml(s){
-      return String(s ?? "").replace(/[&<>"']/g, m => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"
-      }[m]));
+      return String(s||"")
+        .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;").replaceAll("'","&#039;");
     }
 
-    loadList();
+    loadUsers();
   }
 };
