@@ -1,4 +1,3 @@
-// public/module-leitstelle.js
 (function () {
   function esc(s) {
     return String(s ?? "").replace(/[&<>"']/g, (m) => ({
@@ -13,181 +12,106 @@
     return `<span class="badge b-green">${esc(s)}</span>`;
   }
 
-  function wsUrl() {
-    const proto = location.protocol === "https:" ? "wss:" : "ws:";
-    const token = encodeURIComponent(window.SESSION_TOKEN || "");
-    return `${proto}//${location.host}/ws?token=${token}`;
+  // LocalStorage als Quelle (kein Live Sync nötig, kann später WS werden)
+  const KEY = "LST_UNITS_V1";
+
+  function loadUnits(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      if(raw) return JSON.parse(raw);
+    }catch{}
+    return [
+      { id:"ALPHA 01", officer:"", callSign:"", status:"Standby", note:"" },
+      { id:"ALPHA 02", officer:"", callSign:"", status:"Standby", note:"" },
+      { id:"BRAVO 01", officer:"", callSign:"", status:"Standby", note:"" },
+      { id:"CHARLIE 01", officer:"", callSign:"", status:"Standby", note:"" },
+      { id:"CHARLIE 02", officer:"", callSign:"", status:"Standby", note:"" },
+      { id:"DELTA 01", officer:"", callSign:"", status:"Standby", note:"" },
+      { id:"ECHO 01", officer:"", callSign:"", status:"Standby", note:"" },
+      { id:"ECHO 02", officer:"", callSign:"", status:"Standby", note:"" },
+      { id:"FOXTROT 01", officer:"", callSign:"", status:"Standby", note:"" }
+    ];
   }
 
-  function debounce(fn, ms) {
-    let t = null;
-    return (...args) => {
-      clearTimeout(t);
-      t = setTimeout(() => fn(...args), ms);
-    };
+  function saveUnits(units){
+    localStorage.setItem(KEY, JSON.stringify(units));
   }
 
   window.Leitstelle = {
     mount(root) {
-      if (!root) return;
-
-      const isAdmin = (window.SESSION_ROLE === "admin");
-
-      let st = {
-        dispatcher: { name: "", badge: "" },
-        units: []
-      };
-
-      let socket = null;
-      let live = { ok: false, text: "Verbinde..." };
-
-      function send(msg) {
-        try {
-          if (socket && socket.readyState === 1) socket.send(JSON.stringify(msg));
-        } catch {}
-      }
-
-      const sendDebounced = debounce(send, 250);
+      let units = loadUnits();
 
       function counts() {
         let inDienst = 0, streife = 0, ausser = 0, afk = 0;
-        for (const u of st.units) {
+        for (const u of units) {
           if (u.status === "AFK") afk++;
           else if (u.status === "Außer Dienst") ausser++;
-          else {
-            inDienst++;
-            if (u.status === "Streife") streife++;
-          }
+          else { inDienst++; if (u.status === "Streife") streife++; }
         }
         return { inDienst, streife, ausser, afk };
       }
 
-      function rememberFocus() {
-        const a = document.activeElement;
-        if (!a) return null;
-        const key =
-          a.getAttribute?.("data-officer") ||
-          a.getAttribute?.("data-call") ||
-          a.getAttribute?.("data-note") ||
-          a.id;
-        if (!key) return null;
-        return { key, start: a.selectionStart ?? null, end: a.selectionEnd ?? null };
-      }
-
-      function restoreFocus(mem) {
-        if (!mem) return;
-        let el = root.querySelector(`input[data-officer="${CSS.escape(mem.key)}"]`)
-          || root.querySelector(`input[data-call="${CSS.escape(mem.key)}"]`)
-          || root.querySelector(`input[data-note="${CSS.escape(mem.key)}"]`)
-          || root.querySelector(`#${CSS.escape(mem.key)}`);
-        if (!el) return;
-        el.focus({ preventScroll: true });
-        try {
-          if (mem.start != null && mem.end != null) el.setSelectionRange(mem.start, mem.end);
-        } catch {}
-      }
-
       function render() {
-        const mem = rememberFocus();
         const c = counts();
 
         root.innerHTML = `
           <div class="panel">
-            <div class="row" style="align-items:flex-start; justify-content:space-between; gap:12px;">
+            <div class="row" style="align-items:flex-start; justify-content:space-between;">
               <div>
                 <div class="title">🚨 Leitstelle</div>
-                <div class="small">Streifen eintragen + Status ändern (LIVE Sync)</div>
+                <div class="small">Streifen eintragen & Status wechseln</div>
               </div>
-
-              <div style="display:flex; gap:10px; align-items:center;">
-                <span class="badge" style="border-color:${live.ok ? "rgba(50,255,90,.35)" : "rgba(255,70,70,.35)"}; background:${live.ok ? "rgba(50,255,90,.08)" : "rgba(255,70,70,.08)"}">
-                  Live: ${esc(live.text)}
-                </span>
-                <button class="btnMini" id="btnResetLST" ${isAdmin ? "" : "disabled"} style="${isAdmin ? "" : "opacity:.5; cursor:not-allowed"}">Reset</button>
-              </div>
+              <button class="btnMini" id="btnReset">Reset</button>
             </div>
 
             <div class="row" style="margin-top:12px">
               <div class="col">
-                <div class="small">Legende</div>
-                <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap">
-                  <span class="badge b-green">Grün: Im Dienst / Standby</span>
-                  <span class="badge b-red">Rot: Außer Dienst</span>
-                  <span class="badge b-orange">Orange: AFK</span>
-                </div>
-              </div>
-
-              <div class="col">
-                <div class="row">
+                <div class="small">Übersicht</div>
+                <div class="row" style="margin-top:10px">
                   <div class="col">
                     <div class="small">Eingeteilt</div>
-                    <div style="font-size:26px; font-weight:900; margin-top:6px">${c.inDienst}</div>
+                    <div style="font-size:30px; font-weight:900; margin-top:6px">${c.inDienst}</div>
                   </div>
                   <div class="col">
                     <div class="small">Aktive Streifen</div>
-                    <div style="font-size:26px; font-weight:900; margin-top:6px">${c.streife}</div>
+                    <div style="font-size:30px; font-weight:900; margin-top:6px">${c.streife}</div>
                   </div>
                   <div class="col">
                     <div class="small">AFK</div>
-                    <div style="font-size:26px; font-weight:900; margin-top:6px">${c.afk}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <hr/>
-
-            <div class="row">
-              <div class="col">
-                <div class="small">Verantwortlicher für die Leitstelle (nur Admin)</div>
-                <div class="row" style="margin-top:10px; gap:10px">
-                  <div class="col">
-                    <input id="dispName" placeholder="Name" value="${esc(st.dispatcher.name)}" ${isAdmin ? "" : "disabled"} style="${isAdmin ? "" : "opacity:.5"}"/>
-                  </div>
-                  <div class="col">
-                    <input id="dispBadge" placeholder="Dienstnummer" value="${esc(st.dispatcher.badge)}" ${isAdmin ? "" : "disabled"} style="${isAdmin ? "" : "opacity:.5"}"/>
+                    <div style="font-size:30px; font-weight:900; margin-top:6px">${c.afk}</div>
                   </div>
                 </div>
               </div>
 
               <div class="col">
-                <div class="small">Funkcodes (Kurz)</div>
-                <table class="table" style="margin-top:10px">
-                  <tr><th>Code</th><th>Bedeutung</th></tr>
-                  <tr><td>10-01</td><td>Dienstantritt</td></tr>
-                  <tr><td>10-02</td><td>Dienstende</td></tr>
-                  <tr><td>10-04</td><td>Verstanden</td></tr>
-                  <tr><td>10-20</td><td>Standortabfrage</td></tr>
-                  <tr><td>10-30</td><td>Statusabfrage</td></tr>
-                  <tr><td>10-50</td><td>Verstärkung benötigt</td></tr>
-                </table>
+                <div class="small">Legende</div>
+                <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap">
+                  <span class="badge b-green">Im Dienst / Standby</span>
+                  <span class="badge b-orange">AFK</span>
+                  <span class="badge b-red">Außer Dienst</span>
+                </div>
               </div>
             </div>
 
             <hr/>
 
             <div class="small">Streifen</div>
-            <div id="unitGrid" style="
-              margin-top:10px;
-              display:grid;
-              grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-              gap:12px;
-            "></div>
+            <div id="grid" style="margin-top:12px; display:grid; grid-template-columns:repeat(auto-fit, minmax(360px, 1fr)); gap:14px"></div>
           </div>
         `;
 
-        const grid = root.querySelector("#unitGrid");
-        grid.innerHTML = st.units.map(u => `
-          <div style="border:1px solid #1f2430; background:#0a0c10; border-radius:14px; padding:12px">
+        const grid = root.querySelector("#grid");
+        grid.innerHTML = units.map(u => `
+          <div style="border:1px solid #1f2430; background:#0a0c10; border-radius:16px; padding:14px">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:10px">
-              <div style="font-weight:900">${esc(u.id)}</div>
+              <div style="font-weight:900; font-size:16px">${esc(u.id)}</div>
               <div>${statusBadge(u.status)}</div>
             </div>
 
-            <div class="row" style="margin-top:10px; gap:10px">
+            <div class="row" style="margin-top:12px">
               <div class="col">
                 <div class="small">Officer</div>
-                <input data-officer="${esc(u.id)}" value="${esc(u.officer)}" placeholder="Name"/>
+                <input data-off="${esc(u.id)}" value="${esc(u.officer)}" placeholder="Name"/>
               </div>
               <div class="col">
                 <div class="small">Callsign</div>
@@ -195,121 +119,88 @@
               </div>
             </div>
 
-            <div class="row" style="margin-top:10px; gap:10px">
+            <div class="row" style="margin-top:12px">
               <div class="col">
                 <div class="small">Notiz</div>
-                <input data-note="${esc(u.id)}" value="${esc(u.note)}" placeholder="z.B. Verkehr / Einsatz / ..."/>
+                <input data-note="${esc(u.id)}" value="${esc(u.note)}" placeholder="Einsatz / Verkehr / ..."/>
               </div>
             </div>
 
-            <div class="row" style="margin-top:10px; gap:8px">
+            <div class="row" style="margin-top:12px; gap:10px">
               <button class="btnMini" data-st="${esc(u.id)}" data-val="Standby">Standby</button>
               <button class="btnMini" data-st="${esc(u.id)}" data-val="Streife">Streife</button>
               <button class="btnMini" data-st="${esc(u.id)}" data-val="AFK">AFK</button>
               <button class="btnMini" data-st="${esc(u.id)}" data-val="Außer Dienst">Außer Dienst</button>
             </div>
 
-            <div class="row" style="margin-top:10px">
+            <div class="row" style="margin-top:12px">
               <button class="btnMini" data-clear="${esc(u.id)}">Leeren</button>
             </div>
           </div>
         `).join("");
 
-        // admin-only dispatcher
-        const dispName = root.querySelector("#dispName");
-        const dispBadge = root.querySelector("#dispBadge");
-        if (isAdmin) {
-          const onDisp = () => sendDebounced({ type: "set_dispatcher", name: dispName.value, badge: dispBadge.value });
-          dispName.addEventListener("input", onDisp);
-          dispBadge.addEventListener("input", onDisp);
-        }
+        // Inputs
+        root.querySelectorAll("input[data-off]").forEach(inp => {
+          inp.oninput = () => {
+            const id = inp.getAttribute("data-off");
+            const unit = units.find(x => x.id === id);
+            if (!unit) return;
+            unit.officer = inp.value;
+            saveUnits(units);
+          };
+        });
 
-        // unit inputs -> debounce (fix 1-char kick)
-        root.querySelectorAll("input[data-officer]").forEach(inp => {
-          inp.addEventListener("input", () => {
-            const id = inp.getAttribute("data-officer");
-            sendDebounced({ type: "update_unit", id, officer: inp.value });
-          });
-        });
         root.querySelectorAll("input[data-call]").forEach(inp => {
-          inp.addEventListener("input", () => {
+          inp.oninput = () => {
             const id = inp.getAttribute("data-call");
-            sendDebounced({ type: "update_unit", id, callSign: inp.value });
-          });
+            const unit = units.find(x => x.id === id);
+            if (!unit) return;
+            unit.callSign = inp.value;
+            saveUnits(units);
+          };
         });
+
         root.querySelectorAll("input[data-note]").forEach(inp => {
-          inp.addEventListener("input", () => {
+          inp.oninput = () => {
             const id = inp.getAttribute("data-note");
-            sendDebounced({ type: "update_unit", id, note: inp.value });
-          });
+            const unit = units.find(x => x.id === id);
+            if (!unit) return;
+            unit.note = inp.value;
+            saveUnits(units);
+          };
         });
 
         root.querySelectorAll("button[data-st]").forEach(btn => {
-          btn.addEventListener("click", () => {
+          btn.onclick = () => {
             const id = btn.getAttribute("data-st");
-            const status = btn.getAttribute("data-val");
-            send({ type: "update_unit", id, status });
-          });
+            const st = btn.getAttribute("data-val");
+            const unit = units.find(x => x.id === id);
+            if (!unit) return;
+            unit.status = st;
+            saveUnits(units);
+            render();
+          };
         });
 
         root.querySelectorAll("button[data-clear]").forEach(btn => {
-          btn.addEventListener("click", () => {
+          btn.onclick = () => {
             const id = btn.getAttribute("data-clear");
-            send({ type: "clear_unit", id });
-          });
+            const unit = units.find(x => x.id === id);
+            if (!unit) return;
+            unit.officer = ""; unit.callSign = ""; unit.note = ""; unit.status = "Standby";
+            saveUnits(units);
+            render();
+          };
         });
 
-        const btnReset = root.querySelector("#btnResetLST");
-        if (isAdmin) btnReset.onclick = () => send({ type: "reset_leitstelle" });
-
-        restoreFocus(mem);
+        root.querySelector("#btnReset").onclick = () => {
+          localStorage.removeItem(KEY);
+          units = loadUnits();
+          render();
+        };
       }
 
-      function connect() {
-        live = { ok: false, text: "Verbinde..." };
-        render();
-
-        try {
-          socket = new WebSocket(wsUrl());
-        } catch {
-          live = { ok: false, text: "WS Fehler" };
-          render();
-          return;
-        }
-
-        socket.addEventListener("open", () => {
-          live = { ok: true, text: "Verbunden" };
-          render();
-        });
-
-        socket.addEventListener("close", () => {
-          live = { ok: false, text: "Getrennt" };
-          render();
-          setTimeout(connect, 1500);
-        });
-
-        socket.addEventListener("error", () => {
-          live = { ok: false, text: "Fehler" };
-          render();
-          try { socket.close(); } catch {}
-        });
-
-        socket.addEventListener("message", (ev) => {
-          let msg;
-          try { msg = JSON.parse(ev.data); } catch { return; }
-          if (msg.type === "error" && msg.reason === "unauthorized") {
-            live = { ok: false, text: "Nicht autorisiert" };
-            render();
-            return;
-          }
-          if (msg.type === "state" && msg.leitstelle) {
-            st = msg.leitstelle;
-            render();
-          }
-        });
-      }
-
-      connect();
+      render();
     }
   };
 })();
