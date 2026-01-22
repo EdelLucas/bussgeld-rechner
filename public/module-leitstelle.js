@@ -1,206 +1,181 @@
-(function () {
-  function esc(s) {
-    return String(s ?? "").replace(/[&<>"']/g, (m) => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
-    }[m]));
-  }
+window.Leitstelle = {
+  mount(root, ctx){
+    root.innerHTML = `
+      <div class="panel">
+        <div class="title">🚨 Leitstelle</div>
 
-  function statusBadge(status) {
-    const s = status || "Standby";
-    if (s === "AFK") return `<span class="badge b-orange">${esc(s)}</span>`;
-    if (s === "Außer Dienst") return `<span class="badge b-red">${esc(s)}</span>`;
-    return `<span class="badge b-green">${esc(s)}</span>`;
-  }
+        <div class="row">
+          <div class="col">
+            <div class="small">Streife eintragen</div>
+            <div class="row" style="margin-top:10px">
+              <div class="col">
+                <label class="lbl">Callsign</label>
+                <input id="inCall" placeholder="z.B. ALPHA 01"/>
+              </div>
+              <div class="col">
+                <label class="lbl">Besatzung</label>
+                <input id="inMembers" placeholder="z.B. Max / Tim"/>
+              </div>
+              <div class="col">
+                <label class="lbl">Status</label>
+                <select id="inStatus">
+                  <option value="Streife">Streife</option>
+                  <option value="Standby">Standby</option>
+                  <option value="AFK">AFK</option>
+                  <option value="Außer Dienst">Außer Dienst</option>
+                </select>
+              </div>
+            </div>
 
-  // LocalStorage als Quelle (kein Live Sync nötig, kann später WS werden)
-  const KEY = "LST_UNITS_V1";
+            <div class="row" style="margin-top:12px">
+              <button id="btnAdd" class="btnMini">Eintragen / Aktualisieren</button>
+              <button id="btnClear" class="btnMini danger">Felder leeren</button>
+            </div>
 
-  function loadUnits(){
-    try{
-      const raw = localStorage.getItem(KEY);
-      if(raw) return JSON.parse(raw);
-    }catch{}
-    return [
-      { id:"ALPHA 01", officer:"", callSign:"", status:"Standby", note:"" },
-      { id:"ALPHA 02", officer:"", callSign:"", status:"Standby", note:"" },
-      { id:"BRAVO 01", officer:"", callSign:"", status:"Standby", note:"" },
-      { id:"CHARLIE 01", officer:"", callSign:"", status:"Standby", note:"" },
-      { id:"CHARLIE 02", officer:"", callSign:"", status:"Standby", note:"" },
-      { id:"DELTA 01", officer:"", callSign:"", status:"Standby", note:"" },
-      { id:"ECHO 01", officer:"", callSign:"", status:"Standby", note:"" },
-      { id:"ECHO 02", officer:"", callSign:"", status:"Standby", note:"" },
-      { id:"FOXTROT 01", officer:"", callSign:"", status:"Standby", note:"" }
-    ];
-  }
+            <div class="small" style="margin-top:12px">
+              Live: Änderungen werden an alle in deiner Orga synchronisiert.
+            </div>
+          </div>
 
-  function saveUnits(units){
-    localStorage.setItem(KEY, JSON.stringify(units));
-  }
+          <div class="col">
+            <div class="small">Aktive Streifen</div>
+            <div id="unitList" style="margin-top:10px"></div>
+          </div>
+        </div>
+      </div>
+    `;
 
-  window.Leitstelle = {
-    mount(root) {
-      let units = loadUnits();
+    const ws = ctx.getWS();
+    let state = { units: [], incidents: [] };
 
-      function counts() {
-        let inDienst = 0, streife = 0, ausser = 0, afk = 0;
-        for (const u of units) {
-          if (u.status === "AFK") afk++;
-          else if (u.status === "Außer Dienst") ausser++;
-          else { inDienst++; if (u.status === "Streife") streife++; }
-        }
-        return { inDienst, streife, ausser, afk };
+    const $ = (sel) => root.querySelector(sel);
+    const list = $("#unitList");
+
+    function badgeFor(status){
+      if(status === "Streife" || status === "Standby") return `<span class="badge b-green">${status}</span>`;
+      if(status === "AFK") return `<span class="badge b-orange">${status}</span>`;
+      return `<span class="badge b-red">${status}</span>`;
+    }
+
+    function render(){
+      if(!state.units.length){
+        list.innerHTML = `<div class="small">Keine Einträge.</div>`;
+        return;
       }
 
-      function render() {
-        const c = counts();
-
-        root.innerHTML = `
-          <div class="panel">
-            <div class="row" style="align-items:flex-start; justify-content:space-between;">
-              <div>
-                <div class="title">🚨 Leitstelle</div>
-                <div class="small">Streifen eintragen & Status wechseln</div>
-              </div>
-              <button class="btnMini" id="btnReset">Reset</button>
+      list.innerHTML = state.units
+        .slice()
+        .sort((a,b)=> (b.updatedAt||0) - (a.updatedAt||0))
+        .map(u => `
+          <div class="cardListItem">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+              <div style="font-weight:900; font-size:15px">${escapeHtml(u.callsign)}</div>
+              <div>${badgeFor(u.status)}</div>
             </div>
+            <div class="small" style="margin-top:6px">${escapeHtml(u.members || "")}</div>
 
-            <div class="row" style="margin-top:12px">
-              <div class="col">
-                <div class="small">Übersicht</div>
-                <div class="row" style="margin-top:10px">
-                  <div class="col">
-                    <div class="small">Eingeteilt</div>
-                    <div style="font-size:30px; font-weight:900; margin-top:6px">${c.inDienst}</div>
-                  </div>
-                  <div class="col">
-                    <div class="small">Aktive Streifen</div>
-                    <div style="font-size:30px; font-weight:900; margin-top:6px">${c.streife}</div>
-                  </div>
-                  <div class="col">
-                    <div class="small">AFK</div>
-                    <div style="font-size:30px; font-weight:900; margin-top:6px">${c.afk}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col">
-                <div class="small">Legende</div>
-                <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap">
-                  <span class="badge b-green">Im Dienst / Standby</span>
-                  <span class="badge b-orange">AFK</span>
-                  <span class="badge b-red">Außer Dienst</span>
-                </div>
-              </div>
-            </div>
-
-            <hr/>
-
-            <div class="small">Streifen</div>
-            <div id="grid" style="margin-top:12px; display:grid; grid-template-columns:repeat(auto-fit, minmax(360px, 1fr)); gap:14px"></div>
-          </div>
-        `;
-
-        const grid = root.querySelector("#grid");
-        grid.innerHTML = units.map(u => `
-          <div style="border:1px solid #1f2430; background:#0a0c10; border-radius:16px; padding:14px">
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px">
-              <div style="font-weight:900; font-size:16px">${esc(u.id)}</div>
-              <div>${statusBadge(u.status)}</div>
-            </div>
-
-            <div class="row" style="margin-top:12px">
-              <div class="col">
-                <div class="small">Officer</div>
-                <input data-off="${esc(u.id)}" value="${esc(u.officer)}" placeholder="Name"/>
-              </div>
-              <div class="col">
-                <div class="small">Callsign</div>
-                <input data-call="${esc(u.id)}" value="${esc(u.callSign)}" placeholder="z.B. 28-05-050"/>
-              </div>
-            </div>
-
-            <div class="row" style="margin-top:12px">
-              <div class="col">
-                <div class="small">Notiz</div>
-                <input data-note="${esc(u.id)}" value="${esc(u.note)}" placeholder="Einsatz / Verkehr / ..."/>
-              </div>
-            </div>
-
-            <div class="row" style="margin-top:12px; gap:10px">
-              <button class="btnMini" data-st="${esc(u.id)}" data-val="Standby">Standby</button>
-              <button class="btnMini" data-st="${esc(u.id)}" data-val="Streife">Streife</button>
-              <button class="btnMini" data-st="${esc(u.id)}" data-val="AFK">AFK</button>
-              <button class="btnMini" data-st="${esc(u.id)}" data-val="Außer Dienst">Außer Dienst</button>
-            </div>
-
-            <div class="row" style="margin-top:12px">
-              <button class="btnMini" data-clear="${esc(u.id)}">Leeren</button>
+            <div class="row" style="margin-top:10px">
+              <button class="btnMini" data-set="${u.id}" data-status="Streife">Streife</button>
+              <button class="btnMini" data-set="${u.id}" data-status="Standby">Standby</button>
+              <button class="btnMini" data-set="${u.id}" data-status="AFK">AFK</button>
+              <button class="btnMini danger" data-del="${u.id}">Entfernen</button>
             </div>
           </div>
         `).join("");
 
-        // Inputs
-        root.querySelectorAll("input[data-off]").forEach(inp => {
-          inp.oninput = () => {
-            const id = inp.getAttribute("data-off");
-            const unit = units.find(x => x.id === id);
-            if (!unit) return;
-            unit.officer = inp.value;
-            saveUnits(units);
-          };
-        });
-
-        root.querySelectorAll("input[data-call]").forEach(inp => {
-          inp.oninput = () => {
-            const id = inp.getAttribute("data-call");
-            const unit = units.find(x => x.id === id);
-            if (!unit) return;
-            unit.callSign = inp.value;
-            saveUnits(units);
-          };
-        });
-
-        root.querySelectorAll("input[data-note]").forEach(inp => {
-          inp.oninput = () => {
-            const id = inp.getAttribute("data-note");
-            const unit = units.find(x => x.id === id);
-            if (!unit) return;
-            unit.note = inp.value;
-            saveUnits(units);
-          };
-        });
-
-        root.querySelectorAll("button[data-st]").forEach(btn => {
-          btn.onclick = () => {
-            const id = btn.getAttribute("data-st");
-            const st = btn.getAttribute("data-val");
-            const unit = units.find(x => x.id === id);
-            if (!unit) return;
-            unit.status = st;
-            saveUnits(units);
-            render();
-          };
-        });
-
-        root.querySelectorAll("button[data-clear]").forEach(btn => {
-          btn.onclick = () => {
-            const id = btn.getAttribute("data-clear");
-            const unit = units.find(x => x.id === id);
-            if (!unit) return;
-            unit.officer = ""; unit.callSign = ""; unit.note = ""; unit.status = "Standby";
-            saveUnits(units);
-            render();
-          };
-        });
-
-        root.querySelector("#btnReset").onclick = () => {
-          localStorage.removeItem(KEY);
-          units = loadUnits();
-          render();
+      list.querySelectorAll("[data-set]").forEach(btn=>{
+        btn.onclick = ()=> {
+          const id = btn.getAttribute("data-set");
+          const status = btn.getAttribute("data-status");
+          const u = state.units.find(x=>x.id===id);
+          if(!u) return;
+          u.status = status;
+          u.updatedAt = Date.now();
+          pushState();
         };
-      }
+      });
 
+      list.querySelectorAll("[data-del]").forEach(btn=>{
+        btn.onclick = ()=> {
+          const id = btn.getAttribute("data-del");
+          state.units = state.units.filter(x=>x.id!==id);
+          pushState();
+        };
+      });
+    }
+
+    function pushState(){
+      // ws bevorzugt, fallback api
+      if(ws && ws.readyState === 1){
+        ws.send(JSON.stringify({ type:"dispatch:set", state }));
+      }else{
+        ctx.api("/api/dispatch/set", {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify({ state })
+        }).catch(()=>{});
+      }
       render();
     }
-  };
-})();
+
+    $("#btnAdd").onclick = () => {
+      const callsign = $("#inCall").value.trim();
+      const members = $("#inMembers").value.trim();
+      const status = $("#inStatus").value;
+
+      if(!callsign) return;
+
+      // Eintrag pro Callsign unique
+      const existing = state.units.find(u => u.callsign.toLowerCase() === callsign.toLowerCase());
+      if(existing){
+        existing.members = members;
+        existing.status = status;
+        existing.updatedAt = Date.now();
+      } else {
+        state.units.push({
+          id: "u_" + Math.random().toString(16).slice(2),
+          callsign,
+          members,
+          status,
+          updatedAt: Date.now()
+        });
+      }
+      pushState();
+    };
+
+    $("#btnClear").onclick = () => {
+      $("#inCall").value = "";
+      $("#inMembers").value = "";
+      $("#inStatus").value = "Streife";
+    };
+
+    function escapeHtml(s){
+      return String(s||"")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    // initial load via ws init or api
+    ws?.addEventListener("message", (e)=>{
+      let m; try{ m = JSON.parse(e.data);}catch{return;}
+      if(m.type === "dispatch:init" && m.state){
+        state = m.state; render();
+      }
+      if(m.type === "dispatch:update" && m.state){
+        state = m.state; render();
+      }
+    });
+
+    ctx.api("/api/dispatch").then(({data})=>{
+      if(data?.ok && data.state){
+        state = data.state;
+        render();
+      }
+    });
+
+    render();
+  }
+};
