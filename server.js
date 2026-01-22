@@ -1,455 +1,440 @@
 const express = require("express");
 const path = require("path");
-const fs = require("fs");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const cookieParser = require("cookie-parser");
+const bcrypt = require("bcryptjs");
+const { nanoid } = require("nanoid");
+const Database = require("better-sqlite3");
 const http = require("http");
 const WebSocket = require("ws");
 
-const app = express();
-app.use(express.json());
+// ===== Config =====
+const PORT = process.env.PORT || 3000;
+const DB_FILE = process.env.DB_FILE || "data.sqlite";
+const COOKIE_NAME = process.env.COOKIE_NAME || "grandlst_session";
+const JWT_SECRET = process.env.JWT_SECRET || "CHANGE_ME_SUPER_SECRET"; // für prod unbedingt env setzen
+const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK || ""; // optional
 
-const ORGS = ["LSPD", "FIB", "NG", "LI", "EMS", "GOV", "SAHP"];
-
-// --------------------
-// Simple JSON persistence
-// --------------------
-const DATA_FILE = path.join(__dirname, "data.json");
-
-function safeReadJSON(file, fallback) {
-  try {
-    if (!fs.existsSync(file)) return fallback;
-    const raw = fs.readFileSync(file, "utf8");
-    const data = JSON.parse(raw);
-    return data ?? fallback;
-  } catch {
-    return fallback;
-  }
+// ===== Minimal JWT (ohne lib) =====
+const crypto = require("crypto");
+function b64url(buf) {
+  return Buffer.from(buf).toString("base64").replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 }
-function safeWriteJSON(file, data) {
-  try {
-    fs.writeFileSync(file, JSON.stringify(data, null, 2), "utf8");
-  } catch (e) {
-    console.error("write json failed:", e);
-  }
+function signJWT(payload, expSeconds = 60 * 60 * 8) {
+  const header = { alg: "HS256", typ: "JWT" };
+  const now = Math.floor(Date.now() / 1000);
+  const body = { ...payload, iat: now, exp: now + expSeconds };
+  const h = b64url(JSON.stringify(header));
+  const p = b64url(JSON.stringify(body));
+  const data = `${h}.${p}`;
+  const sig = b64url(crypto.createHmac("sha256", JWT_SECRET).update(data).digest());
+  return `${data}.${sig}`;
+}
+function verifyJWT(token) {
+  const parts = (token || "").split(".");
+  if (parts.length !== 3) return null;
+  const [h, p, s] = parts;
+  const data = `${h}.${p}`;
+  const sig = b64url(crypto.createHmac("sha256", JWT_SECRET).update(data).digest());
+  if (sig !== s) return null;
+  const payload = JSON.parse(Buffer.from(p.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8"));
+  const now = Math.floor(Date.now() / 1000);
+  if (payload.exp && now > payload.exp) return null;
+  return payload;
 }
 
-// --------------------
-// DB (file based)
-// --------------------
-const DEFAULT_DB = {
-  users: [
-    // only admin exists initially
-    {
-      id: "u_admin",
-      email: "grand-lst.admin@lokal.de",
-      pass: "k34w6mP58Fg",
-      role: "admin", // admin | leader | user
-      org: "SYSTEM",
-      name: "Grand LST Admin",
-      phone: "",
-      active: true,
-      createdAt: Date.now(),
-      lastLoginAt: null,
-      mustChangePass: false
-    }
-  ],
-  // org-scoped data
-  orgData: ORGS.reduce((acc, o) => {
-    acc[o] = {
-      laws: null,      // set by default on first request
-      persons: [],     // later
-      vehicles: [],    // later
-      audit: []        // server audit log
-    };
-    return acc;
-  }, {}),
-  sessions: {} // token -> { userId, createdAt }
-};
+// ===== DB init =====
+const db = new Database(DB_FILE);
+db.pragma("journal_mode = WAL");
 
-let DB = safeReadJSON(DATA_FILE, DEFAULT_DB);
+db.exec(`
+CREATE TABLE IF NOT EXISTS orgs (
+  id TEXT PRIMARY KEY,
+  code TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  isActive INTEGER NOT NULL DEFAULT 1,
+  createdAt INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS users (
+  id TEXT PRIMARY KEY,
+  orgId TEXT NOT NULL,
+  email TEXT NOT NULL,
+  name TEXT,
+  phone TEXT,
+  role TEXT NOT NULL,
+  passwordHash TEXT,
+  isActive INTEGER NOT NULL DEFAULT 1,
+  createdAt INTEGER NOT NULL,
+  lastLoginAt INTEGER,
+  FOREIGN KEY(orgId) REFERENCES orgs(id),
+  UNIQUE(orgId, email)
+);
+CREATE TABLE IF NOT EXISTS invites (
+  id TEXT PRIMARY KEY,
+  orgId TEXT NOT NULL,
+  email TEXT NOT NULL,
+  role TEXT NOT NULL,
+  tokenHash TEXT NOT NULL,
+  expiresAt INTEGER NOT NULL,
+  usedAt INTEGER,
+  createdByUserId TEXT NOT NULL,
+  createdAt INTEGER NOT NULL,
+  FOREIGN KEY(orgId) REFERENCES orgs(id)
+);
+CREATE TABLE IF NOT EXISTS audit (
+  id TEXT PRIMARY KEY,
+  orgId TEXT,
+  actorUserId TEXT,
+  action TEXT NOT NULL,
+  targetType TEXT,
+  targetId TEXT,
+  detailJson TEXT,
+  ip TEXT,
+  userAgent TEXT,
+  createdAt INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS law_catalog (
+  id TEXT PRIMARY KEY,
+  orgId TEXT NOT NULL,
+  version INTEGER NOT NULL DEFAULT 1,
+  json TEXT NOT NULL,
+  updatedByUserId TEXT NOT NULL,
+  updatedAt INTEGER NOT NULL,
+  FOREIGN KEY(orgId) REFERENCES orgs(id)
+);
+CREATE TABLE IF NOT EXISTS dispatch_state (
+  orgId TEXT PRIMARY KEY,
+  json TEXT NOT NULL,
+  updatedAt INTEGER NOT NULL,
+  updatedByUserId TEXT
+);
+`);
 
-// Ensure orgData exists for all orgs (in case file older)
+// Seed orgs list
+const ORGS = [
+  { code: "LSPD", name: "Los Santos Police Department" },
+  { code: "FIB", name: "Federal Investigation Bureau" },
+  { code: "NG", name: "National Guard" },
+  { code: "LI", name: "Los Santos Industries" },
+  { code: "EMS", name: "Emergency Medical Services" },
+  { code: "GOV", name: "Government" },
+  { code: "SAHP", name: "San Andreas Highway Patrol" }
+];
+const nowMs = () => Date.now();
+
+const getOrgByCode = db.prepare(`SELECT * FROM orgs WHERE code = ?`);
+const insOrg = db.prepare(`INSERT INTO orgs (id, code, name, isActive, createdAt) VALUES (?, ?, ?, 1, ?)`);
 for (const o of ORGS) {
-  DB.orgData[o] = DB.orgData[o] || { laws: null, persons: [], vehicles: [], audit: [] };
-}
-DB.sessions = DB.sessions || {};
-
-// Save helper (throttled-ish)
-let saveTimer = null;
-function scheduleSave() {
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => safeWriteJSON(DATA_FILE, DB), 250);
+  const ex = getOrgByCode.get(o.code);
+  if (!ex) insOrg.run("org_" + nanoid(12), o.code, o.name, nowMs());
 }
 
-// --------------------
-// Utils
-// --------------------
-function rndToken(len = 32) {
-  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let out = "";
-  for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
-  return out;
-}
-function genPassword() {
-  // readable
-  return rndToken(10);
-}
-function nowISO() {
-  return new Date().toISOString();
+// Ensure SUPER_ADMIN exists (dein Admin)
+const SUPER_ADMIN_EMAIL = "grand-lst.admin@lokal.de";
+const SUPER_ADMIN_PASS = "k34w6mP58Fg";
+
+const getAnyOrg = db.prepare(`SELECT id FROM orgs WHERE code = 'GOV'`).get(); // system-admin org fallback
+const getSuper = db.prepare(`SELECT * FROM users WHERE email = ? AND role = 'SUPER_ADMIN'`).get(SUPER_ADMIN_EMAIL);
+if (!getSuper) {
+  const hash = bcrypt.hashSync(SUPER_ADMIN_PASS, 12);
+  db.prepare(`
+    INSERT INTO users (id, orgId, email, name, phone, role, passwordHash, isActive, createdAt)
+    VALUES (?, ?, ?, ?, ?, 'SUPER_ADMIN', ?, 1, ?)
+  `).run("usr_" + nanoid(12), getAnyOrg.id, SUPER_ADMIN_EMAIL, "System Admin", "", hash, nowMs());
 }
 
-function pushAudit(org, actor, action, meta = {}) {
-  const entry = {
-    ts: Date.now(),
-    iso: nowISO(),
-    actor: actor || "system",
+// ===== Audit + optional Discord =====
+async function discordLog(line) {
+  if (!DISCORD_WEBHOOK) return;
+  try {
+    await fetch(DISCORD_WEBHOOK, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: line.slice(0, 1800) })
+    });
+  } catch {}
+}
+function addAudit({ orgId, actorUserId, action, targetType, targetId, detail, req }) {
+  const id = "aud_" + nanoid(12);
+  const detailJson = detail ? JSON.stringify(detail) : null;
+  db.prepare(`
+    INSERT INTO audit (id, orgId, actorUserId, action, targetType, targetId, detailJson, ip, userAgent, createdAt)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    id,
+    orgId || null,
+    actorUserId || null,
     action,
-    meta
-  };
-  if (org && DB.orgData[org]) DB.orgData[org].audit.unshift(entry);
-  // also store global audit on SYSTEM? optional
-  scheduleSave();
-
-  // websocket broadcast to org clients
-  wsBroadcast(org, { type: "audit", entry });
+    targetType || null,
+    targetId || null,
+    detailJson,
+    req?.ip || null,
+    req?.headers?.["user-agent"] || null,
+    nowMs()
+  );
+  discordLog(`🧾 **${action}** org=${orgId || "-"} actor=${actorUserId || "-"} target=${targetType || "-"}:${targetId || "-"}`);
 }
 
-function getUserByToken(req) {
-  const token = (req.headers.authorization || "").replace(/^Bearer\s+/i, "").trim();
-  if (!token) return null;
-  const s = DB.sessions[token];
-  if (!s) return null;
-  const u = DB.users.find(x => x.id === s.userId && x.active);
-  return u || null;
-}
+// ===== Express =====
+const app = express();
+app.set("trust proxy", 1);
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(express.json({ limit: "1mb" }));
+app.use(cookieParser());
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 600 }));
 
+// Static frontend
+app.use(express.static(path.join(__dirname, "public")));
+
+// ===== Auth middleware =====
+function getUserFromReq(req) {
+  const token = req.cookies[COOKIE_NAME];
+  const payload = verifyJWT(token);
+  if (!payload) return null;
+  const user = db.prepare(`SELECT id, orgId, email, name, phone, role, isActive FROM users WHERE id = ?`).get(payload.uid);
+  if (!user || !user.isActive) return null;
+  return user;
+}
 function requireAuth(req, res, next) {
-  const u = getUserByToken(req);
-  if (!u) return res.status(401).json({ ok: false, error: "unauthorized" });
+  const u = getUserFromReq(req);
+  if (!u) return res.status(401).json({ ok: false, error: "UNAUTH" });
   req.user = u;
   next();
 }
-function requireAdmin(req, res, next) {
-  if (!req.user || req.user.role !== "admin") return res.status(403).json({ ok: false, error: "forbidden" });
-  next();
-}
-function requireLeaderOrAdmin(req, res, next) {
-  if (!req.user || (req.user.role !== "admin" && req.user.role !== "leader")) {
-    return res.status(403).json({ ok: false, error: "forbidden" });
-  }
-  next();
-}
-
-// --------------------
-// Static frontend
-// --------------------
-app.use(express.static(path.join(__dirname, "public")));
-
-// --------------------
-// API: Auth
-// --------------------
-
-// Login flow:
-// - email required
-// - password optional:
-//   - if user has no pass yet and only email is provided -> generate pass, set mustChangePass=true and return generatedPass once
-//   - otherwise require pass match
-app.post("/api/login", (req, res) => {
-  const { email, pass } = req.body || {};
-  const e = String(email || "").trim().toLowerCase();
-  const p = String(pass || "").trim();
-
-  if (!e) return res.status(400).json({ ok: false, error: "email_required" });
-
-  const user = DB.users.find(u => (u.email || "").toLowerCase() === e && u.active);
-  if (!user) return res.status(401).json({ ok: false, error: "login_failed" });
-
-  // If password not set yet => allow email-only login to generate password (requested)
-  if (!user.pass) {
-    if (p) return res.status(401).json({ ok: false, error: "login_failed" });
-
-    const newPass = genPassword();
-    user.pass = newPass;
-    user.mustChangePass = true;
-    user.lastLoginAt = Date.now();
-
-    const token = rndToken(48);
-    DB.sessions[token] = { userId: user.id, createdAt: Date.now() };
-    scheduleSave();
-
-    pushAudit(user.org, user.email, "LOGIN_PASSWORD_GENERATED", { role: user.role });
-
-    return res.json({
-      ok: true,
-      token,
-      user: sanitizeUser(user),
-      generatedPass: newPass,
-      mustChangePass: true
-    });
-  }
-
-  if (user.pass !== p) return res.status(401).json({ ok: false, error: "login_failed" });
-
-  user.lastLoginAt = Date.now();
-  const token = rndToken(48);
-  DB.sessions[token] = { userId: user.id, createdAt: Date.now() };
-  scheduleSave();
-
-  pushAudit(user.org, user.email, "LOGIN", { role: user.role });
-
-  res.json({ ok: true, token, user: sanitizeUser(user), mustChangePass: !!user.mustChangePass });
-});
-
-app.post("/api/logout", requireAuth, (req, res) => {
-  const token = (req.headers.authorization || "").replace(/^Bearer\s+/i, "").trim();
-  if (token) delete DB.sessions[token];
-  scheduleSave();
-  pushAudit(req.user.org, req.user.email, "LOGOUT", {});
-  res.json({ ok: true });
-});
-
-app.post("/api/change-password", requireAuth, (req, res) => {
-  const { oldPass, newPass } = req.body || {};
-  const o = String(oldPass || "").trim();
-  const n = String(newPass || "").trim();
-
-  if (!n || n.length < 6) return res.status(400).json({ ok: false, error: "weak_password" });
-
-  const u = req.user;
-  if (u.pass && u.pass !== o && u.mustChangePass !== true) {
-    return res.status(401).json({ ok: false, error: "wrong_old_password" });
-  }
-
-  u.pass = n;
-  u.mustChangePass = false;
-  scheduleSave();
-
-  pushAudit(u.org, u.email, "PASSWORD_CHANGED", {});
-  res.json({ ok: true });
-});
-
-function sanitizeUser(u) {
-  return {
-    id: u.id,
-    email: u.email,
-    role: u.role,
-    org: u.org,
-    name: u.name || "",
-    phone: u.phone || "",
-    active: !!u.active,
-    createdAt: u.createdAt,
-    lastLoginAt: u.lastLoginAt,
-    mustChangePass: !!u.mustChangePass
+function requireRole(...roles) {
+  return (req, res, next) => {
+    if (!req.user) return res.status(401).json({ ok: false, error: "UNAUTH" });
+    if (roles.includes(req.user.role)) return next();
+    return res.status(403).json({ ok: false, error: "FORBIDDEN" });
   };
 }
 
-// --------------------
-// API: Orga laws (org isolated)
-// --------------------
-app.get("/api/laws", requireAuth, (req, res) => {
-  const org = req.user.role === "admin" ? (req.query.org || req.user.org) : req.user.org;
-  if (req.user.role === "admin") {
-    // admin can request any org, but not SYSTEM
-    if (org && org !== "SYSTEM" && !DB.orgData[org]) return res.status(400).json({ ok: false, error: "bad_org" });
+// ===== API =====
+
+// whoami
+app.get("/api/me", requireAuth, (req, res) => res.json({ ok: true, user: req.user }));
+
+// login
+app.post("/api/login", async (req, res) => {
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  const password = String(req.body?.password || "");
+  if (!email || !password) return res.status(400).json({ ok: false });
+
+  const user = db.prepare(`SELECT * FROM users WHERE lower(email)=? AND isActive=1`).get(email);
+  if (!user || !user.passwordHash) return res.status(401).json({ ok: false });
+
+  const ok = await bcrypt.compare(password, user.passwordHash);
+  if (!ok) return res.status(401).json({ ok: false });
+
+  db.prepare(`UPDATE users SET lastLoginAt=? WHERE id=?`).run(nowMs(), user.id);
+
+  const token = signJWT({ uid: user.id });
+  res.cookie(COOKIE_NAME, token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: true // Render/https -> true
+  });
+
+  addAudit({ orgId: user.orgId, actorUserId: user.id, action: "LOGIN", req });
+  res.json({ ok: true });
+});
+
+// logout
+app.post("/api/logout", requireAuth, (req, res) => {
+  res.clearCookie(COOKIE_NAME);
+  addAudit({ orgId: req.user.orgId, actorUserId: req.user.id, action: "LOGOUT", req });
+  res.json({ ok: true });
+});
+
+// ===== Invites =====
+// SUPER_ADMIN: Leader einladen (pro Orga)
+app.post("/api/admin/invite-leader", requireAuth, requireRole("SUPER_ADMIN"), async (req, res) => {
+  const orgCode = String(req.body?.orgCode || "").trim().toUpperCase();
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  if (!orgCode || !email) return res.status(400).json({ ok: false });
+
+  const org = db.prepare(`SELECT * FROM orgs WHERE code=? AND isActive=1`).get(orgCode);
+  if (!org) return res.status(404).json({ ok: false, error: "ORG_NOT_FOUND" });
+
+  const tokenPlain = nanoid(32);
+  const tokenHash = await bcrypt.hash(tokenPlain, 12);
+  const id = "inv_" + nanoid(12);
+  const expiresAt = nowMs() + 24 * 60 * 60 * 1000;
+
+  db.prepare(`
+    INSERT INTO invites (id, orgId, email, role, tokenHash, expiresAt, usedAt, createdByUserId, createdAt)
+    VALUES (?, ?, ?, 'ORG_LEADER', ?, ?, NULL, ?, ?)
+  `).run(id, org.id, email, tokenHash, expiresAt, req.user.id, nowMs());
+
+  addAudit({ orgId: org.id, actorUserId: req.user.id, action: "INVITE_CREATE", targetType: "invite", targetId: id, detail: { email, role: "ORG_LEADER" }, req });
+
+  // Link: du kannst das im UI anzeigen statt per Mail
+  res.json({ ok: true, inviteLink: `/invite/${tokenPlain}`, expiresAt });
+});
+
+// ORG_LEADER: Mitglieder einladen (HR)
+app.post("/api/hr/invite", requireAuth, requireRole("ORG_LEADER", "SUPER_ADMIN"), async (req, res) => {
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  const role = String(req.body?.role || "MEMBER").trim();
+  if (!email) return res.status(400).json({ ok: false });
+
+  // orgId: super admin darf orgId angeben, leader nicht
+  let orgId = req.user.orgId;
+  if (req.user.role === "SUPER_ADMIN" && req.body?.orgId) orgId = String(req.body.orgId);
+
+  const tokenPlain = nanoid(32);
+  const tokenHash = await bcrypt.hash(tokenPlain, 12);
+  const id = "inv_" + nanoid(12);
+  const expiresAt = nowMs() + 24 * 60 * 60 * 1000;
+
+  db.prepare(`
+    INSERT INTO invites (id, orgId, email, role, tokenHash, expiresAt, usedAt, createdByUserId, createdAt)
+    VALUES (?, ?, ?, ?, ?, ?, NULL, ?, ?)
+  `).run(id, orgId, email, role, tokenHash, expiresAt, req.user.id, nowMs());
+
+  addAudit({ orgId, actorUserId: req.user.id, action: "INVITE_CREATE", targetType: "invite", targetId: id, detail: { email, role }, req });
+  res.json({ ok: true, inviteLink: `/invite/${tokenPlain}`, expiresAt });
+});
+
+// Invite accept (token -> account anlegen + password setzen)
+app.post("/api/invite/accept", async (req, res) => {
+  const token = String(req.body?.token || "");
+  const name = String(req.body?.name || "").trim();
+  const phone = String(req.body?.phone || "").trim();
+  const password = String(req.body?.password || "");
+  if (!token || !password) return res.status(400).json({ ok: false });
+
+  const invites = db.prepare(`SELECT * FROM invites WHERE usedAt IS NULL AND expiresAt > ?`).all(nowMs());
+  let found = null;
+  for (const inv of invites) {
+    const ok = await bcrypt.compare(token, inv.tokenHash);
+    if (ok) { found = inv; break; }
   }
-  const o = org && org !== "SYSTEM" ? org : null;
-  if (!o) return res.json({ ok: true, laws: null });
+  if (!found) return res.status(400).json({ ok: false, error: "INVITE_INVALID" });
 
-  res.json({ ok: true, laws: DB.orgData[o].laws });
-});
+  const email = found.email;
+  const orgId = found.orgId;
+  const role = found.role;
 
-app.post("/api/laws", requireAuth, requireLeaderOrAdmin, (req, res) => {
-  const { org, laws } = req.body || {};
-  const targetOrg = req.user.role === "admin" ? String(org || "").trim() : req.user.org;
-  if (!ORGS.includes(targetOrg)) return res.status(400).json({ ok: false, error: "bad_org" });
+  const exists = db.prepare(`SELECT * FROM users WHERE orgId=? AND lower(email)=lower(?)`).get(orgId, email);
+  if (exists) return res.status(400).json({ ok: false, error: "USER_EXISTS" });
 
-  if (!Array.isArray(laws)) return res.status(400).json({ ok: false, error: "bad_laws" });
+  const hash = await bcrypt.hash(password, 12);
+  const userId = "usr_" + nanoid(12);
 
-  DB.orgData[targetOrg].laws = laws;
-  scheduleSave();
+  db.prepare(`
+    INSERT INTO users (id, orgId, email, name, phone, role, passwordHash, isActive, createdAt)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)
+  `).run(userId, orgId, email, name || null, phone || null, role, hash, nowMs());
 
-  pushAudit(targetOrg, req.user.email, "LAWS_UPDATED", { countCats: laws.length });
-  wsBroadcast(targetOrg, { type: "laws", laws });
+  db.prepare(`UPDATE invites SET usedAt=? WHERE id=?`).run(nowMs(), found.id);
 
+  addAudit({ orgId, actorUserId: userId, action: "INVITE_ACCEPT", targetType: "user", targetId: userId, detail: { email, role }, req: { ip: req.ip, headers: req.headers } });
+
+  // auto-login
+  const jwt = signJWT({ uid: userId });
+  res.cookie(COOKIE_NAME, jwt, { httpOnly: true, sameSite: "lax", secure: true });
   res.json({ ok: true });
 });
 
-// --------------------
-// API: Users / Admin + HR
-// --------------------
+// ===== Org isolation example data =====
 
-// Admin: list all users
-app.get("/api/admin/users", requireAuth, requireAdmin, (req, res) => {
-  res.json({ ok: true, users: DB.users.map(sanitizeUser) });
+// Get own org dispatch state
+app.get("/api/dispatch", requireAuth, (req, res) => {
+  const row = db.prepare(`SELECT json FROM dispatch_state WHERE orgId=?`).get(req.user.orgId);
+  res.json({ ok: true, state: row ? JSON.parse(row.json) : null });
 });
 
-// Admin: create leader (or HR user)
-app.post("/api/admin/create-user", requireAuth, requireAdmin, (req, res) => {
-  const { email, name, phone, org, role } = req.body || {};
-  const e = String(email || "").trim().toLowerCase();
-  const n = String(name || "").trim();
-  const ph = String(phone || "").trim();
-  const o = String(org || "").trim().toUpperCase();
-  const r = String(role || "user").trim().toLowerCase();
+// Update dispatch state (Leader only)
+app.post("/api/dispatch", requireAuth, requireRole("ORG_LEADER", "SUPER_ADMIN"), (req, res) => {
+  const orgId = req.user.role === "SUPER_ADMIN" && req.body?.orgId ? String(req.body.orgId) : req.user.orgId;
+  const json = JSON.stringify(req.body?.state || {});
+  db.prepare(`
+    INSERT INTO dispatch_state (orgId, json, updatedAt, updatedByUserId)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT(orgId) DO UPDATE SET json=excluded.json, updatedAt=excluded.updatedAt, updatedByUserId=excluded.updatedByUserId
+  `).run(orgId, json, nowMs(), req.user.id);
 
-  if (!e || !e.includes("@")) return res.status(400).json({ ok: false, error: "bad_email" });
-  if (!ORGS.includes(o)) return res.status(400).json({ ok: false, error: "bad_org" });
-  if (!["leader", "user"].includes(r)) return res.status(400).json({ ok: false, error: "bad_role" });
+  addAudit({ orgId, actorUserId: req.user.id, action: "DISPATCH_UPDATE", targetType: "dispatch_state", targetId: orgId, req });
 
-  const exists = DB.users.find(u => (u.email || "").toLowerCase() === e);
-  if (exists) return res.status(409).json({ ok: false, error: "email_exists" });
-
-  const id = "u_" + rndToken(12);
-  DB.users.push({
-    id,
-    email: e,
-    pass: null, // important: will be generated when user logs in with email only
-    role: r,
-    org: o,
-    name: n,
-    phone: ph,
-    active: true,
-    createdAt: Date.now(),
-    lastLoginAt: null,
-    mustChangePass: false
-  });
-
-  scheduleSave();
-  pushAudit(o, req.user.email, "USER_CREATED", { email: e, role: r });
-
-  res.json({ ok: true, user: sanitizeUser(DB.users.find(x => x.id === id)) });
-});
-
-// Leader: list org users
-app.get("/api/org/users", requireAuth, requireLeaderOrAdmin, (req, res) => {
-  const org = req.user.role === "admin" ? String(req.query.org || "").trim().toUpperCase() : req.user.org;
-  if (!ORGS.includes(org)) return res.status(400).json({ ok: false, error: "bad_org" });
-
-  const list = DB.users
-    .filter(u => u.active && u.org === org && u.role !== "admin")
-    .map(sanitizeUser);
-
-  res.json({ ok: true, users: list });
-});
-
-// Leader/Admin: disable user
-app.post("/api/org/disable-user", requireAuth, requireLeaderOrAdmin, (req, res) => {
-  const { userId } = req.body || {};
-  const id = String(userId || "").trim();
-  const target = DB.users.find(u => u.id === id);
-  if (!target) return res.status(404).json({ ok: false, error: "not_found" });
-
-  const allowedOrg = req.user.role === "admin" ? true : target.org === req.user.org;
-  if (!allowedOrg) return res.status(403).json({ ok: false, error: "forbidden" });
-  if (target.role === "admin") return res.status(403).json({ ok: false, error: "forbidden" });
-
-  target.active = false;
-  scheduleSave();
-
-  pushAudit(target.org, req.user.email, "USER_DISABLED", { email: target.email, role: target.role });
+  broadcastOrg(orgId, { type: "dispatch:update", state: JSON.parse(json) });
   res.json({ ok: true });
 });
 
-// Leader/Admin: reset password (set pass null -> user can generate by email-only login)
-app.post("/api/org/reset-pass", requireAuth, requireLeaderOrAdmin, (req, res) => {
-  const { userId } = req.body || {};
-  const id = String(userId || "").trim();
-  const target = DB.users.find(u => u.id === id);
-  if (!target) return res.status(404).json({ ok: false, error: "not_found" });
-
-  const allowedOrg = req.user.role === "admin" ? true : target.org === req.user.org;
-  if (!allowedOrg) return res.status(403).json({ ok: false, error: "forbidden" });
-  if (target.role === "admin") return res.status(403).json({ ok: false, error: "forbidden" });
-
-  target.pass = null;
-  target.mustChangePass = false;
-  scheduleSave();
-
-  pushAudit(target.org, req.user.email, "PASSWORD_RESET", { email: target.email });
-  res.json({ ok: true });
-});
-
-// Audit log (org scoped)
-app.get("/api/audit", requireAuth, (req, res) => {
-  const org = req.user.role === "admin"
-    ? String(req.query.org || req.user.org || "").trim().toUpperCase()
-    : req.user.org;
-
-  if (!ORGS.includes(org)) return res.status(400).json({ ok: false, error: "bad_org" });
-  res.json({ ok: true, audit: DB.orgData[org].audit.slice(0, 200) });
-});
-
-// --------------------
-// Minimal placeholder data endpoints for overview lists
-// (you can expand later)
-// --------------------
-app.get("/api/org/overview", requireAuth, (req, res) => {
-  const org = req.user.role === "admin"
-    ? String(req.query.org || req.user.org || "").trim().toUpperCase()
-    : req.user.org;
-
-  if (!ORGS.includes(org)) return res.status(400).json({ ok: false, error: "bad_org" });
-
-  res.json({
-    ok: true,
-    overview: {
-      persons: DB.orgData[org].persons.length,
-      vehicles: DB.orgData[org].vehicles.length,
-      users: DB.users.filter(u => u.active && u.org === org).length
-    }
-  });
-});
-
-// --------------------
-// Fallback
-// --------------------
-app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
-
-// --------------------
-// WebSocket live sync (org rooms)
-// --------------------
+// ===== WS (Live Sync) =====
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-const WS_CLIENTS = new Map(); // ws -> { userId, org }
-
+/**
+ * Connection auth:
+ * client sends {type:"auth"} then server reads cookie header to auth
+ */
+const sockets = new Map(); // ws -> { user, orgId }
 function wsSend(ws, obj) {
   try { ws.send(JSON.stringify(obj)); } catch {}
 }
-function wsBroadcast(org, obj) {
-  for (const [ws, meta] of WS_CLIENTS.entries()) {
-    if (meta && meta.org === org && ws.readyState === WebSocket.OPEN) {
-      wsSend(ws, obj);
-    }
+function broadcastOrg(orgId, obj) {
+  for (const [ws, meta] of sockets.entries()) {
+    if (meta?.orgId === orgId && ws.readyState === WebSocket.OPEN) wsSend(ws, obj);
   }
 }
 
-// simple auth on ws: client sends {type:"auth", token}
-wss.on("connection", (ws) => {
-  WS_CLIENTS.set(ws, { userId: null, org: null });
+wss.on("connection", (ws, req) => {
+  sockets.set(ws, null);
 
-  ws.on("message", (msg) => {
-    let data;
-    try { data = JSON.parse(String(msg)); } catch { return; }
+  ws.on("message", (raw) => {
+    let msg;
+    try { msg = JSON.parse(String(raw || "")); } catch { return; }
 
-    if (data.type === "auth") {
-      const token = String(data.token || "").trim();
-      const s = DB.sessions[token];
-      if (!s) return wsSend(ws, { type: "auth", ok: false });
+    if (msg.type === "auth") {
+      // parse cookie from req.headers.cookie
+      const cookie = String(req.headers.cookie || "");
+      const token = cookie.split(";").map(x => x.trim()).find(x => x.startsWith(COOKIE_NAME + "="));
+      if (!token) return wsSend(ws, { type: "auth", ok: false });
+      const jwt = decodeURIComponent(token.split("=")[1] || "");
+      const payload = verifyJWT(jwt);
+      if (!payload) return wsSend(ws, { type: "auth", ok: false });
 
-      const user = DB.users.find(u => u.id === s.userId && u.active);
-      if (!user) return wsSend(ws, { type: "auth", ok: false });
+      const user = db.prepare(`SELECT id, orgId, email, name, phone, role, isActive FROM users WHERE id=?`).get(payload.uid);
+      if (!user || !user.isActive) return wsSend(ws, { type: "auth", ok: false });
 
-      WS_CLIENTS.set(ws, { userId: user.id, org: user.org });
-      wsSend(ws, { type: "auth", ok: true, org: user.org, role: user.role });
+      sockets.set(ws, { userId: user.id, orgId: user.orgId, role: user.role });
+      wsSend(ws, { type: "auth", ok: true, role: user.role });
+
+      // send initial dispatch state
+      const row = db.prepare(`SELECT json FROM dispatch_state WHERE orgId=?`).get(user.orgId);
+      wsSend(ws, { type: "dispatch:init", state: row ? JSON.parse(row.json) : null });
       return;
     }
 
-    // later: live events, calls, dispatch etc.
-    // For now: ignore
+    // Only allow after auth
+    const meta = sockets.get(ws);
+    if (!meta) return;
+
+    // Example: dispatch updates via WS (Leader only)
+    if (msg.type === "dispatch:set") {
+      if (!(meta.role === "ORG_LEADER" || meta.role === "SUPER_ADMIN")) {
+        return wsSend(ws, { type: "err", error: "FORBIDDEN" });
+      }
+      const state = msg.state || {};
+      const json = JSON.stringify(state);
+      db.prepare(`
+        INSERT INTO dispatch_state (orgId, json, updatedAt, updatedByUserId)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(orgId) DO UPDATE SET json=excluded.json, updatedAt=excluded.updatedAt, updatedByUserId=excluded.updatedByUserId
+      `).run(meta.orgId, json, nowMs(), meta.userId);
+
+      broadcastOrg(meta.orgId, { type: "dispatch:update", state });
+      addAudit({ orgId: meta.orgId, actorUserId: meta.userId, action: "DISPATCH_UPDATE_WS", req: { ip: req.socket.remoteAddress, headers: req.headers } });
+      return;
+    }
   });
 
-  ws.on("close", () => WS_CLIENTS.delete(ws));
+  ws.on("close", () => sockets.delete(ws));
 });
 
-const PORT = process.env.PORT || 3000;
+// SPA fallback
+app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
+
 server.listen(PORT, () => console.log("WEB läuft auf Port", PORT));
