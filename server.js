@@ -1,470 +1,455 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const crypto = require("crypto");
 const http = require("http");
 const WebSocket = require("ws");
 
 const app = express();
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json());
 
-// ====== CONFIG ======
-const PORT = process.env.PORT || 3000;
-const DATA_FILE = path.join(__dirname, "data.json");
-const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || "https://discord.com/api/webhooks/1453855487937482894/dO3DP9IQw0xXnl6m62J4rqblUan0u38uya7zEJdtKgekuOXwe0oqdYiMfpGT6okIWSeg";
-
-// Admin Zugang (nur der ist anfangs aktiv)
-const BOOTSTRAP_ADMIN = {
-  email: "grand-lst.admin@lokal.de",
-  password: "k34w6mP58Fg",
-  name: "Grand Admin",
-  org: "GOV",
-  role: "admin"
-};
-
-// Orgas fix
 const ORGS = ["LSPD", "FIB", "NG", "LI", "EMS", "GOV", "SAHP"];
 
-// ====== PERSISTENCE ======
-function loadData() {
+// --------------------
+// Simple JSON persistence
+// --------------------
+const DATA_FILE = path.join(__dirname, "data.json");
+
+function safeReadJSON(file, fallback) {
   try {
-    const raw = fs.readFileSync(DATA_FILE, "utf8");
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? parsed : null;
+    if (!fs.existsSync(file)) return fallback;
+    const raw = fs.readFileSync(file, "utf8");
+    const data = JSON.parse(raw);
+    return data ?? fallback;
   } catch {
-    return null;
+    return fallback;
   }
 }
-function saveData() {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(DB, null, 2), "utf8");
+function safeWriteJSON(file, data) {
+  try {
+    fs.writeFileSync(file, JSON.stringify(data, null, 2), "utf8");
+  } catch (e) {
+    console.error("write json failed:", e);
+  }
 }
 
+// --------------------
+// DB (file based)
+// --------------------
+const DEFAULT_DB = {
+  users: [
+    // only admin exists initially
+    {
+      id: "u_admin",
+      email: "grand-lst.admin@lokal.de",
+      pass: "k34w6mP58Fg",
+      role: "admin", // admin | leader | user
+      org: "SYSTEM",
+      name: "Grand LST Admin",
+      phone: "",
+      active: true,
+      createdAt: Date.now(),
+      lastLoginAt: null,
+      mustChangePass: false
+    }
+  ],
+  // org-scoped data
+  orgData: ORGS.reduce((acc, o) => {
+    acc[o] = {
+      laws: null,      // set by default on first request
+      persons: [],     // later
+      vehicles: [],    // later
+      audit: []        // server audit log
+    };
+    return acc;
+  }, {}),
+  sessions: {} // token -> { userId, createdAt }
+};
+
+let DB = safeReadJSON(DATA_FILE, DEFAULT_DB);
+
+// Ensure orgData exists for all orgs (in case file older)
+for (const o of ORGS) {
+  DB.orgData[o] = DB.orgData[o] || { laws: null, persons: [], vehicles: [], audit: [] };
+}
+DB.sessions = DB.sessions || {};
+
+// Save helper (throttled-ish)
+let saveTimer = null;
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => safeWriteJSON(DATA_FILE, DB), 250);
+}
+
+// --------------------
+// Utils
+// --------------------
+function rndToken(len = 32) {
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let out = "";
+  for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  return out;
+}
+function genPassword() {
+  // readable
+  return rndToken(10);
+}
 function nowISO() {
   return new Date().toISOString();
 }
 
-function rid() {
-  return crypto.randomBytes(10).toString("hex");
-}
-
-function sha256(s) {
-  return crypto.createHash("sha256").update(String(s)).digest("hex");
-}
-
-// ====== DB ======
-let DB = loadData() || {
-  users: [],
-  persons: [],     // pro org getrennt
-  vehicles: [],    // pro org getrennt
-  incidents: [],   // pro org getrennt (Einsätze)
-  audit: []        // serverseitig
-};
-
-// Bootstrap Admin wenn keine User existieren
-if (!Array.isArray(DB.users) || DB.users.length === 0) {
-  DB.users = [{
-    id: rid(),
-    email: BOOTSTRAP_ADMIN.email.toLowerCase(),
-    passHash: sha256(BOOTSTRAP_ADMIN.password),
-    name: BOOTSTRAP_ADMIN.name,
-    org: BOOTSTRAP_ADMIN.org,
-    role: BOOTSTRAP_ADMIN.role,
-    phone: "",
-    active: true,
-    createdAt: nowISO(),
-    mustChangePassword: false
-  }];
-  saveData();
-}
-
-// ====== AUTH TOKENS (in-memory sessions) ======
-const SESSIONS = new Map(); // token -> { userId, createdAt }
-
-function createToken(userId) {
-  const token = crypto.randomBytes(24).toString("hex");
-  SESSIONS.set(token, { userId, createdAt: Date.now() });
-  return token;
-}
-
-function getUserById(userId) {
-  return DB.users.find(u => u.id === userId) || null;
-}
-
-function auth(req, res, next) {
-  const h = req.headers.authorization || "";
-  const token = h.startsWith("Bearer ") ? h.slice(7).trim() : "";
-  if (!token || !SESSIONS.has(token)) return res.status(401).json({ ok: false, error: "unauthorized" });
-  const session = SESSIONS.get(token);
-  const user = getUserById(session.userId);
-  if (!user || !user.active) return res.status(401).json({ ok: false, error: "unauthorized" });
-  req.user = user;
-  req.token = token;
-  next();
-}
-
-function requireRole(...roles) {
-  return (req, res, next) => {
-    const r = req.user?.role;
-    if (!r || !roles.includes(r)) return res.status(403).json({ ok: false, error: "forbidden" });
-    next();
-  };
-}
-
-// ====== AUDIT + DISCORD ======
-async function postDiscord(content) {
-  if (!DISCORD_WEBHOOK_URL) return;
-  try {
-    await fetch(DISCORD_WEBHOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: String(content).slice(0, 1900) })
-    });
-  } catch { /* ignore */ }
-}
-
-async function audit(user, action, meta = {}) {
+function pushAudit(org, actor, action, meta = {}) {
   const entry = {
-    id: rid(),
-    ts: nowISO(),
-    by: { id: user.id, email: user.email, name: user.name, org: user.org, role: user.role },
+    ts: Date.now(),
+    iso: nowISO(),
+    actor: actor || "system",
     action,
     meta
   };
-  DB.audit.unshift(entry);
-  DB.audit = DB.audit.slice(0, 5000);
-  saveData();
+  if (org && DB.orgData[org]) DB.orgData[org].audit.unshift(entry);
+  // also store global audit on SYSTEM? optional
+  scheduleSave();
 
-  const msg = `🧾 **AUDIT**
-**Zeit:** ${entry.ts}
-**Von:** ${user.name} (${user.email}) [${user.org}/${user.role}]
-**Aktion:** ${action}
-**Meta:** \`${JSON.stringify(meta).slice(0, 900)}\``;
-  await postDiscord(msg);
+  // websocket broadcast to org clients
+  wsBroadcast(org, { type: "audit", entry });
 }
 
-// ====== STATIC FRONTEND ======
+function getUserByToken(req) {
+  const token = (req.headers.authorization || "").replace(/^Bearer\s+/i, "").trim();
+  if (!token) return null;
+  const s = DB.sessions[token];
+  if (!s) return null;
+  const u = DB.users.find(x => x.id === s.userId && x.active);
+  return u || null;
+}
+
+function requireAuth(req, res, next) {
+  const u = getUserByToken(req);
+  if (!u) return res.status(401).json({ ok: false, error: "unauthorized" });
+  req.user = u;
+  next();
+}
+function requireAdmin(req, res, next) {
+  if (!req.user || req.user.role !== "admin") return res.status(403).json({ ok: false, error: "forbidden" });
+  next();
+}
+function requireLeaderOrAdmin(req, res, next) {
+  if (!req.user || (req.user.role !== "admin" && req.user.role !== "leader")) {
+    return res.status(403).json({ ok: false, error: "forbidden" });
+  }
+  next();
+}
+
+// --------------------
+// Static frontend
+// --------------------
 app.use(express.static(path.join(__dirname, "public")));
 
-// ====== API ======
+// --------------------
+// API: Auth
+// --------------------
+
+// Login flow:
+// - email required
+// - password optional:
+//   - if user has no pass yet and only email is provided -> generate pass, set mustChangePass=true and return generatedPass once
+//   - otherwise require pass match
 app.post("/api/login", (req, res) => {
-  const { email, password } = req.body || {};
-  const e = String(email || "").toLowerCase().trim();
-  const p = String(password || "").trim();
+  const { email, pass } = req.body || {};
+  const e = String(email || "").trim().toLowerCase();
+  const p = String(pass || "").trim();
 
-  if (!e || !p) return res.status(400).json({ ok: false });
+  if (!e) return res.status(400).json({ ok: false, error: "email_required" });
 
-  const user = DB.users.find(u => u.email === e && u.active);
-  if (!user) return res.status(401).json({ ok: false });
+  const user = DB.users.find(u => (u.email || "").toLowerCase() === e && u.active);
+  if (!user) return res.status(401).json({ ok: false, error: "login_failed" });
 
-  if (user.passHash !== sha256(p)) return res.status(401).json({ ok: false });
+  // If password not set yet => allow email-only login to generate password (requested)
+  if (!user.pass) {
+    if (p) return res.status(401).json({ ok: false, error: "login_failed" });
 
-  const token = createToken(user.id);
-  res.json({
-    ok: true,
-    token,
-    email: user.email,
-    user: user.name,
-    org: user.org,
-    role: user.role
-  });
+    const newPass = genPassword();
+    user.pass = newPass;
+    user.mustChangePass = true;
+    user.lastLoginAt = Date.now();
+
+    const token = rndToken(48);
+    DB.sessions[token] = { userId: user.id, createdAt: Date.now() };
+    scheduleSave();
+
+    pushAudit(user.org, user.email, "LOGIN_PASSWORD_GENERATED", { role: user.role });
+
+    return res.json({
+      ok: true,
+      token,
+      user: sanitizeUser(user),
+      generatedPass: newPass,
+      mustChangePass: true
+    });
+  }
+
+  if (user.pass !== p) return res.status(401).json({ ok: false, error: "login_failed" });
+
+  user.lastLoginAt = Date.now();
+  const token = rndToken(48);
+  DB.sessions[token] = { userId: user.id, createdAt: Date.now() };
+  scheduleSave();
+
+  pushAudit(user.org, user.email, "LOGIN", { role: user.role });
+
+  res.json({ ok: true, token, user: sanitizeUser(user), mustChangePass: !!user.mustChangePass });
 });
 
-app.get("/api/me", auth, (req, res) => {
+app.post("/api/logout", requireAuth, (req, res) => {
+  const token = (req.headers.authorization || "").replace(/^Bearer\s+/i, "").trim();
+  if (token) delete DB.sessions[token];
+  scheduleSave();
+  pushAudit(req.user.org, req.user.email, "LOGOUT", {});
+  res.json({ ok: true });
+});
+
+app.post("/api/change-password", requireAuth, (req, res) => {
+  const { oldPass, newPass } = req.body || {};
+  const o = String(oldPass || "").trim();
+  const n = String(newPass || "").trim();
+
+  if (!n || n.length < 6) return res.status(400).json({ ok: false, error: "weak_password" });
+
   const u = req.user;
-  res.json({
-    ok: true,
-    profile: {
-      id: u.id,
-      email: u.email,
-      name: u.name,
-      phone: u.phone || "",
-      org: u.org,
-      role: u.role
-    }
-  });
+  if (u.pass && u.pass !== o && u.mustChangePass !== true) {
+    return res.status(401).json({ ok: false, error: "wrong_old_password" });
+  }
+
+  u.pass = n;
+  u.mustChangePass = false;
+  scheduleSave();
+
+  pushAudit(u.org, u.email, "PASSWORD_CHANGED", {});
+  res.json({ ok: true });
 });
 
-app.get("/api/profile", auth, (req, res) => {
-  const u = req.user;
-  res.json({
-    ok: true,
-    profile: {
-      id: u.id,
-      email: u.email,
-      name: u.name,
-      phone: u.phone || "",
-      org: u.org,
-      role: u.role
-    }
-  });
-});
-
-// ====== ORG DATA (read) ======
-app.get("/api/persons", auth, (req, res) => {
-  const org = req.user.org;
-  res.json({ ok: true, persons: DB.persons.filter(p => p.org === org) });
-});
-
-app.get("/api/vehicles", auth, (req, res) => {
-  const org = req.user.org;
-  res.json({ ok: true, vehicles: DB.vehicles.filter(v => v.org === org) });
-});
-
-app.get("/api/incidents", auth, (req, res) => {
-  const org = req.user.org;
-  res.json({ ok: true, incidents: DB.incidents.filter(i => i.org === org) });
-});
-
-// ====== INCIDENTS CRUD (Admin only for now) ======
-app.post("/api/incidents", auth, requireRole("admin"), async (req, res) => {
-  const org = req.user.org;
-  const { title, status, note } = req.body || {};
-  const item = {
-    id: rid(),
-    org,
-    title: String(title || "Einsatz").slice(0, 120),
-    status: String(status || "OFFEN").slice(0, 40),
-    note: String(note || "").slice(0, 1000),
-    createdAt: nowISO(),
-    updatedAt: nowISO()
+function sanitizeUser(u) {
+  return {
+    id: u.id,
+    email: u.email,
+    role: u.role,
+    org: u.org,
+    name: u.name || "",
+    phone: u.phone || "",
+    active: !!u.active,
+    createdAt: u.createdAt,
+    lastLoginAt: u.lastLoginAt,
+    mustChangePass: !!u.mustChangePass
   };
-  DB.incidents.unshift(item);
-  saveData();
-  await audit(req.user, "INCIDENT_CREATE", { id: item.id, title: item.title, org });
-  broadcastOrg(org, { type: "incidents:update", payload: DB.incidents.filter(i => i.org === org) });
-  res.json({ ok: true, incident: item });
+}
+
+// --------------------
+// API: Orga laws (org isolated)
+// --------------------
+app.get("/api/laws", requireAuth, (req, res) => {
+  const org = req.user.role === "admin" ? (req.query.org || req.user.org) : req.user.org;
+  if (req.user.role === "admin") {
+    // admin can request any org, but not SYSTEM
+    if (org && org !== "SYSTEM" && !DB.orgData[org]) return res.status(400).json({ ok: false, error: "bad_org" });
+  }
+  const o = org && org !== "SYSTEM" ? org : null;
+  if (!o) return res.json({ ok: true, laws: null });
+
+  res.json({ ok: true, laws: DB.orgData[o].laws });
 });
 
-app.put("/api/incidents/:id", auth, requireRole("admin"), async (req, res) => {
-  const org = req.user.org;
-  const id = req.params.id;
-  const item = DB.incidents.find(x => x.id === id && x.org === org);
-  if (!item) return res.status(404).json({ ok: false });
+app.post("/api/laws", requireAuth, requireLeaderOrAdmin, (req, res) => {
+  const { org, laws } = req.body || {};
+  const targetOrg = req.user.role === "admin" ? String(org || "").trim() : req.user.org;
+  if (!ORGS.includes(targetOrg)) return res.status(400).json({ ok: false, error: "bad_org" });
 
-  const { title, status, note } = req.body || {};
-  if (title != null) item.title = String(title).slice(0, 120);
-  if (status != null) item.status = String(status).slice(0, 40);
-  if (note != null) item.note = String(note).slice(0, 1000);
-  item.updatedAt = nowISO();
+  if (!Array.isArray(laws)) return res.status(400).json({ ok: false, error: "bad_laws" });
 
-  saveData();
-  await audit(req.user, "INCIDENT_UPDATE", { id, org });
-  broadcastOrg(org, { type: "incidents:update", payload: DB.incidents.filter(i => i.org === org) });
+  DB.orgData[targetOrg].laws = laws;
+  scheduleSave();
+
+  pushAudit(targetOrg, req.user.email, "LAWS_UPDATED", { countCats: laws.length });
+  wsBroadcast(targetOrg, { type: "laws", laws });
+
   res.json({ ok: true });
 });
 
-app.delete("/api/incidents/:id", auth, requireRole("admin"), async (req, res) => {
-  const org = req.user.org;
-  const id = req.params.id;
-  const before = DB.incidents.length;
-  DB.incidents = DB.incidents.filter(x => !(x.id === id && x.org === org));
-  if (DB.incidents.length === before) return res.status(404).json({ ok: false });
-  saveData();
-  await audit(req.user, "INCIDENT_DELETE", { id, org });
-  broadcastOrg(org, { type: "incidents:update", payload: DB.incidents.filter(i => i.org === org) });
-  res.json({ ok: true });
+// --------------------
+// API: Users / Admin + HR
+// --------------------
+
+// Admin: list all users
+app.get("/api/admin/users", requireAuth, requireAdmin, (req, res) => {
+  res.json({ ok: true, users: DB.users.map(sanitizeUser) });
 });
 
-// ====== ADMIN: USERS + ROLES + HR ======
-app.get("/api/admin/users", auth, requireRole("admin"), (req, res) => {
-  res.json({
-    ok: true,
-    users: DB.users.map(u => ({
-      id: u.id,
-      email: u.email,
-      name: u.name,
-      org: u.org,
-      role: u.role,
-      phone: u.phone || "",
-      active: !!u.active,
-      createdAt: u.createdAt
-    })),
-    orgs: ORGS
-  });
-});
-
-app.post("/api/admin/users", auth, requireRole("admin"), async (req, res) => {
-  const { email, name, org, role, phone } = req.body || {};
-  const e = String(email || "").toLowerCase().trim();
+// Admin: create leader (or HR user)
+app.post("/api/admin/create-user", requireAuth, requireAdmin, (req, res) => {
+  const { email, name, phone, org, role } = req.body || {};
+  const e = String(email || "").trim().toLowerCase();
   const n = String(name || "").trim();
+  const ph = String(phone || "").trim();
   const o = String(org || "").trim().toUpperCase();
   const r = String(role || "user").trim().toLowerCase();
-  const ph = String(phone || "").trim();
 
-  if (!e || !n || !ORGS.includes(o)) return res.status(400).json({ ok: false, error: "invalid" });
-  if (!["admin", "leader", "hr", "user"].includes(r)) return res.status(400).json({ ok: false, error: "role" });
-  if (DB.users.some(u => u.email === e)) return res.status(409).json({ ok: false, error: "exists" });
+  if (!e || !e.includes("@")) return res.status(400).json({ ok: false, error: "bad_email" });
+  if (!ORGS.includes(o)) return res.status(400).json({ ok: false, error: "bad_org" });
+  if (!["leader", "user"].includes(r)) return res.status(400).json({ ok: false, error: "bad_role" });
 
-  const generated = crypto.randomBytes(8).toString("base64url"); // initial PW
-  const user = {
-    id: rid(),
+  const exists = DB.users.find(u => (u.email || "").toLowerCase() === e);
+  if (exists) return res.status(409).json({ ok: false, error: "email_exists" });
+
+  const id = "u_" + rndToken(12);
+  DB.users.push({
+    id,
     email: e,
-    passHash: sha256(generated),
-    name: n,
-    org: o,
+    pass: null, // important: will be generated when user logs in with email only
     role: r,
+    org: o,
+    name: n,
     phone: ph,
     active: true,
-    createdAt: nowISO(),
-    mustChangePassword: false
-  };
-  DB.users.push(user);
-  saveData();
-  await audit(req.user, "USER_CREATE", { email: e, org: o, role: r });
+    createdAt: Date.now(),
+    lastLoginAt: null,
+    mustChangePass: false
+  });
 
-  res.json({ ok: true, user: { id: user.id, email: user.email, name: user.name, org: user.org, role: user.role }, generatedPassword: generated });
+  scheduleSave();
+  pushAudit(o, req.user.email, "USER_CREATED", { email: e, role: r });
+
+  res.json({ ok: true, user: sanitizeUser(DB.users.find(x => x.id === id)) });
 });
 
-app.put("/api/admin/users/:id", auth, requireRole("admin"), async (req, res) => {
-  const id = req.params.id;
-  const u = DB.users.find(x => x.id === id);
-  if (!u) return res.status(404).json({ ok: false });
+// Leader: list org users
+app.get("/api/org/users", requireAuth, requireLeaderOrAdmin, (req, res) => {
+  const org = req.user.role === "admin" ? String(req.query.org || "").trim().toUpperCase() : req.user.org;
+  if (!ORGS.includes(org)) return res.status(400).json({ ok: false, error: "bad_org" });
 
-  const { name, org, role, phone, active } = req.body || {};
-  if (name != null) u.name = String(name).trim();
-  if (phone != null) u.phone = String(phone).trim();
-  if (org != null) {
-    const o = String(org).trim().toUpperCase();
-    if (ORGS.includes(o)) u.org = o;
-  }
-  if (role != null) {
-    const r = String(role).trim().toLowerCase();
-    if (["admin", "leader", "hr", "user"].includes(r)) u.role = r;
-  }
-  if (active != null) u.active = !!active;
+  const list = DB.users
+    .filter(u => u.active && u.org === org && u.role !== "admin")
+    .map(sanitizeUser);
 
-  saveData();
-  await audit(req.user, "USER_UPDATE", { id, email: u.email });
+  res.json({ ok: true, users: list });
+});
+
+// Leader/Admin: disable user
+app.post("/api/org/disable-user", requireAuth, requireLeaderOrAdmin, (req, res) => {
+  const { userId } = req.body || {};
+  const id = String(userId || "").trim();
+  const target = DB.users.find(u => u.id === id);
+  if (!target) return res.status(404).json({ ok: false, error: "not_found" });
+
+  const allowedOrg = req.user.role === "admin" ? true : target.org === req.user.org;
+  if (!allowedOrg) return res.status(403).json({ ok: false, error: "forbidden" });
+  if (target.role === "admin") return res.status(403).json({ ok: false, error: "forbidden" });
+
+  target.active = false;
+  scheduleSave();
+
+  pushAudit(target.org, req.user.email, "USER_DISABLED", { email: target.email, role: target.role });
   res.json({ ok: true });
 });
 
-app.post("/api/admin/reset", auth, requireRole("admin"), async (req, res) => {
-  // Notfall Reset: löscht alles außer Users
-  DB.persons = [];
-  DB.vehicles = [];
-  DB.incidents = [];
-  saveData();
-  await audit(req.user, "NOTFALL_RESET", {});
-  broadcastAll({ type: "incidents:updateAll", payload: {} });
+// Leader/Admin: reset password (set pass null -> user can generate by email-only login)
+app.post("/api/org/reset-pass", requireAuth, requireLeaderOrAdmin, (req, res) => {
+  const { userId } = req.body || {};
+  const id = String(userId || "").trim();
+  const target = DB.users.find(u => u.id === id);
+  if (!target) return res.status(404).json({ ok: false, error: "not_found" });
+
+  const allowedOrg = req.user.role === "admin" ? true : target.org === req.user.org;
+  if (!allowedOrg) return res.status(403).json({ ok: false, error: "forbidden" });
+  if (target.role === "admin") return res.status(403).json({ ok: false, error: "forbidden" });
+
+  target.pass = null;
+  target.mustChangePass = false;
+  scheduleSave();
+
+  pushAudit(target.org, req.user.email, "PASSWORD_RESET", { email: target.email });
   res.json({ ok: true });
 });
 
-app.get("/api/admin/audit", auth, requireRole("admin"), (req, res) => {
-  res.json({ ok: true, audit: DB.audit.slice(0, 200) });
+// Audit log (org scoped)
+app.get("/api/audit", requireAuth, (req, res) => {
+  const org = req.user.role === "admin"
+    ? String(req.query.org || req.user.org || "").trim().toUpperCase()
+    : req.user.org;
+
+  if (!ORGS.includes(org)) return res.status(400).json({ ok: false, error: "bad_org" });
+  res.json({ ok: true, audit: DB.orgData[org].audit.slice(0, 200) });
 });
 
-// ====== FALLBACK ======
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+// --------------------
+// Minimal placeholder data endpoints for overview lists
+// (you can expand later)
+// --------------------
+app.get("/api/org/overview", requireAuth, (req, res) => {
+  const org = req.user.role === "admin"
+    ? String(req.query.org || req.user.org || "").trim().toUpperCase()
+    : req.user.org;
+
+  if (!ORGS.includes(org)) return res.status(400).json({ ok: false, error: "bad_org" });
+
+  res.json({
+    ok: true,
+    overview: {
+      persons: DB.orgData[org].persons.length,
+      vehicles: DB.orgData[org].vehicles.length,
+      users: DB.users.filter(u => u.active && u.org === org).length
+    }
+  });
 });
 
-// ====== WEBSOCKET ======
+// --------------------
+// Fallback
+// --------------------
+app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
+
+// --------------------
+// WebSocket live sync (org rooms)
+// --------------------
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+
+const WS_CLIENTS = new Map(); // ws -> { userId, org }
 
 function wsSend(ws, obj) {
   try { ws.send(JSON.stringify(obj)); } catch {}
 }
-
-function parseTokenFromUrl(url) {
-  try {
-    const u = new URL(url, "http://localhost");
-    return u.searchParams.get("token") || "";
-  } catch { return ""; }
-}
-
-const WS_CLIENTS = new Set();
-
-function broadcastAll(msg) {
-  for (const c of WS_CLIENTS) wsSend(c.ws, msg);
-}
-
-function broadcastOrg(org, msg) {
-  for (const c of WS_CLIENTS) {
-    if (c.org === org) wsSend(c.ws, msg);
+function wsBroadcast(org, obj) {
+  for (const [ws, meta] of WS_CLIENTS.entries()) {
+    if (meta && meta.org === org && ws.readyState === WebSocket.OPEN) {
+      wsSend(ws, obj);
+    }
   }
 }
 
-wss.on("connection", (ws, req) => {
-  const token = parseTokenFromUrl(req.url || "");
-  if (!token || !SESSIONS.has(token)) {
-    ws.close();
-    return;
-  }
-  const sess = SESSIONS.get(token);
-  const user = getUserById(sess.userId);
-  if (!user || !user.active) {
-    ws.close();
-    return;
-  }
+// simple auth on ws: client sends {type:"auth", token}
+wss.on("connection", (ws) => {
+  WS_CLIENTS.set(ws, { userId: null, org: null });
 
-  const client = { ws, token, userId: user.id, org: user.org, role: user.role };
-  WS_CLIENTS.add(client);
+  ws.on("message", (msg) => {
+    let data;
+    try { data = JSON.parse(String(msg)); } catch { return; }
 
-  // initial push
-  wsSend(ws, { type: "hello", payload: { org: user.org, role: user.role, name: user.name } });
-  wsSend(ws, { type: "incidents:update", payload: DB.incidents.filter(i => i.org === user.org) });
+    if (data.type === "auth") {
+      const token = String(data.token || "").trim();
+      const s = DB.sessions[token];
+      if (!s) return wsSend(ws, { type: "auth", ok: false });
 
-  ws.on("message", async (buf) => {
-    let msg = null;
-    try { msg = JSON.parse(buf.toString("utf8")); } catch { return; }
-    if (!msg || typeof msg !== "object") return;
+      const user = DB.users.find(u => u.id === s.userId && u.active);
+      if (!user) return wsSend(ws, { type: "auth", ok: false });
 
-    // client->server (optional): ping
-    if (msg.type === "ping") {
-      wsSend(ws, { type: "pong", payload: Date.now() });
+      WS_CLIENTS.set(ws, { userId: user.id, org: user.org });
+      wsSend(ws, { type: "auth", ok: true, org: user.org, role: user.role });
       return;
     }
 
-    // Live actions: only admin for now
-    if (msg.type === "incidents:create") {
-      if (user.role !== "admin") return;
-      const { title, status, note } = msg.payload || {};
-      const item = {
-        id: rid(),
-        org: user.org,
-        title: String(title || "Einsatz").slice(0, 120),
-        status: String(status || "OFFEN").slice(0, 40),
-        note: String(note || "").slice(0, 1000),
-        createdAt: nowISO(),
-        updatedAt: nowISO()
-      };
-      DB.incidents.unshift(item);
-      saveData();
-      await audit(user, "INCIDENT_CREATE_WS", { id: item.id });
-      broadcastOrg(user.org, { type: "incidents:update", payload: DB.incidents.filter(i => i.org === user.org) });
-      return;
-    }
-
-    if (msg.type === "incidents:update") {
-      if (user.role !== "admin") return;
-      const { id, patch } = msg.payload || {};
-      const item = DB.incidents.find(x => x.id === id && x.org === user.org);
-      if (!item) return;
-      if (patch?.title != null) item.title = String(patch.title).slice(0, 120);
-      if (patch?.status != null) item.status = String(patch.status).slice(0, 40);
-      if (patch?.note != null) item.note = String(patch.note).slice(0, 1000);
-      item.updatedAt = nowISO();
-      saveData();
-      await audit(user, "INCIDENT_UPDATE_WS", { id });
-      broadcastOrg(user.org, { type: "incidents:update", payload: DB.incidents.filter(i => i.org === user.org) });
-      return;
-    }
-
-    if (msg.type === "incidents:delete") {
-      if (user.role !== "admin") return;
-      const { id } = msg.payload || {};
-      DB.incidents = DB.incidents.filter(x => !(x.id === id && x.org === user.org));
-      saveData();
-      await audit(user, "INCIDENT_DELETE_WS", { id });
-      broadcastOrg(user.org, { type: "incidents:update", payload: DB.incidents.filter(i => i.org === user.org) });
-      return;
-    }
+    // later: live events, calls, dispatch etc.
+    // For now: ignore
   });
 
-  ws.on("close", () => {
-    WS_CLIENTS.delete(client);
-  });
+  ws.on("close", () => WS_CLIENTS.delete(ws));
 });
 
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log("WEB läuft auf Port", PORT));
