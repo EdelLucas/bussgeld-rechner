@@ -16,9 +16,16 @@ const ORGS = ["LSPD", "FIB", "NG", "LI", "EMS", "GOV", "SAHP"];
 // role: admin | leader | user
 // login via email + password
 let USERS = [
-  { id: crypto.randomUUID(), name: "System Admin", phone: "", email: "admin@grand-lst.local", password: "9999", role: "admin", org: "GOV", active: true },
-  // Beispiel normaler User:
-  { id: crypto.randomUUID(), name: "LSPD Officer", phone: "", email: "lspd@grand-lst.local", password: "1234", role: "user", org: "LSPD", active: true },
+  {
+    id: crypto.randomUUID(),
+    name: "Grand LST Admin",
+    phone: "",
+    email: "grand-lst.admin@lokal.de",
+    password: "k34w6mP58Fg",
+    role: "admin",
+    org: "GOV",
+    active: true
+  }
 ];
 
 // ===== SESSIONS =====
@@ -158,8 +165,11 @@ app.post("/api/admin/create-leader", requireAuth, requireAdmin, (req, res) => {
   ensureOrg(o);
   audit(o, req.session.user, "leader:create", { leaderEmail: e, leaderName: n });
 
-  // Passwort nur einmal zurückgeben
-  res.json({ ok: true, leader: { id: leader.id, name: leader.name, email: leader.email, phone: leader.phone, org: leader.org, role: leader.role }, generatedPassword: pw });
+  res.json({
+    ok: true,
+    leader: { id: leader.id, name: leader.name, email: leader.email, phone: leader.phone, org: leader.org, role: leader.role },
+    generatedPassword: pw
+  });
 });
 
 // ===== Admin: Leader-Liste =====
@@ -170,13 +180,10 @@ app.get("/api/admin/leaders", requireAuth, requireAdmin, (req, res) => {
   res.json({ ok: true, leaders });
 });
 
-// ===== ORG State (nur eigene org; admin optional via ?org=) =====
+// ===== ORG State =====
 app.get("/api/state", requireAuth, (req, res) => {
   const s = req.session;
   const orgId = (s.role === "admin" && req.query.org) ? String(req.query.org).toUpperCase() : s.org;
-
-  if (s.role !== "admin" && orgId !== s.org) return res.status(403).json({ ok: false });
-
   const o = ensureOrg(orgId);
   res.json({ ok: true, org: orgId, db: o });
 });
