@@ -11,21 +11,21 @@ window.Rechner = {
         </div>
 
         <div class="row" style="margin-top:12px">
-          <div class="col" style="min-width:560px">
+          <div class="col" style="min-width:620px">
             <input id="search" placeholder="Suche..."/>
-            <div id="cards" style="margin-top:12px; max-height:72vh; overflow:auto; padding-right:6px"></div>
+            <div id="cards" style="margin-top:12px; max-height:74vh; overflow:auto; padding-right:8px"></div>
           </div>
 
-          <div class="col">
-            <div class="panel" style="box-shadow:none">
+          <div class="col rechnerSide" style="max-width:420px">
+            <div class="panel rechnerSide" style="box-shadow:none">
               <div class="row">
                 <div class="col">
                   <div class="small">HÖCHSTE STRAFE</div>
-                  <div id="outM" style="font-size:32px; font-weight:900; margin-top:6px; color:#d4af37">$0</div>
+                  <div id="outM" style="font-size:28px; font-weight:900; margin-top:6px; color:#d4af37">$0</div>
                 </div>
                 <div class="col">
                   <div class="small">WANTEDS (höchster)</div>
-                  <div id="outW" style="font-size:32px; font-weight:900; margin-top:6px; color:#f1fa8c">0</div>
+                  <div id="outW" style="font-size:28px; font-weight:900; margin-top:6px; color:#f1fa8c">0</div>
                 </div>
               </div>
 
@@ -36,26 +36,26 @@ window.Rechner = {
                 <div class="col" style="text-align:right"><button id="swRights" class="btnMini">AUS</button></div>
               </div>
 
-              <div class="row" style="align-items:center; margin-top:10px">
+              <div class="row" style="align-items:center; margin-top:8px">
                 <div class="col small">Reue (§35)</div>
                 <div class="col" style="text-align:right"><button id="sw35" class="btnMini">AUS</button></div>
               </div>
 
-              <div class="row" style="align-items:center; margin-top:10px">
-                <div class="col small">Haftbefehl / Beschluss (Grund)</div>
+              <div class="row" style="align-items:center; margin-top:8px">
+                <div class="col small">Haftbefehl / Beschluss</div>
                 <div class="col" style="text-align:right"><button id="swGrund" class="btnMini">AUS</button></div>
               </div>
 
-              <input id="inGrund" placeholder="Grund / Aktenzeichen..." style="margin-top:12px; display:none"/>
+              <input id="inGrund" placeholder="Grund / Aktenzeichen..." style="margin-top:10px; display:none"/>
 
               <hr/>
 
               <div class="small" style="color:var(--accent); font-weight:900">AKTEN-EINTRAG (klicken)</div>
-              <div id="entry" style="margin-top:10px; background:#0a0c10; border:1px dashed #2a2f38; border-radius:14px; padding:12px; min-height:56px; font-size:13px; color:var(--muted); cursor:copy">
+              <div id="entry" class="rechnerEntry" style="margin-top:10px">
                 Wähle Strafen...
               </div>
 
-              <div class="row" style="margin-top:12px; gap:10px">
+              <div class="row" style="margin-top:10px; gap:10px">
                 <button id="btnRechte" class="btnMini">Rechte</button>
                 <button id="btnBelehr" class="btnMini">Belehrungen</button>
                 <button id="btnAnw" class="btnMini">Anwälte</button>
@@ -67,12 +67,12 @@ window.Rechner = {
 
       <!-- Modal (kleiner) -->
       <div id="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:50; align-items:center; justify-content:center; padding:18px">
-        <div id="modalBox" style="width:min(760px,94vw); height:min(70vh,760px); background:var(--card); border:1px solid rgba(255,46,126,.65); border-radius:18px; box-shadow:var(--shadow); overflow:hidden">
-          <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--border); background:rgba(255,46,126,.06)">
-            <div id="modalTitle" style="font-weight:900; color:var(--accent); font-size:15px"></div>
+        <div id="modalBox" style="width:min(720px,94vw); height:min(62vh,720px); background:var(--card); border:1px solid rgba(255,46,126,.65); border-radius:18px; box-shadow:var(--shadow); overflow:hidden">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-bottom:1px solid var(--border); background:rgba(255,46,126,.06)">
+            <div id="modalTitle" style="font-weight:900; color:var(--accent); font-size:14px"></div>
             <button id="modalClose" class="btnMini">Schließen</button>
           </div>
-          <div id="modalBody" style="padding:14px; height:calc(100% - 52px); overflow:auto; font-size:14px; line-height:1.45"></div>
+          <div id="modalBody" style="padding:12px; height:calc(100% - 48px); overflow:auto; font-size:13px; line-height:1.45"></div>
         </div>
       </div>
     `;
@@ -81,7 +81,7 @@ window.Rechner = {
 
     const state = {
       selected: [],
-      activeGs: {},   // id -> 0..gs
+      activeGs: {},
       rights: false,
       reue: false,
       grundActive: false,
@@ -117,14 +117,13 @@ window.Rechner = {
       modal.style.display = "flex";
     }
     function closeModal(){ modal.style.display = "none"; }
-
     modalClose.onclick = closeModal;
     modal.onclick = (e)=>{ if(e.target === modal) closeModal(); };
 
     $("#btnAnw").onclick = ()=> openModal("ANWÄLTE", `
       <iframe
         src="https://docs.google.com/spreadsheets/d/1DufMS-4hxX75e9bJk_z3jSHqCcO6JmimoqYh6M94zP0/edit?gid=690010630#gid=690010630"
-        style="width:100%; height:55vh; border:none; border-radius:12px"></iframe>
+        style="width:100%; height:48vh; border:none; border-radius:12px"></iframe>
     `);
 
     $("#btnRechte").onclick = ()=> openModal("RECHTE", `
@@ -161,10 +160,7 @@ window.Rechner = {
     }
 
     function update(){
-      // Höchste Strafe bleibt max
       let maxM = 0;
-
-      // Wanteds: NICHT summieren, sondern höchster
       let maxW = 0;
 
       state.selected.forEach(l => {
@@ -173,13 +169,11 @@ window.Rechner = {
         if(w > maxW) maxW = w;
       });
 
-      // Reue: -2 aber mind. 1 wenn >0
       if(state.reue && maxW > 0) maxW = Math.max(1, maxW - 2);
 
       outM.textContent = "$" + maxM.toLocaleString();
       outW.textContent = String(maxW);
 
-      // Rechte-Block (wie vorher) + kein Copy wenn fehlend
       if(!state.rights && (state.selected.length || state.grundActive)){
         entry.textContent = "⚠️ RECHTE VERGESSEN!";
         entry.style.color = "#ff6b6b";
@@ -228,9 +222,7 @@ window.Rechner = {
           tr.style.cursor = "pointer";
 
           tr.onclick = (e)=>{
-            // Klick auf Stern soll nicht Row togglen
             if(e.target && e.target.classList && e.target.classList.contains("starOpt")) return;
-
             const idx = state.selected.findIndex(s=>s.id===id);
             if(idx>-1){
               state.selected.splice(idx,1);
@@ -249,7 +241,6 @@ window.Rechner = {
           let starsHtml = `<span class="starRow">` +
             `<span class="starFill">${"★".repeat(baseW)}</span>`;
 
-          // Klickbare Zusatzsterne (gs)
           for(let s=1; s<=gsMax; s++){
             const active = curGs >= s ? "active" : "";
             starsHtml += `<span class="starOpt ${active}" data-star="${id}" data-val="${s}">★</span>`;
@@ -257,10 +248,10 @@ window.Rechner = {
           starsHtml += `</span>`;
 
           tr.innerHTML = `
-            <td style="width:110px; color:var(--accent); font-weight:900">${i.p}</td>
-            <td style="font-size:14px">${i.n}</td>
-            <td style="width:160px">${starsHtml}</td>
-            <td style="width:110px; text-align:right; color:#d4af37; font-weight:900">$${Number(i.m).toLocaleString()}</td>
+            <td style="width:120px; color:var(--accent); font-weight:900">${i.p}</td>
+            <td class="lawName">${i.n}</td>
+            <td style="width:170px">${starsHtml}</td>
+            <td style="width:120px; text-align:right; color:#d4af37; font-weight:900">$${Number(i.m).toLocaleString()}</td>
           `;
 
           tbody.appendChild(tr);
@@ -272,14 +263,12 @@ window.Rechner = {
         cards.appendChild(wrap);
       });
 
-      // Stern clicks (nach render)
       cards.querySelectorAll(".starOpt").forEach(star=>{
         star.onclick = (ev)=>{
           ev.stopPropagation();
           const id = star.getAttribute("data-star");
           const val = Number(star.getAttribute("data-val") || 0);
 
-          // Nur wenn Law selektiert ist
           const law = state.selected.find(x=>x.id===id);
           if(!law) return;
 
@@ -289,7 +278,6 @@ window.Rechner = {
       });
     }
 
-    // Search
     search.oninput = ()=>{
       const q = search.value.toLowerCase();
       cards.querySelectorAll("tr").forEach(tr=>{
@@ -297,7 +285,6 @@ window.Rechner = {
       });
     };
 
-    // switches
     toggleBtn(swRights, state.rights);
     toggleBtn(sw35, state.reue);
     toggleBtn(swGrund, state.grundActive);
@@ -313,7 +300,6 @@ window.Rechner = {
     };
     inGrund.oninput = ()=>{ state.grund = inGrund.value; update(); };
 
-    // copy
     entry.onclick = async ()=>{
       const txt = entry.textContent || "";
       if(txt.includes("⚠️")) return;
@@ -321,7 +307,6 @@ window.Rechner = {
       try{ await navigator.clipboard.writeText(txt); }catch{}
     };
 
-    // Reset
     $("#btnResetAll").onclick = ()=>{
       state.selected = [];
       state.activeGs = {};
@@ -338,7 +323,6 @@ window.Rechner = {
       render(); update();
     };
 
-    // Update Zeit im Eintrag (wenn was drin steht)
     setInterval(()=>{
       if(entry.textContent && entry.textContent.includes("|") && !entry.textContent.includes("⚠️")){
         update();
