@@ -1,95 +1,95 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Grand LST</title>
-  <link rel="stylesheet" href="style.css"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Straftaten-Rechner</title>
+  <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-
-<!-- LOGIN -->
-<div id="loginView" class="loginWrap">
-  <div class="loginCard glass">
-    <div class="loginBrand">
-      <div class="brandIcon"></div>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">MDT</div>
       <div>
-        <div class="brandTitle">Grand LST</div>
-        <div class="brandSub">Login erforderlich</div>
+        <div class="title">Straftaten-Rechner</div>
+        <div class="subtitle">Katalog → Auswahl → Aktenzeile</div>
       </div>
     </div>
 
-    <label class="lbl">E-Mail</label>
-    <input id="inUser" autocomplete="username" placeholder="name@orga.de"/>
-
-    <label class="lbl" style="margin-top:10px">Passwort</label>
-    <input id="inPass" type="password" autocomplete="current-password" placeholder="••••••••"/>
-
-    <button id="btnLogin" class="btnPrimary">Anmelden</button>
-    <div id="loginMsg" class="msg"></div>
-  </div>
-</div>
-
-<!-- APP -->
-<div id="appView" class="appShell" style="display:none">
-  <aside class="sidebar glass">
-    <div class="sideTop">
-      <div class="sideLogo">
-        <div class="dot"></div>
-        <div>
-          <div class="sideTitle">ADMIN Dashboard</div>
-          <div class="sideSub" id="orgLine">—</div>
-        </div>
-      </div>
+    <div class="top-actions">
+      <button id="btnReset" class="btn ghost" title="Alles zurücksetzen">Zurücksetzen</button>
+      <button id="btnCopy" class="btn" title="Aktenzeile kopieren">Aktenzeile kopieren</button>
     </div>
+  </header>
 
-    <nav class="sideNav" id="sideNav"></nav>
-
-    <div class="sideBottom">
-      <div class="sideHint">System • Web</div>
-    </div>
-  </aside>
-
-  <main class="mainArea">
-    <header class="topbar glass">
-      <div class="topLeft">
-        <div class="topCrumb" id="crumb">Dashboard</div>
+  <main class="layout">
+    <section class="left">
+      <div class="searchbar">
+        <input id="searchInput" type="search" placeholder="Suche nach Paragraph oder Bezeichnung..." />
+        <div class="pill"><span id="selectedCount">0</span> ausgewählt</div>
       </div>
 
-      <div class="topRight">
-        <div class="userPill glass" id="userPill">
-          <div class="avatar"></div>
-          <div class="userMeta">
-            <div class="userName" id="whoName">—</div>
-            <div class="userRole" id="whoRole">—</div>
-          </div>
-          <button class="btnGhost" id="btnLogout">Logout</button>
-        </div>
-      </div>
-    </header>
+      <div class="section-title">STRAFGESETZBUCH (StGB)</div>
 
-    <section class="content">
-      <!-- Optional: Dashboard Platzhalter (kannst du später füllen) -->
-      <section id="view-dashboard" class="view"></section>
-
-      <section id="view-leitstelle" class="view" style="display:none"></section>
-      <section id="view-rechner" class="view" style="display:none"></section>
-      <section id="view-personen" class="view" style="display:none"></section>
-      <section id="view-fahrzeuge" class="view" style="display:none"></section>
-      <section id="view-hr" class="view" style="display:none"></section>
-      <section id="view-admin" class="view" style="display:none"></section>
+      <div id="cards" class="cards"></div>
     </section>
-  </main>
-</div>
 
-<!-- Modules -->
-<script src="data-laws.js"></script>
-<script src="module-leitstelle.js"></script>
-<script src="module-rechner.js"></script>
-<script src="module-personen.js"></script>
-<script src="module-fahrzeuge.js"></script>
-<script src="module-hr.js"></script>
-<script src="module-admin.js"></script>
-<script src="app.js"></script>
+    <aside class="right">
+      <div class="panel">
+        <div class="panel-title">ZUSAMMENFASSUNG</div>
+        <div class="summary-grid">
+          <div class="summary-box">
+            <div class="label">GELDSTRAFE</div>
+            <div class="value" id="sumFine">$0</div>
+          </div>
+          <div class="summary-box">
+            <div class="label">WANTED-LEVEL</div>
+            <div class="value" id="sumWanted">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">STRAFMODIFIKATION</div>
+
+        <label class="toggle">
+          <span>§35 Abs. 1 — Reue</span>
+          <input id="modReue" type="checkbox" />
+          <span class="switch"></span>
+        </label>
+        <div class="hint">-20% Geldstrafe</div>
+
+        <label class="toggle">
+          <span>§25 Abs. 2 — Wiederholungstäter</span>
+          <input id="modRepeat" type="checkbox" />
+          <span class="switch"></span>
+        </label>
+        <div class="hint">+50% Geldstrafe</div>
+
+        <div class="row">
+          <div class="row-label">Systemwanteds</div>
+          <select id="modSystem">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </div>
+        <div class="hint">Addiert Wanted-Level pauschal</div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">AKTENZEILE</div>
+        <input id="azInput" class="text" placeholder="z.B. AZ-2026-001" />
+        <textarea id="aktenText" class="textarea" placeholder="Wird automatisch erstellt..." readonly></textarea>
+        <div class="smallrow">
+          <div class="muted" id="lastUpdate">—</div>
+          <div class="muted" id="copyState"></div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script type="module" src="./app.js"></script>
 </body>
 </html>
