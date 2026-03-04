@@ -1,242 +1,168 @@
-const loginView = document.getElementById("loginView");
-const appView = document.getElementById("appView");
+import { STRAFTATEN } from "./data-straftaten.js";
 
-const inUser = document.getElementById("inUser");
-const inPass = document.getElementById("inPass");
-const btnLogin = document.getElementById("btnLogin");
-const btnLogout = document.getElementById("btnLogout");
+const $ = (id) => document.getElementById(id);
 
-const loginMsg = document.getElementById("loginMsg");
+const elCards = $("cards");
+const elSearch = $("searchInput");
+const elSelectedCount = $("selectedCount");
 
-const sideNav = document.getElementById("sideNav");
-const crumb = document.getElementById("crumb");
+const elSumFine = $("sumFine");
+const elSumWanted = $("sumWanted");
 
-const orgLine = document.getElementById("orgLine");
-const whoName = document.getElementById("whoName");
-const whoRole = document.getElementById("whoRole");
+const elModReue = $("modReue");
+const elModRepeat = $("modRepeat");
+const elModSystem = $("modSystem");
 
-let SESSION = null;
-let WS = null;
+const elAz = $("azInput");
+const elAkten = $("aktenText");
+const elLastUpdate = $("lastUpdate");
+const elCopyState = $("copyState");
 
-btnLogin.addEventListener("click", doLogin);
-btnLogout.addEventListener("click", doLogout);
-[inUser, inPass].forEach(el => el.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); }));
+const btnReset = $("btnReset");
+const btnCopy = $("btnCopy");
 
-function setView(viewId){
-  document.querySelectorAll(".view").forEach(v => v.style.display = "none");
-  const el = document.getElementById("view-" + viewId);
-  if (el) el.style.display = "block";
+const state = { selected: new Set(), query: "" };
 
-  document.querySelectorAll(".sideItem").forEach(b=>{
-    b.classList.toggle("active", b.dataset.view === viewId);
-  });
+function formatMoney(n){
+  const s = Math.round(n).toString();
+  const withDots = s.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `$${withDots}`;
+}
+function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+function stars(n){ return "★".repeat(clamp(n,0,6)); }
 
-  const active = NAV_ITEMS.find(x=>x.id===viewId);
-  crumb.textContent = active?.label || "Dashboard";
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
 }
 
-async function api(url, options){
-  const res = await fetch(url, options);
-  const data = await res.json().catch(()=>({}));
-  return { res, data };
+function filtered(){
+  const q = state.query.trim().toLowerCase();
+  if(!q) return STRAFTATEN;
+  return STRAFTATEN.filter(x =>
+    x.name.toLowerCase().includes(q) ||
+    x.para.toLowerCase().includes(q) ||
+    x.id.toLowerCase().includes(q)
+  );
 }
 
-function connectWS(){
-  const proto = location.protocol === "https:" ? "wss" : "ws";
-  WS = new WebSocket(`${proto}://${location.host}`);
-  WS.addEventListener("open", () => WS.send(JSON.stringify({ type:"auth" })));
-}
+function renderCards(){
+  const items = filtered();
+  elCards.innerHTML = "";
 
-let NAV_ITEMS = [];
+  for(const x of items){
+    const isSel = state.selected.has(x.id);
 
-function buildSidebar(){
-  const role = SESSION?.user?.role;
-
-  NAV_ITEMS = [
-    { id:"dashboard", label:"Dashboard" },
-    { id:"leitstelle", label:"Leitstelle" },
-    { id:"rechner", label:"Strafrechner" },
-    { id:"personen", label:"Personen" },
-    { id:"fahrzeuge", label:"Fahrzeuge" }
-  ];
-
-  if (role === "ORG_LEADER" || role === "SUPER_ADMIN") NAV_ITEMS.push({ id:"hr", label:"HR" });
-  if (role === "SUPER_ADMIN") NAV_ITEMS.push({ id:"admin", label:"Audit-Log" });
-
-  sideNav.innerHTML = "";
-  NAV_ITEMS.forEach(item=>{
-    const btn = document.createElement("button");
-    btn.className = "sideItem";
-    btn.dataset.view = item.id;
-    btn.textContent = item.label;
-    btn.onclick = ()=> setView(item.id);
-    sideNav.appendChild(btn);
-  });
-
-  setView("dashboard");
-}
-
-function renderDashboard(){
-  const dash = document.getElementById("view-dashboard");
-  dash.innerHTML = `
-    <div class="row">
-      <div class="col">
-        <div class="panel">
-          <div class="small">Offene Bewerbungen</div>
-          <div style="font-weight:900; font-size:34px; margin-top:6px">—</div>
-          <div class="small" style="margin-top:6px">Zur Überprüfung</div>
-        </div>
+    const card = document.createElement("div");
+    card.className = "card" + (isSel ? " selected" : "");
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="badge">${escapeHtml(x.para)}</div>
+        <div style="opacity:.55">↗</div>
       </div>
-      <div class="col">
-        <div class="panel">
-          <div class="small">Aktive Fälle</div>
-          <div style="font-weight:900; font-size:34px; margin-top:6px">—</div>
-          <div class="small" style="margin-top:6px">Laufende Ermittlungen</div>
-        </div>
-      </div>
-      <div class="col">
-        <div class="panel">
-          <div class="small">Letzte Logins</div>
-          <div style="font-weight:900; font-size:34px; margin-top:6px">—</div>
-          <div class="small" style="margin-top:6px">Heute angemeldet</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="row" style="margin-top:14px">
-      <div class="col" style="min-width:360px">
-        <div class="panel">
-          <div class="title">Schnellzugriff</div>
-          <div class="row">
-            <button class="btnMini" id="goLeit">Leitstelle öffnen</button>
-            <button class="btnMini" id="goRech">Strafrechner öffnen</button>
-          </div>
-        </div>
-      </div>
-      <div class="col">
-        <div class="panel">
-          <div class="title">Hinweis</div>
-          <div class="small" style="line-height:1.55">
-            Denk dran: interne Daten bleiben org-intern. Zugänge werden über HR erstellt.
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  dash.querySelector("#goLeit").onclick = ()=> setView("leitstelle");
-  dash.querySelector("#goRech").onclick = ()=> setView("rechner");
-}
-
-async function doLogin(){
-  loginMsg.textContent = "";
-
-  const email = inUser.value.trim();
-  const password = inPass.value;
-
-  if (!email || !password) {
-    loginMsg.textContent = "Bitte E-Mail und Passwort eingeben.";
-    return;
+      <div class="name">${escapeHtml(x.name)}</div>
+      <div class="fine">${formatMoney(x.fine)}</div>
+      <div class="stars" title="Wanted: ${x.wanted}">${x.wanted ? stars(x.wanted) : ""}</div>
+    `;
+    card.addEventListener("click", () => toggleSelect(x.id));
+    elCards.appendChild(card);
   }
-
-  const { res, data } = await api("/api/login", {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ email, password })
-  });
-
-  if (!res.ok || !data.ok) {
-    loginMsg.textContent = "Login fehlgeschlagen.";
-    return;
-  }
-
-  const me = await api("/api/me");
-  if (!me.res.ok || !me.data.ok) {
-    loginMsg.textContent = "Session konnte nicht geladen werden.";
-    return;
-  }
-
-  SESSION = me.data;
-
-  loginView.style.display = "none";
-  appView.style.display = "flex";
-
-  const u = SESSION.user;
-  whoName.textContent = u.name || u.email;
-  whoRole.textContent = u.role;
-  orgLine.textContent = "Org: (Server-OrgId) " + (u.orgId || "—");
-
-  connectWS();
-  buildSidebar();
-  renderDashboard();
-
-  // mount modules
-  Leitstelle.mount(document.getElementById("view-leitstelle"), { api, getWS:()=>WS });
-  Rechner.mount(document.getElementById("view-rechner"), { api });
-  Personen.mount(document.getElementById("view-personen"), { api });
-  Fahrzeuge.mount(document.getElementById("view-fahrzeuge"), { api });
-
-  if (u.role === "ORG_LEADER" || u.role === "SUPER_ADMIN") {
-    HR.mount(document.getElementById("view-hr"), { api, session: SESSION });
-  }
-  if (u.role === "SUPER_ADMIN") {
-    Admin.mount(document.getElementById("view-admin"), { api });
-  }
-
-  if (u.mustChangePw) showMustChangePassword();
 }
 
-async function doLogout(){
-  await api("/api/logout", { method:"POST" }).catch(()=>{});
-  location.reload();
+function toggleSelect(id){
+  if(state.selected.has(id)) state.selected.delete(id);
+  else state.selected.add(id);
+  updateAll();
 }
 
-function showMustChangePassword(){
-  const overlay = document.createElement("div");
-  overlay.className = "modalOverlay";
-  overlay.style.display = "flex";
+function compute(){
+  const selectedItems = STRAFTATEN.filter(x => state.selected.has(x.id));
 
-  overlay.innerHTML = `
-    <div class="modalBox">
-      <div class="modalHead">
-        <div class="modalTitle">Passwort ändern</div>
-        <button class="btnMini" id="xClose">Schließen</button>
-      </div>
-      <div class="modalBody">
-        <div class="small" style="margin-bottom:10px;">
-          Du musst dein temporäres Passwort ändern.
-        </div>
+  let fine = selectedItems.reduce((a,b) => a + b.fine, 0);
+  let wanted = selectedItems.reduce((a,b) => a + (b.wanted || 0), 0);
 
-        <label class="lbl">Altes Passwort</label>
-        <input id="oldPw" type="password"/>
+  if(elModReue.checked) fine *= 0.8;
+  if(elModRepeat.checked) fine *= 1.5;
+  wanted += Number(elModSystem.value || 0);
 
-        <label class="lbl" style="margin-top:10px;">Neues Passwort (min. 6 Zeichen)</label>
-        <input id="newPw" type="password"/>
+  fine = Math.round(fine);
+  wanted = Math.max(0, Math.round(wanted));
 
-        <button class="btnPrimary" id="savePw">Speichern</button>
-        <div id="pwMsg" class="msg"></div>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(overlay);
-  overlay.querySelector("#xClose").onclick = () => overlay.remove();
-
-  overlay.querySelector("#savePw").onclick = async () => {
-    const oldPassword = overlay.querySelector("#oldPw").value;
-    const newPassword = overlay.querySelector("#newPw").value;
-
-    const { res, data } = await api("/api/change-password", {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ oldPassword, newPassword })
-    });
-
-    if (!res.ok || !data.ok) {
-      overlay.querySelector("#pwMsg").textContent = "Fehler beim Speichern.";
-      return;
-    }
-
-    overlay.remove();
-  };
+  return { selectedItems, fine, wanted };
 }
+
+function buildAktenzeile(calc){
+  const az = elAz.value.trim();
+  const paras = calc.selectedItems.map(x => x.para.replace("StGB ", ""));
+  const detail = calc.selectedItems.map(x => `${x.para.replace("StGB ","")} ${x.name}`);
+
+  const mods = [];
+  if(elModReue.checked) mods.push("Reue (-20%)");
+  if(elModRepeat.checked) mods.push("Wiederholung (+50%)");
+  const sys = Number(elModSystem.value || 0);
+  if(sys) mods.push(`Systemwanteds (+${sys})`);
+
+  return [
+    az ? `[${az}]` : null,
+    `Straftaten: ${paras.length ? paras.join(", ") : "—"}`,
+    `Geldstrafe: ${formatMoney(calc.fine)}`,
+    `Wanted: ${calc.wanted ? calc.wanted : "—"}`,
+    `Details: ${detail.length ? detail.join(" | ") : "—"}`,
+    `Mods: ${mods.length ? mods.join(", ") : "—"}`
+  ].filter(Boolean).join("\n");
+}
+
+function updateSidebar(){
+  const calc = compute();
+  elSelectedCount.textContent = String(state.selected.size);
+  elSumFine.textContent = formatMoney(calc.fine);
+  elSumWanted.textContent = calc.wanted ? stars(calc.wanted) : "—";
+  elAkten.value = buildAktenzeile(calc);
+
+  const stamp = new Date().toLocaleString("de-DE");
+  elLastUpdate.textContent = `Zuletzt aktualisiert: ${stamp}`;
+}
+
+function updateAll(){
+  renderCards();
+  updateSidebar();
+}
+
+function resetAll(){
+  state.selected.clear();
+  state.query = "";
+  elSearch.value = "";
+  elModReue.checked = false;
+  elModRepeat.checked = false;
+  elModSystem.value = "0";
+  elCopyState.textContent = "";
+  updateAll();
+}
+
+async function copyAktenzeile(){
+  try{
+    await navigator.clipboard.writeText(elAkten.value || "");
+    elCopyState.textContent = "Kopiert ✓";
+    setTimeout(() => elCopyState.textContent = "", 1200);
+  }catch{
+    elCopyState.textContent = "Kopieren fehlgeschlagen";
+    setTimeout(() => elCopyState.textContent = "", 1600);
+  }
+}
+
+elSearch.addEventListener("input", () => {
+  state.query = elSearch.value;
+  renderCards();
+});
+[elModReue, elModRepeat, elModSystem, elAz].forEach(el => {
+  el.addEventListener("change", updateSidebar);
+  el.addEventListener("input", updateSidebar);
+});
+btnReset.addEventListener("click", resetAll);
+btnCopy.addEventListener("click", copyAktenzeile);
+
+updateAll();
