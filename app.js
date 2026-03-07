@@ -2,167 +2,267 @@ import { STRAFTATEN } from "./data-straftaten.js";
 
 const $ = (id) => document.getElementById(id);
 
-const elCards = $("cards");
-const elSearch = $("searchInput");
-const elSelectedCount = $("selectedCount");
+const els = {
+  cards: $("cards"),
+  searchInput: $("searchInput"),
+  selectedCount: $("selectedCount"),
 
-const elSumFine = $("sumFine");
-const elSumWanted = $("sumWanted");
+  sumFine: $("sumFine"),
+  sumWanted: $("sumWanted"),
+  sumJail: $("sumJail"),
+  sumCount: $("sumCount"),
 
-const elModReue = $("modReue");
-const elModRepeat = $("modRepeat");
-const elModSystem = $("modSystem");
+  modReue: $("modReue"),
+  modRepeat: $("modRepeat"),
+  modSystem: $("modSystem"),
+  wantedMode: $("wantedMode"),
 
-const elAz = $("azInput");
-const elAkten = $("aktenText");
-const elLastUpdate = $("lastUpdate");
-const elCopyState = $("copyState");
+  azInput: $("azInput"),
+  aktenFormat: $("aktenFormat"),
+  aktenText: $("aktenText"),
+  lastUpdate: $("lastUpdate"),
+  copyState: $("copyState"),
 
-const btnReset = $("btnReset");
-const btnCopy = $("btnCopy");
+  btnReset: $("btnReset"),
+  btnCopy: $("btnCopy"),
+};
 
-const state = { selected: new Set(), query: "" };
+const state = {
+  selected: new Set(),
+  search: "",
+};
 
-function formatMoney(n){
-  const s = Math.round(n).toString();
-  const withDots = s.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  return `$${withDots}`;
+function formatMoney(value) {
+  const rounded = Math.round(value);
+  return `$${rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
 }
-function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
-function stars(n){ return "★".repeat(clamp(n,0,6)); }
 
-function escapeHtml(str){
+function formatJail(minutes) {
+  return `${Math.round(minutes)} Min.`;
+}
+
+function stars(count) {
+  return "★".repeat(Math.max(0, Math.min(6, count)));
+}
+
+function escapeHtml(str) {
   return String(str)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
-function filtered(){
-  const q = state.query.trim().toLowerCase();
-  if(!q) return STRAFTATEN;
-  return STRAFTATEN.filter(x =>
-    x.name.toLowerCase().includes(q) ||
-    x.para.toLowerCase().includes(q) ||
-    x.id.toLowerCase().includes(q)
+function getFilteredItems() {
+  const q = state.search.trim().toLowerCase();
+  if (!q) return STRAFTATEN;
+
+  return STRAFTATEN.filter(item =>
+    item.name.toLowerCase().includes(q) ||
+    item.para.toLowerCase().includes(q) ||
+    item.id.toLowerCase().includes(q)
   );
 }
 
-function renderCards(){
-  const items = filtered();
-  elCards.innerHTML = "";
+function renderCards() {
+  const items = getFilteredItems();
 
-  for(const x of items){
-    const isSel = state.selected.has(x.id);
+  els.cards.innerHTML = items.map(item => {
+    const selected = state.selected.has(item.id);
 
-    const card = document.createElement("div");
-    card.className = "card" + (isSel ? " selected" : "");
-    card.innerHTML = `
-      <div class="card-top">
-        <div class="badge">${escapeHtml(x.para)}</div>
-        <div style="opacity:.55">↗</div>
+    return `
+      <div class="card ${selected ? "selected" : ""}" data-id="${escapeHtml(item.id)}">
+        <div class="card-top">
+          <div class="card-para">${escapeHtml(item.para)}</div>
+          <div class="card-link">↗</div>
+        </div>
+
+        <div class="card-name">${escapeHtml(item.name)}</div>
+
+        <div class="card-meta">
+          <div class="card-fine">${formatMoney(item.fine)}</div>
+        </div>
+
+        <div class="card-bottom">
+          <div class="card-jail">${formatJail(item.jail)}</div>
+          <div class="card-stars">${item.wanted ? stars(item.wanted) : "—"}</div>
+        </div>
       </div>
-      <div class="name">${escapeHtml(x.name)}</div>
-      <div class="fine">${formatMoney(x.fine)}</div>
-      <div class="stars" title="Wanted: ${x.wanted}">${x.wanted ? stars(x.wanted) : ""}</div>
     `;
-    card.addEventListener("click", () => toggleSelect(x.id));
-    elCards.appendChild(card);
+  }).join("");
+
+  els.cards.querySelectorAll(".card").forEach(card => {
+    card.addEventListener("click", () => {
+      const id = card.dataset.id;
+      toggleSelection(id);
+    });
+  });
+}
+
+function toggleSelection(id) {
+  if (state.selected.has(id)) {
+    state.selected.delete(id);
+  } else {
+    state.selected.add(id);
   }
+  updateUI();
 }
 
-function toggleSelect(id){
-  if(state.selected.has(id)) state.selected.delete(id);
-  else state.selected.add(id);
-  updateAll();
+function getSelectedItems() {
+  return STRAFTATEN.filter(item => state.selected.has(item.id));
 }
 
-function compute(){
-  const selectedItems = STRAFTATEN.filter(x => state.selected.has(x.id));
+function calculateWanted(items) {
+  const mode = els.wantedMode.value;
+  const systemWanted = Number(els.modSystem.value || 0);
 
-  let fine = selectedItems.reduce((a,b) => a + b.fine, 0);
-  let wanted = selectedItems.reduce((a,b) => a + (b.wanted || 0), 0);
+  if (!items.length) return systemWanted;
 
-  if(elModReue.checked) fine *= 0.8;
-  if(elModRepeat.checked) fine *= 1.5;
-  wanted += Number(elModSystem.value || 0);
+  const itemWanteds = items.map(item => item.wanted || 0);
+
+  let baseWanted = 0;
+
+  if (mode === "sum") {
+    baseWanted = itemWanteds.reduce((sum, value) => sum + value, 0);
+  } else {
+    baseWanted = Math.max(...itemWanteds);
+  }
+
+  return Math.max(0, baseWanted + systemWanted);
+}
+
+function calculateTotals() {
+  const items = getSelectedItems();
+
+  let fine = items.reduce((sum, item) => sum + item.fine, 0);
+  let jail = items.reduce((sum, item) => sum + item.jail, 0);
+  let wanted = calculateWanted(items);
+
+  if (els.modReue.checked) {
+    fine *= 0.8;
+  }
+
+  if (els.modRepeat.checked) {
+    fine *= 1.5;
+    jail *= 1.25;
+  }
 
   fine = Math.round(fine);
-  wanted = Math.max(0, Math.round(wanted));
+  jail = Math.round(jail);
 
-  return { selectedItems, fine, wanted };
+  return {
+    items,
+    fine,
+    jail,
+    wanted,
+    count: items.length,
+  };
 }
 
-function buildAktenzeile(calc){
-  const az = elAz.value.trim();
-  const paras = calc.selectedItems.map(x => x.para.replace("StGB ", ""));
-  const detail = calc.selectedItems.map(x => `${x.para.replace("StGB ","")} ${x.name}`);
+function buildAktenzeile(data) {
+  const az = els.azInput.value.trim();
+  const format = els.aktenFormat.value;
+
+  const paraList = data.items.map(item => item.para.replace("StGB ", ""));
+  const detailList = data.items.map(item => `${item.para.replace("StGB ", "")} ${item.name}`);
 
   const mods = [];
-  if(elModReue.checked) mods.push("Reue (-20%)");
-  if(elModRepeat.checked) mods.push("Wiederholung (+50%)");
-  const sys = Number(elModSystem.value || 0);
-  if(sys) mods.push(`Systemwanteds (+${sys})`);
+  if (els.modReue.checked) mods.push("Reue (-20% Geldstrafe)");
+  if (els.modRepeat.checked) mods.push("Wiederholungstäter (+50% Geldstrafe, +25% Haftzeit)");
+  if (Number(els.modSystem.value || 0) > 0) mods.push(`Systemwanteds +${els.modSystem.value}`);
+  mods.push(`Wanted-Modus: ${els.wantedMode.value === "sum" ? "Addieren" : "Höchste Tat"}`);
+
+  if (format === "kurz") {
+    return [
+      az ? `[${az}]` : null,
+      `Straftaten: ${paraList.length ? paraList.join(", ") : "—"}`,
+      `Gesamtgeldstrafe: ${formatMoney(data.fine)}`,
+      `Haftzeit: ${formatJail(data.jail)}`,
+      `Wanted: ${data.wanted ? `${data.wanted} (${stars(data.wanted)})` : "—"}`,
+      `Modifikationen: ${mods.length ? mods.join(", ") : "—"}`
+    ].filter(Boolean).join("\n");
+  }
 
   return [
     az ? `[${az}]` : null,
-    `Straftaten: ${paras.length ? paras.join(", ") : "—"}`,
-    `Geldstrafe: ${formatMoney(calc.fine)}`,
-    `Wanted: ${calc.wanted ? calc.wanted : "—"}`,
-    `Details: ${detail.length ? detail.join(" | ") : "—"}`,
-    `Mods: ${mods.length ? mods.join(", ") : "—"}`
+    "Straftaten:",
+    detailList.length ? detailList.join("\n") : "—",
+    "",
+    `Gesamtgeldstrafe: ${formatMoney(data.fine)}`,
+    `Haftzeit: ${formatJail(data.jail)}`,
+    `Wanted: ${data.wanted ? `${data.wanted} (${stars(data.wanted)})` : "—"}`,
+    `Modifikationen: ${mods.length ? mods.join(", ") : "—"}`
   ].filter(Boolean).join("\n");
 }
 
-function updateSidebar(){
-  const calc = compute();
-  elSelectedCount.textContent = String(state.selected.size);
-  elSumFine.textContent = formatMoney(calc.fine);
-  elSumWanted.textContent = calc.wanted ? stars(calc.wanted) : "—";
-  elAkten.value = buildAktenzeile(calc);
+function updateSummary() {
+  const totals = calculateTotals();
 
-  const stamp = new Date().toLocaleString("de-DE");
-  elLastUpdate.textContent = `Zuletzt aktualisiert: ${stamp}`;
+  els.selectedCount.textContent = String(totals.count);
+  els.sumFine.textContent = formatMoney(totals.fine);
+  els.sumWanted.textContent = totals.wanted ? stars(totals.wanted) : "—";
+  els.sumJail.textContent = formatJail(totals.jail);
+  els.sumCount.textContent = String(totals.count);
+  els.aktenText.value = buildAktenzeile(totals);
+
+  els.lastUpdate.textContent = `Zuletzt aktualisiert: ${new Date().toLocaleString("de-DE")}`;
 }
 
-function updateAll(){
+function updateUI() {
   renderCards();
-  updateSidebar();
+  updateSummary();
 }
 
-function resetAll(){
+function resetAll() {
   state.selected.clear();
-  state.query = "";
-  elSearch.value = "";
-  elModReue.checked = false;
-  elModRepeat.checked = false;
-  elModSystem.value = "0";
-  elCopyState.textContent = "";
-  updateAll();
+  state.search = "";
+  els.searchInput.value = "";
+
+  els.modReue.checked = false;
+  els.modRepeat.checked = false;
+  els.modSystem.value = "0";
+  els.wantedMode.value = "max";
+  els.aktenFormat.value = "lang";
+  els.azInput.value = "";
+  els.copyState.textContent = "";
+
+  updateUI();
 }
 
-async function copyAktenzeile(){
-  try{
-    await navigator.clipboard.writeText(elAkten.value || "");
-    elCopyState.textContent = "Kopiert ✓";
-    setTimeout(() => elCopyState.textContent = "", 1200);
-  }catch{
-    elCopyState.textContent = "Kopieren fehlgeschlagen";
-    setTimeout(() => elCopyState.textContent = "", 1600);
+async function copyAktenzeile() {
+  try {
+    await navigator.clipboard.writeText(els.aktenText.value || "");
+    els.copyState.textContent = "Kopiert ✓";
+    setTimeout(() => {
+      els.copyState.textContent = "";
+    }, 1200);
+  } catch {
+    els.copyState.textContent = "Kopieren fehlgeschlagen";
+    setTimeout(() => {
+      els.copyState.textContent = "";
+    }, 1500);
   }
 }
 
-elSearch.addEventListener("input", () => {
-  state.query = elSearch.value;
+els.searchInput.addEventListener("input", (e) => {
+  state.search = e.target.value || "";
   renderCards();
 });
-[elModReue, elModRepeat, elModSystem, elAz].forEach(el => {
-  el.addEventListener("change", updateSidebar);
-  el.addEventListener("input", updateSidebar);
-});
-btnReset.addEventListener("click", resetAll);
-btnCopy.addEventListener("click", copyAktenzeile);
 
-updateAll();
+[
+  els.modReue,
+  els.modRepeat,
+  els.modSystem,
+  els.wantedMode,
+  els.azInput,
+  els.aktenFormat,
+].forEach(el => {
+  el.addEventListener("change", updateSummary);
+  el.addEventListener("input", updateSummary);
+});
+
+els.btnReset.addEventListener("click", resetAll);
+els.btnCopy.addEventListener("click", copyAktenzeile);
+
+updateUI();
