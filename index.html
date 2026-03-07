@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Straftaten-Rechner</title>
+  <title>MDT Straftaten-Rechner</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
@@ -11,39 +11,52 @@
     <div class="brand">
       <div class="logo">MDT</div>
       <div>
-        <div class="title">Straftaten-Rechner</div>
-        <div class="subtitle">Katalog → Auswahl → Aktenzeile</div>
+        <div class="title">Straftatenkatalog</div>
+        <div class="subtitle">Mobile Data Terminal — Straftaten-Rechner</div>
       </div>
     </div>
 
     <div class="top-actions">
-      <button id="btnReset" class="btn ghost">Zurücksetzen</button>
-      <button id="btnCopy" class="btn">Aktenzeile kopieren</button>
+      <button class="icon-btn" id="btnReset" title="Zurücksetzen">↺</button>
+      <button class="icon-btn primary" id="btnCopy" title="Aktenzeile kopieren">⧉</button>
     </div>
   </header>
 
   <main class="layout">
-    <section class="left">
-      <div class="searchbar">
+    <section class="main-content">
+      <div class="toolbar">
         <input id="searchInput" type="search" placeholder="Suche nach Paragraph oder Bezeichnung..." />
-        <div class="pill"><span id="selectedCount">0</span> ausgewählt</div>
+        <div class="toolbar-right">
+          <span class="count-pill"><span id="selectedCount">0</span> ausgewählt</span>
+        </div>
       </div>
 
-      <div class="section-title">STRAFGESETZBUCH (StGB)</div>
+      <div class="section-header">
+        <span>STRAFGESETZBUCH (StGB)</span>
+      </div>
+
       <div id="cards" class="cards"></div>
     </section>
 
-    <aside class="right">
+    <aside class="sidebar">
       <div class="panel">
         <div class="panel-title">ZUSAMMENFASSUNG</div>
         <div class="summary-grid">
           <div class="summary-box">
-            <div class="label">GELDSTRAFE</div>
-            <div class="value" id="sumFine">$0</div>
+            <div class="summary-label">GELDSTRAFE</div>
+            <div class="summary-value money" id="sumFine">$0</div>
           </div>
           <div class="summary-box">
-            <div class="label">WANTED-LEVEL</div>
-            <div class="value" id="sumWanted">—</div>
+            <div class="summary-label">WANTED-LEVEL</div>
+            <div class="summary-value" id="sumWanted">—</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-label">HAFTZEIT</div>
+            <div class="summary-value" id="sumJail">0 Min.</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-label">TATEN</div>
+            <div class="summary-value" id="sumCount">0</div>
           </div>
         </div>
       </div>
@@ -51,39 +64,73 @@
       <div class="panel">
         <div class="panel-title">STRAFMODIFIKATION</div>
 
-        <label class="toggle">
-          <span>§35 Abs. 1 — Reue</span>
-          <input id="modReue" type="checkbox" />
-          <span class="switch"></span>
+        <label class="toggle-row">
+          <div>
+            <div class="toggle-title">§35 Abs. 1 — Reue</div>
+            <div class="toggle-desc">-20% Geldstrafe</div>
+          </div>
+          <label class="switch-wrap">
+            <input id="modReue" type="checkbox" />
+            <span class="switch"></span>
+          </label>
         </label>
-        <div class="hint">-20% Geldstrafe</div>
 
-        <label class="toggle">
-          <span>§25 Abs. 2 — Wiederholungstäter</span>
-          <input id="modRepeat" type="checkbox" />
-          <span class="switch"></span>
+        <label class="toggle-row">
+          <div>
+            <div class="toggle-title">§25 Abs. 2 — Wiederholungstäter</div>
+            <div class="toggle-desc">+50% Geldstrafe und +25% Haftzeit</div>
+          </div>
+          <label class="switch-wrap">
+            <input id="modRepeat" type="checkbox" />
+            <span class="switch"></span>
+          </label>
         </label>
-        <div class="hint">+50% Geldstrafe</div>
 
-        <div class="row">
-          <div class="row-label">Systemwanteds</div>
+        <div class="field-row">
+          <div>
+            <div class="toggle-title">Systemwanteds</div>
+            <div class="toggle-desc">Pauschal zusätzlich</div>
+          </div>
           <select id="modSystem">
             <option value="0">0</option>
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
           </select>
         </div>
-        <div class="hint">Addiert Wanted-Level pauschal</div>
+
+        <div class="field-row">
+          <div>
+            <div class="toggle-title">Wanted-Berechnung</div>
+            <div class="toggle-desc">Serverlogik wählen</div>
+          </div>
+          <select id="wantedMode">
+            <option value="max">Höchste Tat</option>
+            <option value="sum">Addieren</option>
+          </select>
+        </div>
       </div>
 
       <div class="panel">
         <div class="panel-title">AKTENZEILE</div>
-        <input id="azInput" class="text" placeholder="z.B. AZ-2026-001" />
-        <textarea id="aktenText" class="textarea" placeholder="Wird automatisch erstellt..." readonly></textarea>
-        <div class="smallrow">
-          <div class="muted" id="lastUpdate">—</div>
-          <div class="muted" id="copyState"></div>
+
+        <input id="azInput" class="text-input" placeholder="z.B. AZ-2026-001" />
+
+        <div class="field-row stacked">
+          <div class="toggle-title">Format</div>
+          <select id="aktenFormat">
+            <option value="lang">Langform</option>
+            <option value="kurz">Kurzform</option>
+          </select>
+        </div>
+
+        <textarea id="aktenText" class="textarea" readonly placeholder="Wird automatisch erzeugt..."></textarea>
+
+        <div class="panel-footer">
+          <span id="lastUpdate">—</span>
+          <span id="copyState"></span>
         </div>
       </div>
     </aside>
