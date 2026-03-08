@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Straftatenkatalog</title>
+  <title>Straftkatalog</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
-<body>
+<body class="theme-dark">
   <header class="topbar">
     <div class="brand">
       <div class="logo">MDT</div>
@@ -17,66 +17,116 @@
     </div>
 
     <div class="top-actions">
-      <button class="top-btn">🎓 Tutorials</button>
-      <button class="top-icon">📅</button>
-      <button class="top-icon">📖</button>
-      <button class="top-icon">📑</button>
-      <button class="top-icon">🔨</button>
-      <button class="top-icon">📋</button>
-      <button class="top-icon">🔗</button>
-      <button class="top-icon active">▦</button>
-      <button class="top-icon">🎮</button>
+      <button class="top-btn active" data-tab="straftatenTab">Straftaten</button>
+      <button class="top-btn" data-tab="fibcoTab">FIBCO Akte</button>
+      <button class="top-btn" data-tab="cidTab">CID Beweise</button>
 
-      <div class="switch-inline">
-        <span>Kurzform</span>
-        <label class="switch-wrap">
-          <input id="aktenShortToggle" type="checkbox" />
-          <span class="switch"></span>
-        </label>
-      </div>
+      <select id="themeSelect" class="top-select">
+        <option value="theme-dark">Schwarz</option>
+        <option value="theme-light">Weiß</option>
+        <option value="theme-alert">Rot/Blau blinkend</option>
+        <option value="theme-purple">Lila</option>
+        <option value="theme-pink">Rosa</option>
+      </select>
 
-      <div class="switch-inline">
-        <span>Auto-Zurücksetzen</span>
-        <label class="switch-wrap">
-          <input id="autoResetToggle" type="checkbox" />
-          <span class="switch"></span>
-        </label>
-      </div>
-
-      <div class="switch-inline">
-        <span>Sidebar fixieren</span>
-        <label class="switch-wrap">
-          <input id="pinSidebarToggle" type="checkbox" checked />
-          <span class="switch"></span>
-        </label>
-      </div>
+      <select id="layoutSelect" class="top-select">
+        <option value="grid">Kasten</option>
+        <option value="list">Untereinander</option>
+      </select>
     </div>
   </header>
 
   <main class="page-layout">
     <section class="content">
-      <div class="search-row">
-        <input id="searchInput" class="search-input" type="search" placeholder="Suche nach Paragraph oder Bezeichnung..." />
-        <div class="selected-pill"><span id="selectedCount">0</span> ausgewählt</div>
+      <div class="top-info-grid">
+        <div class="info-panel">
+          <div class="panel-title">ANWALTSREGISTER</div>
+          <div class="text-block">
+            <p><strong>Justizminister:</strong> —</p>
+            <p><strong>Staatsanwälte:</strong> —</p>
+            <p><strong>Rechtsanwälte:</strong> —</p>
+            <p><strong>Organanwälte:</strong> —</p>
+          </div>
+        </div>
+
+        <div class="info-panel">
+          <div class="panel-title">RECHTE DES BEKLAGTEN</div>
+          <div class="text-block small-text">
+            Sie haben das Recht zu schweigen, alles was Sie sagen kann und wird gegen Sie verwendet werden.
+            Ab 2 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt, den Sie selbst benennen müssen.
+            Wenn kein Anwalt verfügbar ist, wird Ihnen keiner gestellt. Die Judikative übernimmt der Exekutivbeamte.
+            Wenn ein Anwalt hinzugezogen wird, kann es länger als 25 Minuten dauern.
+            Haben Sie ihre Rechte verstanden?
+          </div>
+        </div>
+
+        <div class="info-panel">
+          <div class="panel-title">BELEHRUNG / HB / BESCHLUSS / BEFRAGUNG</div>
+          <div class="text-block small-text">
+            <p><strong>Belehrung:</strong><br>
+            „Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird vor Gericht gegen Sie verwendet werden. Sie haben das Recht, zu jeder Vernehmung einen Rechtsanwalt hinzuzuziehen. Haben Sie das verstanden?“</p>
+
+            <p><strong>Haftbefehl:</strong><br>
+            "Die Justiz hat einen Haftbefehl gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Haftbefehl vor Gericht zu ziehen, falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung gegen den Haftbefehl einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen Gerichtsprozess ablehnen, wird der Haftbefehl von den ausgewählten Beamten vollstreckt. Im weiteren Verlauf erhalten Sie eine staatliche Berufssperre von X Tagen nach §19 (4) Beamten Dienst Gesetzbuch. Während dieser Zeit dürfen Sie keinem Staatsdienst nachgehen. Wenn Sie flüchten haben Sie kein Recht mehr auf einen Rechtsanwalt.”</p>
+
+            <p><strong>Beschluss:</strong><br>
+            "Die Justiz hat einen Beschluss gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Beschluss vor Gericht zu ziehen, falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung gegen den Beschluss einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen Gerichtsprozess ablehnen, wird der Beschluss von den ausgewählten Beamten vollstreckt. Wenn Sie flüchten haben Sie kein Recht mehr auf einen Rechtsanwalt."</p>
+          </div>
+        </div>
+
+        <div class="info-panel">
+          <div class="panel-title">BESCHWERDELINK / LEADERLISTE</div>
+          <div class="text-block small-text">
+            <p><strong>FIBCO:</strong> bit.ly/FIBCO-DE01</p>
+            <br>
+            <p><strong>FIB:</strong> Leader: Leyla Ballerina - Vize: Gojira Bukur</p>
+            <p><strong>LSPD:</strong> Leader: John Bohnee - Vize: Panam Veto</p>
+            <p><strong>SAHP:</strong> Leader: Lone Guard</p>
+            <p><strong>GOV:</strong> Leader: Simon Kellerman</p>
+            <p><strong>NG:</strong> Leader: Ray Eston - Vize: Hildegard Nikolaus + Angus Newton</p>
+            <p><strong>LI:</strong> Leader: Cherry Bloom - Vize: —</p>
+            <p><strong>EMS:</strong> Leader: Andrew Fuchs - Vize: Fabian Avocodo + Julian Hwang</p>
+          </div>
+        </div>
       </div>
 
-      <div class="section-title">STRAFGESETZBUCH (STGB)</div>
+      <div id="straftatenTab" class="tab-content active">
+        <div class="search-row">
+          <input id="searchInput" class="search-input" type="search" placeholder="Suche nach Paragraph oder Bezeichnung..." />
+          <div class="selected-pill"><span id="selectedCount">0</span> ausgewählt</div>
+        </div>
 
-      <div id="cards" class="cards"></div>
+        <div class="section-title">STRAFGESETZBUCH (STGB)</div>
+        <div id="cards" class="cards"></div>
+      </div>
+
+      <div id="fibcoTab" class="tab-content">
+        <div class="panel">
+          <div class="panel-title">FIBCO AKTE</div>
+          <textarea id="fibcoText" class="textarea large" placeholder="Hier kannst du FIBCO-Inhalte sammeln..."></textarea>
+        </div>
+      </div>
+
+      <div id="cidTab" class="tab-content">
+        <div class="panel">
+          <div class="panel-title">CID BEWEISE</div>
+          <textarea id="cidText" class="textarea large" placeholder="Hier kannst du CID-Beweise sammeln..."></textarea>
+        </div>
+      </div>
     </section>
 
-    <aside id="sidebarMain" class="sidebar">
+    <aside class="sidebar">
       <button id="btnReset" class="reset-btn">↻ Zurücksetzen</button>
 
       <div class="panel">
         <div class="panel-title">ZUSAMMENFASSUNG</div>
-        <div class="summary-grid">
+        <div class="summary-grid two-only">
           <div class="summary-box">
-            <div class="summary-label">GELDSTRAFE</div>
+            <div class="summary-label">HÖCHSTE GELDSTRAFE</div>
             <div class="summary-value" id="sumFine">$0</div>
           </div>
           <div class="summary-box">
-            <div class="summary-label">WANTED-LEVEL</div>
+            <div class="summary-label">HÖCHSTE WANTEDS</div>
             <div class="summary-value" id="sumWanted">—</div>
           </div>
         </div>
@@ -87,46 +137,30 @@
 
         <div class="setting-row">
           <div>
-            <div class="setting-title">§35 Abs. 1 — Reue</div>
-            <div class="setting-desc">Wanteds −2 (min. 1)</div>
+            <div class="setting-title">Rechte vorgelesen</div>
+            <div class="setting-desc">Ohne das kann nicht kopiert werden</div>
           </div>
           <label class="switch-wrap">
-            <input id="modReue" type="checkbox" />
-            <span class="switch"></span>
-          </label>
-        </div>
-
-        <div class="setting-row">
-          <div>
-            <div class="setting-title">§25 Abs. 2 StVO — Wiederholungstäter</div>
-            <div class="setting-desc">Verdopplung des Bußgeldes</div>
-          </div>
-          <label class="switch-wrap">
-            <input id="modRepeat" type="checkbox" />
+            <input id="rightsReadToggle" type="checkbox" />
             <span class="switch"></span>
           </label>
         </div>
 
         <div class="field-block">
-          <label class="setting-title" for="modSystem">Systemwanteds</label>
-          <div class="setting-desc">Benötigt Aktualisierung von Daten</div>
-          <select id="modSystem" class="select-input">
-            <option value="0">0</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-          </select>
+          <label class="setting-title">Freie Zusatz-Wanteds</label>
+          <div class="gray-control-row">
+            <button class="gray-btn" data-wanted-adjust="-1">−</button>
+            <input id="manualWantedInput" class="manual-input" type="number" min="0" max="10" value="0" />
+            <button class="gray-btn" data-wanted-adjust="1">+</button>
+          </div>
+          <div class="setting-desc">Diese grauen Sterne setzt der Beamte selbst</div>
+          <div id="manualWantedStars" class="gray-stars">☆☆☆☆☆</div>
         </div>
 
         <div class="field-block">
-          <label class="setting-title" for="wantedMode">Wanted-Berechnung</label>
-          <div class="setting-desc">Standard: höchste Tat</div>
-          <select id="wantedMode" class="select-input">
-            <option value="max">Höchste Tat</option>
-            <option value="sum">Addieren</option>
-          </select>
+          <label class="setting-title">Freie Zusatz-Geldstrafe</label>
+          <input id="manualFineInput" class="text-input" type="number" min="0" step="1000" value="0" />
+          <div class="setting-desc">Wird auf die höchste Strafe aufgeschlagen</div>
         </div>
 
         <div class="field-block">
@@ -138,42 +172,18 @@
         </div>
 
         <div class="field-block">
-          <label class="setting-title" for="azInput"># Aktenzeichen</label>
+          <label class="setting-title">Aktenzeichen</label>
           <input id="azInput" class="text-input" placeholder="z.B. AZ-2026-001" />
         </div>
       </div>
 
       <div class="panel">
-        <div class="panel-title">AKTENZEILE</div>
-        <textarea id="aktenText" class="textarea" readonly placeholder="Wähle Straftatbestände aus..."></textarea>
+        <div class="panel-title">LIVE-KOPIERFELD</div>
+        <div id="liveStamp" class="live-stamp">--.--.---- | --:--:--</div>
+        <textarea id="aktenText" class="textarea" readonly placeholder="Wähle Straftaten aus..."></textarea>
         <div class="panel-footer">
-          <span id="sheetStatus">Lade Daten...</span>
+          <span id="copyStatus">Nicht kopiert</span>
           <button id="btnCopy" class="copy-btn">Kopieren</button>
-        </div>
-      </div>
-    </aside>
-
-    <aside id="sidebarExtra" class="sidebar extra-sidebar">
-      <div class="panel">
-        <div class="panel-title">EINSTELLUNGEN & LINKS</div>
-        <div class="link-list">
-          <button id="toggleThemeBtn" class="link-btn" type="button">Design ändern</button>
-          <button id="toggleListBtn" class="link-btn" type="button">Auflistung ändern</button>
-
-          <a class="link-btn" href="#" target="_blank" rel="noopener noreferrer">Anwaltsregister</a>
-          <a class="link-btn" href="#" target="_blank" rel="noopener noreferrer">Rechte</a>
-          <a class="link-btn" href="#" target="_blank" rel="noopener noreferrer">Belehrungen</a>
-          <a class="link-btn" href="#" target="_blank" rel="noopener noreferrer">Eventliste</a>
-          <a class="link-btn" href="#" target="_blank" rel="noopener noreferrer">Beschwerde Links</a>
-          <a class="link-btn" href="#" target="_blank" rel="noopener noreferrer">Leader + Vize Liste</a>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-title">SHEET-QUELLE</div>
-        <input id="sheetUrlInput" class="text-input" readonly />
-        <div class="setting-desc">
-          Öffentliche Google-Sheets-CSV als Datenquelle.
         </div>
       </div>
     </aside>
