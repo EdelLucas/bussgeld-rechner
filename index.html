@@ -19,7 +19,6 @@
     <div class="top-actions">
       <button class="top-btn active" data-tab="straftatenTab">Straftaten</button>
       <button class="top-btn" data-tab="fibcoTab">FIBCO Akte</button>
-      <button class="top-btn" data-tab="cidTab">CID Beweise</button>
 
       <select id="themeSelect" class="top-select">
         <option value="theme-dark">Schwarz</option>
@@ -38,31 +37,31 @@
 
   <main class="page-layout">
     <section class="content">
-      <div class="top-info-grid">
-        <div class="info-panel">
-          <div class="panel-title">ANWALTSREGISTER</div>
-          <div class="text-block">
+      <div class="accordion-grid">
+        <details class="accordion-card">
+          <summary>ANWALTSREGISTER</summary>
+          <div class="accordion-content small-text">
             <p><strong>Justizminister:</strong> —</p>
             <p><strong>Staatsanwälte:</strong> —</p>
             <p><strong>Rechtsanwälte:</strong> —</p>
             <p><strong>Organanwälte:</strong> —</p>
           </div>
-        </div>
+        </details>
 
-        <div class="info-panel">
-          <div class="panel-title">RECHTE DES BEKLAGTEN</div>
-          <div class="text-block small-text">
+        <details class="accordion-card">
+          <summary>RECHTE DES BEKLAGTEN</summary>
+          <div class="accordion-content small-text">
             Sie haben das Recht zu schweigen, alles was Sie sagen kann und wird gegen Sie verwendet werden.
             Ab 2 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt, den Sie selbst benennen müssen.
             Wenn kein Anwalt verfügbar ist, wird Ihnen keiner gestellt. Die Judikative übernimmt der Exekutivbeamte.
             Wenn ein Anwalt hinzugezogen wird, kann es länger als 25 Minuten dauern.
             Haben Sie ihre Rechte verstanden?
           </div>
-        </div>
+        </details>
 
-        <div class="info-panel">
-          <div class="panel-title">BELEHRUNG / HB / BESCHLUSS / BEFRAGUNG</div>
-          <div class="text-block small-text">
+        <details class="accordion-card">
+          <summary>BELEHRUNG / HAFTBEFEHL / BESCHLUSS / BEFRAGUNG</summary>
+          <div class="accordion-content small-text">
             <p><strong>Belehrung:</strong><br>
             „Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird vor Gericht gegen Sie verwendet werden. Sie haben das Recht, zu jeder Vernehmung einen Rechtsanwalt hinzuzuziehen. Haben Sie das verstanden?“</p>
 
@@ -72,11 +71,11 @@
             <p><strong>Beschluss:</strong><br>
             "Die Justiz hat einen Beschluss gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Beschluss vor Gericht zu ziehen, falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung gegen den Beschluss einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen Gerichtsprozess ablehnen, wird der Beschluss von den ausgewählten Beamten vollstreckt. Wenn Sie flüchten haben Sie kein Recht mehr auf einen Rechtsanwalt."</p>
           </div>
-        </div>
+        </details>
 
-        <div class="info-panel">
-          <div class="panel-title">BESCHWERDELINK / LEADERLISTE</div>
-          <div class="text-block small-text">
+        <details class="accordion-card">
+          <summary>BESCHWERDELINK / LEADER + VIZE LEADER</summary>
+          <div class="accordion-content small-text">
             <p><strong>FIBCO:</strong> bit.ly/FIBCO-DE01</p>
             <br>
             <p><strong>FIB:</strong> Leader: Leyla Ballerina - Vize: Gojira Bukur</p>
@@ -87,7 +86,7 @@
             <p><strong>LI:</strong> Leader: Cherry Bloom - Vize: —</p>
             <p><strong>EMS:</strong> Leader: Andrew Fuchs - Vize: Fabian Avocodo + Julian Hwang</p>
           </div>
-        </div>
+        </details>
       </div>
 
       <div id="straftatenTab" class="tab-content active">
@@ -103,14 +102,41 @@
       <div id="fibcoTab" class="tab-content">
         <div class="panel">
           <div class="panel-title">FIBCO AKTE</div>
-          <textarea id="fibcoText" class="textarea large" placeholder="Hier kannst du FIBCO-Inhalte sammeln..."></textarea>
-        </div>
-      </div>
 
-      <div id="cidTab" class="tab-content">
-        <div class="panel">
-          <div class="panel-title">CID BEWEISE</div>
-          <textarea id="cidText" class="textarea large" placeholder="Hier kannst du CID-Beweise sammeln..."></textarea>
+          <textarea id="fibcoText" class="textarea large">Name | CO-ID-1 | Datum der Straftat
+
+Codename: [Codename]
+
+Telefonnummer:
+Behörde:
+Familie:
+
+Reisepass:
+Dienstausweis:
+Personalakte:
+PDA Hauptseite:
+PDA Fahrzeugliste:
+
+[Vorfall]
+Am TT.MM.YYYY um HH:MM Uhr […]
+
+[Befragung Tatverdächtiger]
+
+- ABC
+
+[Zeugen-/aussagen]
+
+- ABC
+
+[Beweissammlung]
+
+- ABC
+
+[Tatvorwurf]
+
+- ABC
+
+[Schlussbetrachtung]</textarea>
         </div>
       </div>
     </section>
@@ -149,9 +175,9 @@
         <div class="field-block">
           <label class="setting-title">Freie Zusatz-Wanteds</label>
           <div class="gray-control-row">
-            <button class="gray-btn" data-wanted-adjust="-1">−</button>
+            <button class="gray-btn" data-wanted-adjust="-1" type="button">−</button>
             <input id="manualWantedInput" class="manual-input" type="number" min="0" max="10" value="0" />
-            <button class="gray-btn" data-wanted-adjust="1">+</button>
+            <button class="gray-btn" data-wanted-adjust="1" type="button">+</button>
           </div>
           <div class="setting-desc">Diese grauen Sterne setzt der Beamte selbst</div>
           <div id="manualWantedStars" class="gray-stars">☆☆☆☆☆</div>
