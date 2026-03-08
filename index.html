@@ -17,8 +17,8 @@
     </div>
 
     <div class="top-actions">
-      <button class="top-btn active" data-tab="straftatenTab">Straftaten</button>
-      <button class="top-btn" data-tab="fibcoTab">FIBCO Akte</button>
+      <button class="top-btn active" data-tab="straftatenTab" type="button">Straftaten</button>
+      <button class="top-btn" data-tab="fibcoTab" type="button">FIBCO Akte</button>
 
       <select id="themeSelect" class="top-select">
         <option value="theme-dark">Schwarz</option>
@@ -102,7 +102,6 @@
       <div id="fibcoTab" class="tab-content">
         <div class="panel">
           <div class="panel-title">FIBCO AKTE</div>
-
           <textarea id="fibcoText" class="textarea large">Name | CO-ID-1 | Datum der Straftat
 
 Codename: [Codename]
@@ -142,11 +141,11 @@ Am TT.MM.YYYY um HH:MM Uhr […]
     </section>
 
     <aside class="sidebar">
-      <button id="btnReset" class="reset-btn">↻ Zurücksetzen</button>
+      <button id="btnReset" class="reset-btn" type="button">↻ Zurücksetzen</button>
 
       <div class="panel">
         <div class="panel-title">ZUSAMMENFASSUNG</div>
-        <div class="summary-grid two-only">
+        <div class="summary-grid">
           <div class="summary-box">
             <div class="summary-label">HÖCHSTE GELDSTRAFE</div>
             <div class="summary-value" id="sumFine">$0</div>
@@ -209,7 +208,7 @@ Am TT.MM.YYYY um HH:MM Uhr […]
         <textarea id="aktenText" class="textarea" readonly placeholder="Wähle Straftaten aus..."></textarea>
         <div class="panel-footer">
           <span id="copyStatus">Nicht kopiert</span>
-          <button id="btnCopy" class="copy-btn">Kopieren</button>
+          <button id="btnCopy" class="copy-btn" type="button">Kopieren</button>
         </div>
       </div>
     </aside>
