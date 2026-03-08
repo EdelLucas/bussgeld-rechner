@@ -9,7 +9,9 @@
 <body class="theme-dark">
   <header class="topbar">
     <div class="brand">
-      <img src="./logo.png" alt="Los Santos Logo" class="brand-logo" />
+      <div class="brand-badge">
+        <img src="./logo.png" alt="Logo" class="brand-logo" />
+      </div>
       <div class="brand-text">
         <div class="title">Straftkatalog</div>
         <div class="subtitle">Mobile Data Terminal — Akten-Generator</div>
@@ -19,6 +21,8 @@
     <div class="top-actions">
       <button class="top-btn active" data-tab="straftatenTab" type="button">Straftaten</button>
       <button class="top-btn" data-tab="anwaltTab" type="button">Anwaltsregister</button>
+      <button class="top-btn" data-tab="rechteTab" type="button">Rechte</button>
+      <button class="top-btn" data-tab="belehrungTab" type="button">Belehrung</button>
       <button class="top-btn" data-tab="fibcoTab" type="button">FIBCO Akte</button>
 
       <select id="themeSelect" class="top-select">
@@ -38,48 +42,6 @@
 
   <main class="page-layout">
     <section class="content">
-      <div class="accordion-grid">
-        <details class="accordion-card">
-          <summary>RECHTE DES BEKLAGTEN</summary>
-          <div class="accordion-content small-text">
-            Sie haben das Recht zu schweigen, alles was Sie sagen kann und wird gegen Sie verwendet werden.
-            Ab 2 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt, den Sie selbst benennen müssen.
-            Wenn kein Anwalt verfügbar ist, wird Ihnen keiner gestellt. Die Judikative übernimmt der Exekutivbeamte.
-            Wenn ein Anwalt hinzugezogen wird, kann es länger als 25 Minuten dauern.
-            Haben Sie ihre Rechte verstanden?
-          </div>
-        </details>
-
-        <details class="accordion-card">
-          <summary>BELEHRUNG / HAFTBEFEHL / BESCHLUSS / BEFRAGUNG</summary>
-          <div class="accordion-content small-text">
-            <p><strong>Belehrung:</strong><br>
-            „Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird vor Gericht gegen Sie verwendet werden. Sie haben das Recht, zu jeder Vernehmung einen Rechtsanwalt hinzuzuziehen. Haben Sie das verstanden?“</p>
-
-            <p><strong>Haftbefehl:</strong><br>
-            "Die Justiz hat einen Haftbefehl gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Haftbefehl vor Gericht zu ziehen, falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung gegen den Haftbefehl einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen Gerichtsprozess ablehnen, wird der Haftbefehl von den ausgewählten Beamten vollstreckt. Im weiteren Verlauf erhalten Sie eine staatliche Berufssperre von X Tagen nach §19 (4) Beamten Dienst Gesetzbuch. Während dieser Zeit dürfen Sie keinem Staatsdienst nachgehen. Wenn Sie flüchten haben Sie kein Recht mehr auf einen Rechtsanwalt.”</p>
-
-            <p><strong>Beschluss:</strong><br>
-            "Die Justiz hat einen Beschluss gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Beschluss vor Gericht zu ziehen, falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung gegen den Beschluss einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen Gerichtsprozess ablehnen, wird der Beschluss von den ausgewählten Beamten vollstreckt. Wenn Sie flüchten haben Sie kein Recht mehr auf einen Rechtsanwalt."</p>
-          </div>
-        </details>
-
-        <details class="accordion-card">
-          <summary>BESCHWERDELINK / LEADER + VIZE LEADER</summary>
-          <div class="accordion-content small-text">
-            <p><strong>FIBCO:</strong> bit.ly/FIBCO-DE01</p>
-            <br>
-            <p><strong>FIB:</strong> Leader: Leyla Ballerina - Vize: Gojira Bukur</p>
-            <p><strong>LSPD:</strong> Leader: John Bohnee - Vize: Panam Veto</p>
-            <p><strong>SAHP:</strong> Leader: Lone Guard</p>
-            <p><strong>GOV:</strong> Leader: Simon Kellerman</p>
-            <p><strong>NG:</strong> Leader: Ray Eston - Vize: Hildegard Nikolaus + Angus Newton</p>
-            <p><strong>LI:</strong> Leader: Cherry Bloom - Vize: —</p>
-            <p><strong>EMS:</strong> Leader: Andrew Fuchs - Vize: Fabian Avocodo + Julian Hwang</p>
-          </div>
-        </details>
-      </div>
-
       <div id="straftatenTab" class="tab-content active">
         <div class="search-row">
           <input id="searchInput" class="search-input" type="search" placeholder="Suche nach Paragraph oder Bezeichnung..." />
@@ -91,33 +53,85 @@
       </div>
 
       <div id="anwaltTab" class="tab-content">
-        <div class="panel">
+        <div class="panel content-panel">
           <div class="panel-title">ANWALTSREGISTER</div>
 
-          <div class="anwalt-section">
-            <div class="anwalt-heading">Justizminister</div>
-            <div class="anwalt-entry">—</div>
+          <div class="register-group">
+            <div class="register-title">Justizminister</div>
+            <div class="register-entry">—</div>
           </div>
 
-          <div class="anwalt-section">
-            <div class="anwalt-heading">Staatsanwälte</div>
-            <div class="anwalt-entry">—</div>
+          <div class="register-group">
+            <div class="register-title">Staatsanwälte</div>
+            <div class="register-entry">—</div>
           </div>
 
-          <div class="anwalt-section">
-            <div class="anwalt-heading">Rechtsanwälte</div>
-            <div class="anwalt-entry">—</div>
+          <div class="register-group">
+            <div class="register-title">Rechtsanwälte</div>
+            <div class="register-entry">—</div>
           </div>
 
-          <div class="anwalt-section">
-            <div class="anwalt-heading">Organanwälte</div>
-            <div class="anwalt-entry">—</div>
+          <div class="register-group">
+            <div class="register-title">Organanwälte</div>
+            <div class="register-entry">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="rechteTab" class="tab-content">
+        <div class="panel content-panel">
+          <div class="panel-title">RECHTE DES BEKLAGTEN</div>
+          <div class="long-text">
+            Sie haben das Recht zu schweigen, alles was Sie sagen kann und wird gegen Sie verwendet werden.
+            Ab 2 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt, den Sie selbst benennen müssen.
+            Wenn kein Anwalt verfügbar ist, wird Ihnen keiner gestellt. Die Judikative übernimmt der Exekutivbeamte.
+            Wenn ein Anwalt hinzugezogen wird, kann es länger als 25 Minuten dauern.
+            Haben Sie ihre Rechte verstanden?
+          </div>
+        </div>
+      </div>
+
+      <div id="belehrungTab" class="tab-content">
+        <div class="panel content-panel">
+          <div class="panel-title">BELEHRUNG / HAFTBEFEHL / BESCHLUSS / BEFRAGUNG</div>
+
+          <div class="text-section">
+            <div class="register-title">Belehrung</div>
+            <div class="long-text">
+              „Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird vor Gericht gegen Sie verwendet werden.
+              Sie haben das Recht, zu jeder Vernehmung einen Rechtsanwalt hinzuzuziehen. Haben Sie das verstanden?“
+            </div>
+          </div>
+
+          <div class="text-section">
+            <div class="register-title">Haftbefehl</div>
+            <div class="long-text">
+              "Die Justiz hat einen Haftbefehl gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen,
+              kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Haftbefehl vor Gericht zu ziehen,
+              falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung
+              gegen den Haftbefehl einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen
+              Gerichtsprozess ablehnen, wird der Haftbefehl von den ausgewählten Beamten vollstreckt. Im weiteren Verlauf
+              erhalten Sie eine staatliche Berufssperre von X Tagen nach §19 (4) Beamten Dienst Gesetzbuch. Während dieser Zeit
+              dürfen Sie keinem Staatsdienst nachgehen. Wenn Sie flüchten haben Sie kein Recht mehr auf einen Rechtsanwalt.”
+            </div>
+          </div>
+
+          <div class="text-section">
+            <div class="register-title">Beschluss</div>
+            <div class="long-text">
+              "Die Justiz hat einen Beschluss gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen,
+              kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Beschluss vor Gericht zu ziehen,
+              falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung
+              gegen den Beschluss einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen
+              Gerichtsprozess ablehnen, wird der Beschluss von den ausgewählten Beamten vollstreckt. Wenn Sie flüchten
+              haben Sie kein Recht mehr auf einen Rechtsanwalt."
+            </div>
           </div>
         </div>
       </div>
 
       <div id="fibcoTab" class="tab-content">
-        <div class="panel">
+        <div class="panel content-panel">
           <div class="panel-title">FIBCO AKTE</div>
           <textarea id="fibcoText" class="textarea large">Name | CO-ID-1 | Datum der Straftat
 
