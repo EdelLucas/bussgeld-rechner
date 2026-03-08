@@ -9,7 +9,7 @@
 <body class="theme-dark">
   <header class="topbar">
     <div class="brand">
-      <div class="logo">MDT</div>
+      <img src="./logo.png" alt="Los Santos Logo" class="brand-logo" />
       <div class="brand-text">
         <div class="title">Straftkatalog</div>
         <div class="subtitle">Mobile Data Terminal — Akten-Generator</div>
@@ -18,6 +18,7 @@
 
     <div class="top-actions">
       <button class="top-btn active" data-tab="straftatenTab" type="button">Straftaten</button>
+      <button class="top-btn" data-tab="anwaltTab" type="button">Anwaltsregister</button>
       <button class="top-btn" data-tab="fibcoTab" type="button">FIBCO Akte</button>
 
       <select id="themeSelect" class="top-select">
@@ -38,16 +39,6 @@
   <main class="page-layout">
     <section class="content">
       <div class="accordion-grid">
-        <details class="accordion-card">
-          <summary>ANWALTSREGISTER</summary>
-          <div class="accordion-content small-text">
-            <p><strong>Justizminister:</strong> —</p>
-            <p><strong>Staatsanwälte:</strong> —</p>
-            <p><strong>Rechtsanwälte:</strong> —</p>
-            <p><strong>Organanwälte:</strong> —</p>
-          </div>
-        </details>
-
         <details class="accordion-card">
           <summary>RECHTE DES BEKLAGTEN</summary>
           <div class="accordion-content small-text">
@@ -97,6 +88,32 @@
 
         <div class="section-title">STRAFGESETZBUCH (STGB)</div>
         <div id="cards" class="cards"></div>
+      </div>
+
+      <div id="anwaltTab" class="tab-content">
+        <div class="panel">
+          <div class="panel-title">ANWALTSREGISTER</div>
+
+          <div class="anwalt-section">
+            <div class="anwalt-heading">Justizminister</div>
+            <div class="anwalt-entry">—</div>
+          </div>
+
+          <div class="anwalt-section">
+            <div class="anwalt-heading">Staatsanwälte</div>
+            <div class="anwalt-entry">—</div>
+          </div>
+
+          <div class="anwalt-section">
+            <div class="anwalt-heading">Rechtsanwälte</div>
+            <div class="anwalt-entry">—</div>
+          </div>
+
+          <div class="anwalt-section">
+            <div class="anwalt-heading">Organanwälte</div>
+            <div class="anwalt-entry">—</div>
+          </div>
+        </div>
       </div>
 
       <div id="fibcoTab" class="tab-content">
