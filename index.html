@@ -3,60 +3,81 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MDT Straftaten-Rechner</title>
+  <title>Straftatenkatalog</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <div class="logo">MDT</div>
-      <div>
-        <div class="title">Straftatenkatalog</div>
-        <div class="subtitle">Mobile Data Terminal — Straftaten-Rechner</div>
+      <div class="brand-text">
+        <div class="title">Straftkatalog</div>
+        <div class="subtitle">Mobile Data Terminal — Akten-Generator</div>
       </div>
     </div>
 
     <div class="top-actions">
-      <button class="icon-btn" id="btnReset" title="Zurücksetzen">↺</button>
-      <button class="icon-btn primary" id="btnCopy" title="Aktenzeile kopieren">⧉</button>
+      <button class="top-btn">🎓 Tutorials</button>
+      <button class="top-icon">📅</button>
+      <button class="top-icon">📖</button>
+      <button class="top-icon">📑</button>
+      <button class="top-icon">🔨</button>
+      <button class="top-icon">📋</button>
+      <button class="top-icon">🔗</button>
+      <button class="top-icon active">▦</button>
+      <button class="top-icon">🎮</button>
+
+      <div class="switch-inline">
+        <span>Kurzform</span>
+        <label class="switch-wrap">
+          <input id="aktenShortToggle" type="checkbox" />
+          <span class="switch"></span>
+        </label>
+      </div>
+
+      <div class="switch-inline">
+        <span>Auto-Zurücksetzen</span>
+        <label class="switch-wrap">
+          <input id="autoResetToggle" type="checkbox" />
+          <span class="switch"></span>
+        </label>
+      </div>
+
+      <div class="switch-inline">
+        <span>Sidebar fixieren</span>
+        <label class="switch-wrap">
+          <input id="pinSidebarToggle" type="checkbox" checked />
+          <span class="switch"></span>
+        </label>
+      </div>
     </div>
   </header>
 
-  <main class="layout">
-    <section class="main-content">
-      <div class="toolbar">
-        <input id="searchInput" type="search" placeholder="Suche nach Paragraph oder Bezeichnung..." />
-        <div class="toolbar-right">
-          <span class="count-pill"><span id="selectedCount">0</span> ausgewählt</span>
-        </div>
+  <main class="page-layout">
+    <section class="content">
+      <div class="search-row">
+        <input id="searchInput" class="search-input" type="search" placeholder="Suche nach Paragraph oder Bezeichnung..." />
+        <div class="selected-pill"><span id="selectedCount">0</span> ausgewählt</div>
       </div>
 
-      <div class="section-header">
-        <span>STRAFGESETZBUCH (StGB)</span>
-      </div>
+      <div class="section-title">STRAFGESETZBUCH (STGB)</div>
 
       <div id="cards" class="cards"></div>
     </section>
 
-    <aside class="sidebar">
+    <aside id="sidebarMain" class="sidebar">
+      <button id="btnReset" class="reset-btn">↻ Zurücksetzen</button>
+
       <div class="panel">
         <div class="panel-title">ZUSAMMENFASSUNG</div>
         <div class="summary-grid">
           <div class="summary-box">
             <div class="summary-label">GELDSTRAFE</div>
-            <div class="summary-value money" id="sumFine">$0</div>
+            <div class="summary-value" id="sumFine">$0</div>
           </div>
           <div class="summary-box">
             <div class="summary-label">WANTED-LEVEL</div>
             <div class="summary-value" id="sumWanted">—</div>
-          </div>
-          <div class="summary-box">
-            <div class="summary-label">HAFTZEIT</div>
-            <div class="summary-value" id="sumJail">0 Min.</div>
-          </div>
-          <div class="summary-box">
-            <div class="summary-label">TATEN</div>
-            <div class="summary-value" id="sumCount">0</div>
           </div>
         </div>
       </div>
@@ -64,34 +85,32 @@
       <div class="panel">
         <div class="panel-title">STRAFMODIFIKATION</div>
 
-        <label class="toggle-row">
+        <div class="setting-row">
           <div>
-            <div class="toggle-title">§35 Abs. 1 — Reue</div>
-            <div class="toggle-desc">-20% Geldstrafe</div>
+            <div class="setting-title">§35 Abs. 1 — Reue</div>
+            <div class="setting-desc">Wanteds −2 (min. 1)</div>
           </div>
           <label class="switch-wrap">
             <input id="modReue" type="checkbox" />
             <span class="switch"></span>
           </label>
-        </label>
+        </div>
 
-        <label class="toggle-row">
+        <div class="setting-row">
           <div>
-            <div class="toggle-title">§25 Abs. 2 — Wiederholungstäter</div>
-            <div class="toggle-desc">+50% Geldstrafe und +25% Haftzeit</div>
+            <div class="setting-title">§25 Abs. 2 StVO — Wiederholungstäter</div>
+            <div class="setting-desc">Verdopplung des Bußgeldes</div>
           </div>
           <label class="switch-wrap">
             <input id="modRepeat" type="checkbox" />
             <span class="switch"></span>
           </label>
-        </label>
+        </div>
 
-        <div class="field-row">
-          <div>
-            <div class="toggle-title">Systemwanteds</div>
-            <div class="toggle-desc">Pauschal zusätzlich</div>
-          </div>
-          <select id="modSystem">
+        <div class="field-block">
+          <label class="setting-title" for="modSystem">Systemwanteds</label>
+          <div class="setting-desc">Benötigt Aktualisierung von Daten</div>
+          <select id="modSystem" class="select-input">
             <option value="0">0</option>
             <option value="1">1</option>
             <option value="2">2</option>
@@ -101,75 +120,60 @@
           </select>
         </div>
 
-        <div class="field-row">
-          <div>
-            <div class="toggle-title">Wanted-Berechnung</div>
-            <div class="toggle-desc">Serverlogik wählen</div>
-          </div>
-          <select id="wantedMode">
+        <div class="field-block">
+          <label class="setting-title" for="wantedMode">Wanted-Berechnung</label>
+          <div class="setting-desc">Standard: höchste Tat</div>
+          <select id="wantedMode" class="select-input">
             <option value="max">Höchste Tat</option>
             <option value="sum">Addieren</option>
           </select>
+        </div>
+
+        <div class="field-block">
+          <label class="setting-title">Kennzeichen & Ort</label>
+          <div class="two-grid">
+            <input id="plateInput" class="text-input" placeholder="z.B. LS-AB-123" />
+            <input id="placeInput" class="text-input" placeholder="z.B. Vinewood" />
+          </div>
+        </div>
+
+        <div class="field-block">
+          <label class="setting-title" for="azInput"># Aktenzeichen</label>
+          <input id="azInput" class="text-input" placeholder="z.B. AZ-2026-001" />
         </div>
       </div>
 
       <div class="panel">
         <div class="panel-title">AKTENZEILE</div>
-
-        <input id="azInput" class="text-input" placeholder="z.B. AZ-2026-001" />
-
-        <div class="field-row stacked">
-          <div class="toggle-title">Format</div>
-          <select id="aktenFormat">
-            <option value="lang">Langform</option>
-            <option value="kurz">Kurzform</option>
-          </select>
-        </div>
-
-        <textarea id="aktenText" class="textarea" readonly placeholder="Wird automatisch erzeugt..."></textarea>
-
+        <textarea id="aktenText" class="textarea" readonly placeholder="Wähle Straftatbestände aus..."></textarea>
         <div class="panel-footer">
-          <span id="lastUpdate">—</span>
-          <span id="copyState"></span>
+          <span id="sheetStatus">Lade Daten...</span>
+          <button id="btnCopy" class="copy-btn">Kopieren</button>
         </div>
       </div>
     </aside>
 
-    <aside class="settingsbar">
+    <aside id="sidebarExtra" class="sidebar extra-sidebar">
       <div class="panel">
         <div class="panel-title">EINSTELLUNGEN & LINKS</div>
+        <div class="link-list">
+          <button id="toggleThemeBtn" class="link-btn" type="button">Design ändern</button>
+          <button id="toggleListBtn" class="link-btn" type="button">Auflistung ändern</button>
 
-        <div class="settings-list">
-          <button class="settings-btn" id="toggleThemeBtn">Design ändern</button>
-          <button class="settings-btn" id="toggleListBtn">Auflistung ändern</button>
-
-          <a class="settings-link" href="#" target="_blank" rel="noopener noreferrer">Anwaltsregister</a>
-          <a class="settings-link" href="#" target="_blank" rel="noopener noreferrer">Rechte</a>
-          <a class="settings-link" href="#" target="_blank" rel="noopener noreferrer">Belehrungen</a>
-          <a class="settings-link" href="#" target="_blank" rel="noopener noreferrer">Eventliste</a>
-          <a class="settings-link" href="#" target="_blank" rel="noopener noreferrer">Beschwerde Links</a>
-          <a class="settings-link" href="#" target="_blank" rel="noopener noreferrer">Leader + Vize Liste</a>
+          <a class="link-btn" href="#" target="_blank" rel="noopener noreferrer">Anwaltsregister</a>
+          <a class="link-btn" href="#" target="_blank" rel="noopener noreferrer">Rechte</a>
+          <a class="link-btn" href="#" target="_blank" rel="noopener noreferrer">Belehrungen</a>
+          <a class="link-btn" href="#" target="_blank" rel="noopener noreferrer">Eventliste</a>
+          <a class="link-btn" href="#" target="_blank" rel="noopener noreferrer">Beschwerde Links</a>
+          <a class="link-btn" href="#" target="_blank" rel="noopener noreferrer">Leader + Vize Liste</a>
         </div>
       </div>
 
       <div class="panel">
-        <div class="panel-title">GESETZE AUS SHEETS</div>
-        <div class="toggle-desc" style="margin-bottom:10px;">
-          Lädt Straftaten automatisch aus einer veröffentlichten Google-Sheets-CSV.
-        </div>
-
-        <input
-          id="sheetUrlInput"
-          class="text-input"
-          placeholder="CSV-Link aus Google Sheets einfügen"
-        />
-
-        <div class="settings-list">
-          <button class="settings-btn" id="loadSheetBtn">Gesetze aus Sheets laden</button>
-        </div>
-
-        <div class="panel-footer">
-          <span id="sheetStatus">Keine externe Quelle geladen</span>
+        <div class="panel-title">SHEET-QUELLE</div>
+        <input id="sheetUrlInput" class="text-input" readonly />
+        <div class="setting-desc">
+          Öffentliche Google-Sheets-CSV als Datenquelle.
         </div>
       </div>
     </aside>
