@@ -33,7 +33,6 @@ const els = {
   manualWantedInput: $("manualWantedInput"),
   manualWantedStars: $("manualWantedStars"),
   manualFineInput: $("manualFineInput"),
-  fibcoText: $("fibcoText"),
 };
 
 const state = {
@@ -139,7 +138,6 @@ function buildAktenText(items, fine, wanted) {
   const place = els.placeInput.value.trim();
 
   const lines = [];
-
   lines.push(`Datum: ${date}`);
   lines.push(`Uhrzeit: ${time}`);
 
@@ -169,8 +167,7 @@ function buildAktenText(items, fine, wanted) {
 
 function updateLiveStamp() {
   const now = new Date();
-  const text = `${now.toLocaleDateString("de-DE")} | ${now.toLocaleTimeString("de-DE")}`;
-  els.liveStamp.textContent = text;
+  els.liveStamp.textContent = `${now.toLocaleDateString("de-DE")} | ${now.toLocaleTimeString("de-DE")}`;
 }
 
 function updateManualStars() {
