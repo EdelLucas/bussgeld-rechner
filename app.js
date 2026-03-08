@@ -32,12 +32,12 @@ const els = {
   rightsReadToggle: $("rightsReadToggle"),
   manualWantedInput: $("manualWantedInput"),
   manualWantedStars: $("manualWantedStars"),
-  manualFineInput: $("manualFineInput"),
+  manualFineInput: $("manualFineInput")
 };
 
 const state = {
   selected: new Set(),
-  search: "",
+  search: ""
 };
 
 function formatMoney(value) {
@@ -184,7 +184,6 @@ function updateSummary() {
   els.sumFine.textContent = formatMoney(fine);
   els.sumWanted.textContent = wanted ? starsYellow(wanted) : "—";
   els.aktenText.value = buildAktenText(items, fine, wanted);
-
   updateManualStars();
 }
 
