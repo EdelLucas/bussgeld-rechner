@@ -34,7 +34,6 @@ const els = {
   manualWantedStars: $("manualWantedStars"),
   manualFineInput: $("manualFineInput"),
   fibcoText: $("fibcoText"),
-  cidText: $("cidText"),
 };
 
 const state = {
@@ -284,6 +283,7 @@ els.searchInput.addEventListener("input", (e) => {
 
 els.btnReset.addEventListener("click", resetAll);
 els.btnCopy.addEventListener("click", copyCurrentText);
+
 els.liveStamp.addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(els.liveStamp.textContent || "");
@@ -298,6 +298,7 @@ setupTheme();
 setupLayout();
 setupManualControls();
 updateLiveStamp();
+
 setInterval(() => {
   updateLiveStamp();
   updateSummary();
