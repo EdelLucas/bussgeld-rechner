@@ -134,6 +134,45 @@
         </div>
       </div>
     </aside>
+
+    <aside class="settingsbar">
+      <div class="panel">
+        <div class="panel-title">EINSTELLUNGEN & LINKS</div>
+
+        <div class="settings-list">
+          <button class="settings-btn" id="toggleThemeBtn">Design ändern</button>
+          <button class="settings-btn" id="toggleListBtn">Auflistung ändern</button>
+
+          <a class="settings-link" href="#" target="_blank" rel="noopener noreferrer">Anwaltsregister</a>
+          <a class="settings-link" href="#" target="_blank" rel="noopener noreferrer">Rechte</a>
+          <a class="settings-link" href="#" target="_blank" rel="noopener noreferrer">Belehrungen</a>
+          <a class="settings-link" href="#" target="_blank" rel="noopener noreferrer">Eventliste</a>
+          <a class="settings-link" href="#" target="_blank" rel="noopener noreferrer">Beschwerde Links</a>
+          <a class="settings-link" href="#" target="_blank" rel="noopener noreferrer">Leader + Vize Liste</a>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">GESETZE AUS SHEETS</div>
+        <div class="toggle-desc" style="margin-bottom:10px;">
+          Lädt Straftaten automatisch aus einer veröffentlichten Google-Sheets-CSV.
+        </div>
+
+        <input
+          id="sheetUrlInput"
+          class="text-input"
+          placeholder="CSV-Link aus Google Sheets einfügen"
+        />
+
+        <div class="settings-list">
+          <button class="settings-btn" id="loadSheetBtn">Gesetze aus Sheets laden</button>
+        </div>
+
+        <div class="panel-footer">
+          <span id="sheetStatus">Keine externe Quelle geladen</span>
+        </div>
+      </div>
+    </aside>
   </main>
 
   <script type="module" src="./app.js"></script>
