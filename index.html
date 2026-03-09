@@ -4,14 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Straftkatalog</title>
+  <link rel="icon" type="image/png" href="./favicon.png" />
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body class="theme-dark">
   <header class="topbar">
     <div class="brand">
-      <div class="brand-badge">
-        <img src="./logo.png" alt="Logo" class="brand-logo" />
-      </div>
       <div class="brand-text">
         <div class="title">Straftkatalog</div>
         <div class="subtitle">Mobile Data Terminal — Akten-Generator</div>
@@ -19,121 +17,223 @@
     </div>
 
     <div class="top-actions">
-      <button class="top-btn active" data-tab="straftatenTab" type="button">Straftaten</button>
-      <button class="top-btn" data-tab="anwaltTab" type="button">Anwaltsregister</button>
-      <button class="top-btn" data-tab="rechteTab" type="button">Rechte</button>
-      <button class="top-btn" data-tab="belehrungTab" type="button">Belehrung</button>
-      <button class="top-btn" data-tab="fibcoTab" type="button">FIBCO Akte</button>
+      <button class="top-btn active" type="button" id="btnStraftaten">⚖️ Straftaten</button>
+      <button class="top-btn" type="button" data-modal="anwaltModal">👨‍⚖️ Anwälte</button>
+      <button class="top-btn" type="button" data-modal="rechteModal">📜 Rechte</button>
+      <button class="top-btn" type="button" data-modal="belehrungModal">🚨 Belehrung</button>
+      <button class="top-btn" type="button" data-modal="fibcoModal">🕵️ FIBCO Akte</button>
 
       <select id="themeSelect" class="top-select">
-        <option value="theme-dark">Schwarz</option>
-        <option value="theme-light">Weiß</option>
-        <option value="theme-alert">Rot/Blau blinkend</option>
-        <option value="theme-purple">Lila</option>
-        <option value="theme-pink">Rosa</option>
+        <option value="theme-dark">Midnight</option>
+        <option value="theme-light">Snow</option>
+        <option value="theme-alert">Police</option>
+        <option value="theme-purple">Neon Violet</option>
+        <option value="theme-pink">Rose</option>
       </select>
 
       <select id="layoutSelect" class="top-select">
-        <option value="grid">Kasten</option>
-        <option value="list">Untereinander</option>
+        <option value="grid">Karten</option>
+        <option value="list">Liste</option>
       </select>
     </div>
   </header>
 
   <main class="page-layout">
     <section class="content">
-      <div id="straftatenTab" class="tab-content active">
-        <div class="search-row">
-          <input id="searchInput" class="search-input" type="search" placeholder="Suche nach Paragraph oder Bezeichnung..." />
-          <div class="selected-pill"><span id="selectedCount">0</span> ausgewählt</div>
+      <div class="hero-panel">
+        <div class="hero-left">
+          <div class="hero-title">⚖️ Straftatenübersicht</div>
+          <div class="hero-subtitle">Höchste Strafe und höchste Wanteds werden gewertet.</div>
         </div>
-
-        <div class="section-title">STRAFGESETZBUCH (STGB)</div>
-        <div id="cards" class="cards"></div>
-      </div>
-
-      <div id="anwaltTab" class="tab-content">
-        <div class="panel content-panel">
-          <div class="panel-title">ANWALTSREGISTER</div>
-
-          <div class="register-group">
-            <div class="register-title">Justizminister</div>
-            <div class="register-entry">—</div>
-          </div>
-
-          <div class="register-group">
-            <div class="register-title">Staatsanwälte</div>
-            <div class="register-entry">—</div>
-          </div>
-
-          <div class="register-group">
-            <div class="register-title">Rechtsanwälte</div>
-            <div class="register-entry">—</div>
-          </div>
-
-          <div class="register-group">
-            <div class="register-title">Organanwälte</div>
-            <div class="register-entry">—</div>
-          </div>
+        <div class="hero-right">
+          <div class="hero-chip">🍏 App-Style UI</div>
+          <div class="hero-chip">🕒 Live-Zeit</div>
+          <div class="hero-chip">⭐ Graue Wanteds pro Tat</div>
         </div>
       </div>
 
-      <div id="rechteTab" class="tab-content">
-        <div class="panel content-panel">
-          <div class="panel-title">RECHTE DES BEKLAGTEN</div>
+      <div class="search-row">
+        <input id="searchInput" class="search-input" type="search" placeholder="Suche nach Paragraph oder Bezeichnung..." />
+        <div class="selected-pill"><span id="selectedCount">0</span> ausgewählt</div>
+      </div>
+
+      <div class="section-title">STRAFGESETZBUCH (STGB)</div>
+      <div id="cards" class="cards"></div>
+    </section>
+
+    <aside class="sidebar">
+      <button id="btnReset" class="reset-btn" type="button">↻ Zurücksetzen</button>
+
+      <div class="panel">
+        <div class="panel-title">ZUSAMMENFASSUNG</div>
+        <div class="summary-grid">
+          <div class="summary-box">
+            <div class="summary-label">HÖCHSTE GELDSTRAFE</div>
+            <div class="summary-value" id="sumFine">$0</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-label">HÖCHSTE WANTEDS</div>
+            <div class="summary-value" id="sumWanted">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">AKTENSTEUERUNG</div>
+
+        <div class="setting-row">
+          <div>
+            <div class="setting-title">📖 Rechte vorgelesen</div>
+            <div class="setting-desc">Ohne das wird nichts kopiert</div>
+          </div>
+          <label class="switch-wrap">
+            <input id="rightsReadToggle" type="checkbox" />
+            <span class="switch"></span>
+          </label>
+        </div>
+
+        <div class="field-block">
+          <label class="setting-title">💵 Freie Zusatz-Geldstrafe</label>
+          <input id="manualFineInput" class="text-input" type="number" min="0" step="1000" value="0" />
+          <div class="setting-desc">Wird auf die höchste Geldstrafe aufgeschlagen</div>
+        </div>
+
+        <div class="field-block">
+          <label class="setting-title">🚗 Kennzeichen & Ort</label>
+          <div class="two-grid">
+            <input id="plateInput" class="text-input" placeholder="z.B. LS-AB-123" />
+            <input id="placeInput" class="text-input" placeholder="z.B. Vinewood" />
+          </div>
+        </div>
+
+        <div class="field-block">
+          <label class="setting-title">🗂️ Aktenzeichen</label>
+          <input id="azInput" class="text-input" placeholder="z.B. AZ-2026-001" />
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">LIVE-KOPIERFELD</div>
+        <div id="liveStamp" class="live-stamp">--.--.---- | --:--:--</div>
+
+        <div class="copy-line-wrap">
+          <div class="copy-line-label">Kurze Aktenzeile</div>
+          <div id="aktenLine" class="copy-line-box">--.--.---- | --:--:-- - —</div>
+        </div>
+
+        <textarea id="aktenText" class="textarea" readonly placeholder="Wähle Straftaten aus..."></textarea>
+
+        <div class="panel-footer">
+          <span id="copyStatus">Nicht kopiert</span>
+          <div class="copy-actions">
+            <button id="btnCopyLine" class="copy-btn small" type="button">Zeile kopieren</button>
+            <button id="btnCopy" class="copy-btn" type="button">Akte kopieren</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Anwälte Modal -->
+  <div id="anwaltModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">👨‍⚖️ Anwaltsregister</div>
+        <button class="modal-close" type="button" data-close-modal>✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="register-group">
+          <div class="register-title">Justizminister</div>
+          <div class="register-entry">—</div>
+        </div>
+        <div class="register-group">
+          <div class="register-title">Staatsanwälte</div>
+          <div class="register-entry">—</div>
+        </div>
+        <div class="register-group">
+          <div class="register-title">Rechtsanwälte</div>
+          <div class="register-entry">—</div>
+        </div>
+        <div class="register-group">
+          <div class="register-title">Organanwälte</div>
+          <div class="register-entry">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rechte Modal -->
+  <div id="rechteModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">📜 Rechte des Beklagten</div>
+        <button class="modal-close" type="button" data-close-modal>✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="long-text">
+          Sie haben das Recht zu schweigen, alles was Sie sagen kann und wird gegen Sie verwendet werden.
+          Ab 2 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt, den Sie selbst benennen müssen.
+          Wenn kein Anwalt verfügbar ist, wird Ihnen keiner gestellt. Die Judikative übernimmt der Exekutivbeamte.
+          Wenn ein Anwalt hinzugezogen wird, kann es länger als 25 Minuten dauern.
+          Haben Sie ihre Rechte verstanden?
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Belehrung Modal -->
+  <div id="belehrungModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">🚨 Belehrung / Haftbefehl / Beschluss</div>
+        <button class="modal-close" type="button" data-close-modal>✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="text-section">
+          <div class="register-title">Belehrung</div>
           <div class="long-text">
-            Sie haben das Recht zu schweigen, alles was Sie sagen kann und wird gegen Sie verwendet werden.
-            Ab 2 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt, den Sie selbst benennen müssen.
-            Wenn kein Anwalt verfügbar ist, wird Ihnen keiner gestellt. Die Judikative übernimmt der Exekutivbeamte.
-            Wenn ein Anwalt hinzugezogen wird, kann es länger als 25 Minuten dauern.
-            Haben Sie ihre Rechte verstanden?
+            „Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird vor Gericht gegen Sie verwendet werden.
+            Sie haben das Recht, zu jeder Vernehmung einen Rechtsanwalt hinzuzuziehen. Haben Sie das verstanden?“
+          </div>
+        </div>
+
+        <div class="text-section">
+          <div class="register-title">Haftbefehl</div>
+          <div class="long-text">
+            "Die Justiz hat einen Haftbefehl gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen,
+            kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Haftbefehl vor Gericht zu ziehen,
+            falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung
+            gegen den Haftbefehl einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen
+            Gerichtsprozess ablehnen, wird der Haftbefehl von den ausgewählten Beamten vollstreckt. Im weiteren Verlauf
+            erhalten Sie eine staatliche Berufssperre von X Tagen nach §19 (4) Beamten Dienst Gesetzbuch. Während dieser Zeit
+            dürfen Sie keinem Staatsdienst nachgehen. Wenn Sie flüchten haben Sie kein Recht mehr auf einen Rechtsanwalt.”
+          </div>
+        </div>
+
+        <div class="text-section">
+          <div class="register-title">Beschluss</div>
+          <div class="long-text">
+            "Die Justiz hat einen Beschluss gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen,
+            kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Beschluss vor Gericht zu ziehen,
+            falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung
+            gegen den Beschluss einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen
+            Gerichtsprozess ablehnen, wird der Beschluss von den ausgewählten Beamten vollstreckt. Wenn Sie flüchten
+            haben Sie kein Recht mehr auf einen Rechtsanwalt."
           </div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <div id="belehrungTab" class="tab-content">
-        <div class="panel content-panel">
-          <div class="panel-title">BELEHRUNG / HAFTBEFEHL / BESCHLUSS / BEFRAGUNG</div>
-
-          <div class="text-section">
-            <div class="register-title">Belehrung</div>
-            <div class="long-text">
-              „Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird vor Gericht gegen Sie verwendet werden.
-              Sie haben das Recht, zu jeder Vernehmung einen Rechtsanwalt hinzuzuziehen. Haben Sie das verstanden?“
-            </div>
-          </div>
-
-          <div class="text-section">
-            <div class="register-title">Haftbefehl</div>
-            <div class="long-text">
-              "Die Justiz hat einen Haftbefehl gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen,
-              kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Haftbefehl vor Gericht zu ziehen,
-              falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung
-              gegen den Haftbefehl einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen
-              Gerichtsprozess ablehnen, wird der Haftbefehl von den ausgewählten Beamten vollstreckt. Im weiteren Verlauf
-              erhalten Sie eine staatliche Berufssperre von X Tagen nach §19 (4) Beamten Dienst Gesetzbuch. Während dieser Zeit
-              dürfen Sie keinem Staatsdienst nachgehen. Wenn Sie flüchten haben Sie kein Recht mehr auf einen Rechtsanwalt.”
-            </div>
-          </div>
-
-          <div class="text-section">
-            <div class="register-title">Beschluss</div>
-            <div class="long-text">
-              "Die Justiz hat einen Beschluss gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen,
-              kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Beschluss vor Gericht zu ziehen,
-              falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung
-              gegen den Beschluss einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen
-              Gerichtsprozess ablehnen, wird der Beschluss von den ausgewählten Beamten vollstreckt. Wenn Sie flüchten
-              haben Sie kein Recht mehr auf einen Rechtsanwalt."
-            </div>
-          </div>
-        </div>
+  <!-- FIBCO Modal -->
+  <div id="fibcoModal" class="modal-backdrop hidden">
+    <div class="modal modal-large">
+      <div class="modal-header">
+        <div class="modal-title">🕵️ FIBCO Akte</div>
+        <button class="modal-close" type="button" data-close-modal>✕</button>
       </div>
-
-      <div id="fibcoTab" class="tab-content">
-        <div class="panel content-panel">
-          <div class="panel-title">FIBCO AKTE</div>
-          <textarea id="fibcoText" class="textarea large">Name | CO-ID-1 | Datum der Straftat
+      <div class="modal-body">
+        <textarea id="fibcoText" class="textarea large">Name | CO-ID-1 | Datum der Straftat
 
 Codename: [Codename]
 
@@ -167,83 +267,9 @@ Am TT.MM.YYYY um HH:MM Uhr […]
 - ABC
 
 [Schlussbetrachtung]</textarea>
-        </div>
       </div>
-    </section>
-
-    <aside class="sidebar">
-      <button id="btnReset" class="reset-btn" type="button">↻ Zurücksetzen</button>
-
-      <div class="panel">
-        <div class="panel-title">ZUSAMMENFASSUNG</div>
-        <div class="summary-grid">
-          <div class="summary-box">
-            <div class="summary-label">HÖCHSTE GELDSTRAFE</div>
-            <div class="summary-value" id="sumFine">$0</div>
-          </div>
-          <div class="summary-box">
-            <div class="summary-label">HÖCHSTE WANTEDS</div>
-            <div class="summary-value" id="sumWanted">—</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-title">STRAFMODIFIKATION</div>
-
-        <div class="setting-row">
-          <div>
-            <div class="setting-title">Rechte vorgelesen</div>
-            <div class="setting-desc">Ohne das kann nicht kopiert werden</div>
-          </div>
-          <label class="switch-wrap">
-            <input id="rightsReadToggle" type="checkbox" />
-            <span class="switch"></span>
-          </label>
-        </div>
-
-        <div class="field-block">
-          <label class="setting-title">Freie Zusatz-Wanteds</label>
-          <div class="gray-control-row">
-            <button class="gray-btn" data-wanted-adjust="-1" type="button">−</button>
-            <input id="manualWantedInput" class="manual-input" type="number" min="0" max="10" value="0" />
-            <button class="gray-btn" data-wanted-adjust="1" type="button">+</button>
-          </div>
-          <div class="setting-desc">Diese grauen Sterne setzt der Beamte selbst</div>
-          <div id="manualWantedStars" class="gray-stars">☆☆☆☆☆</div>
-        </div>
-
-        <div class="field-block">
-          <label class="setting-title">Freie Zusatz-Geldstrafe</label>
-          <input id="manualFineInput" class="text-input" type="number" min="0" step="1000" value="0" />
-          <div class="setting-desc">Wird auf die höchste Strafe aufgeschlagen</div>
-        </div>
-
-        <div class="field-block">
-          <label class="setting-title">Kennzeichen & Ort</label>
-          <div class="two-grid">
-            <input id="plateInput" class="text-input" placeholder="z.B. LS-AB-123" />
-            <input id="placeInput" class="text-input" placeholder="z.B. Vinewood" />
-          </div>
-        </div>
-
-        <div class="field-block">
-          <label class="setting-title">Aktenzeichen</label>
-          <input id="azInput" class="text-input" placeholder="z.B. AZ-2026-001" />
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-title">LIVE-KOPIERFELD</div>
-        <div id="liveStamp" class="live-stamp">--.--.---- | --:--:--</div>
-        <textarea id="aktenText" class="textarea" readonly placeholder="Wähle Straftaten aus..."></textarea>
-        <div class="panel-footer">
-          <span id="copyStatus">Nicht kopiert</span>
-          <button id="btnCopy" class="copy-btn" type="button">Kopieren</button>
-        </div>
-      </div>
-    </aside>
-  </main>
+    </div>
+  </div>
 
   <script type="module" src="./app.js"></script>
 </body>
