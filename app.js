@@ -23,21 +23,23 @@ const els = {
   placeInput: $("placeInput"),
   azInput: $("azInput"),
   aktenText: $("aktenText"),
+  aktenLine: $("aktenLine"),
   btnReset: $("btnReset"),
   btnCopy: $("btnCopy"),
+  btnCopyLine: $("btnCopyLine"),
   copyStatus: $("copyStatus"),
   liveStamp: $("liveStamp"),
   themeSelect: $("themeSelect"),
   layoutSelect: $("layoutSelect"),
   rightsReadToggle: $("rightsReadToggle"),
-  manualWantedInput: $("manualWantedInput"),
-  manualWantedStars: $("manualWantedStars"),
-  manualFineInput: $("manualFineInput")
+  manualFineInput: $("manualFineInput"),
+  modals: document.querySelectorAll(".modal-backdrop")
 };
 
 const state = {
   selected: new Set(),
-  search: ""
+  search: "",
+  extraWantedById: {}
 };
 
 function formatMoney(value) {
@@ -45,14 +47,16 @@ function formatMoney(value) {
   return `$${rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
 }
 
-function starsYellow(count) {
-  return "★".repeat(Math.max(0, Number(count) || 0));
+function formatDate(now = new Date()) {
+  return now.toLocaleDateString("de-DE");
 }
 
-function starsGray(count, total = 5) {
-  const active = Math.max(0, Number(count) || 0);
-  const off = Math.max(0, total - active);
-  return "★".repeat(active) + "☆".repeat(off);
+function formatTime(now = new Date()) {
+  return now.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+}
+
+function starsYellow(count) {
+  return "★".repeat(Math.max(0, Number(count) || 0));
 }
 
 function escapeHtml(str) {
@@ -75,17 +79,27 @@ function getFilteredItems() {
   );
 }
 
+function getItemExtraWanted(id) {
+  return Number(state.extraWantedById[id] || 0);
+}
+
+function getEffectiveWanted(item) {
+  return Number(item.wanted || 0) + getItemExtraWanted(item.id);
+}
+
 function renderCards() {
   const items = getFilteredItems();
 
   els.cards.innerHTML = items.map(item => {
     const selected = state.selected.has(item.id);
+    const effectiveWanted = getEffectiveWanted(item);
+    const extraWanted = getItemExtraWanted(item.id);
 
     return `
       <div class="card ${selected ? "selected" : ""}" data-id="${escapeHtml(item.id)}">
         <div class="card-top">
           <div class="card-para">${escapeHtml(item.para)}</div>
-          <div class="card-link">↗</div>
+          <div class="card-link">✨</div>
         </div>
 
         <div class="card-name">${escapeHtml(item.name)}</div>
@@ -96,17 +110,44 @@ function renderCards() {
         </div>
 
         <div class="card-bottom">
-          <div class="card-stars">${item.wanted ? starsYellow(item.wanted) : "—"}</div>
+          <div class="card-stars">${effectiveWanted ? starsYellow(effectiveWanted) : "—"}</div>
+
+          <div class="card-gray-tools" data-stop-click="true">
+            <button class="gray-mini-btn" type="button" data-extra-minus="${escapeHtml(item.id)}">−</button>
+            <div class="gray-mini-count" title="Graue Zusatz-Wanteds">${extraWanted}</div>
+            <button class="gray-mini-btn" type="button" data-extra-plus="${escapeHtml(item.id)}">+</button>
+          </div>
         </div>
       </div>
     `;
   }).join("");
 
   els.cards.querySelectorAll(".card").forEach(card => {
-    card.addEventListener("click", () => {
+    card.addEventListener("click", (event) => {
+      if (event.target.closest("[data-stop-click='true']")) return;
+
       const id = card.dataset.id;
       if (state.selected.has(id)) state.selected.delete(id);
       else state.selected.add(id);
+
+      updateUI();
+    });
+  });
+
+  els.cards.querySelectorAll("[data-extra-plus]").forEach(btn => {
+    btn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const id = btn.dataset.extraPlus;
+      state.extraWantedById[id] = getItemExtraWanted(id) + 1;
+      updateUI();
+    });
+  });
+
+  els.cards.querySelectorAll("[data-extra-minus]").forEach(btn => {
+    btn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const id = btn.dataset.extraMinus;
+      state.extraWantedById[id] = Math.max(0, getItemExtraWanted(id) - 1);
       updateUI();
     });
   });
@@ -123,15 +164,22 @@ function getHighestFine(items) {
 }
 
 function getHighestWanted(items) {
-  const highest = items.length ? Math.max(...items.map(i => Number(i.wanted || 0))) : 0;
-  const manual = Number(els.manualWantedInput.value || 0);
-  return highest + manual;
+  const highest = items.length ? Math.max(...items.map(i => getEffectiveWanted(i))) : 0;
+  return highest;
+}
+
+function buildCompactAkteLine(items) {
+  const now = new Date();
+  const date = formatDate(now);
+  const time = formatTime(now);
+  const paras = items.map(item => item.para).join(" + ");
+  return `${date} | ${time} - ${paras || "—"}`;
 }
 
 function buildAktenText(items, fine, wanted) {
   const now = new Date();
-  const date = now.toLocaleDateString("de-DE");
-  const time = now.toLocaleTimeString("de-DE");
+  const date = formatDate(now);
+  const time = formatTime(now);
 
   const az = els.azInput.value.trim();
   const plate = els.plateInput.value.trim();
@@ -151,7 +199,8 @@ function buildAktenText(items, fine, wanted) {
   if (items.length) {
     items.forEach(item => {
       const extra = item.info ? ` | ${item.info}` : "";
-      lines.push(`${item.para} ${item.name}${extra}`);
+      const gray = getItemExtraWanted(item.id) > 0 ? ` | Zusatz-Wanteds: ${getItemExtraWanted(item.id)}` : "";
+      lines.push(`${item.para} ${item.name}${extra}${gray}`);
     });
   } else {
     lines.push("—");
@@ -160,6 +209,7 @@ function buildAktenText(items, fine, wanted) {
   lines.push("");
   lines.push(`Höchste Geldstrafe: ${formatMoney(fine)}`);
   lines.push(`Höchste Wanteds: ${wanted ? `${wanted} (${starsYellow(wanted)})` : "—"}`);
+  lines.push(`Kurze Aktenzeile: ${buildCompactAkteLine(items)}`);
   lines.push(`Rechte vorgelesen: ${els.rightsReadToggle.checked ? "Ja" : "Nein"}`);
 
   return lines.join("\n");
@@ -167,12 +217,7 @@ function buildAktenText(items, fine, wanted) {
 
 function updateLiveStamp() {
   const now = new Date();
-  els.liveStamp.textContent = `${now.toLocaleDateString("de-DE")} | ${now.toLocaleTimeString("de-DE")}`;
-}
-
-function updateManualStars() {
-  const count = Number(els.manualWantedInput.value || 0);
-  els.manualWantedStars.textContent = starsGray(count, 5);
+  els.liveStamp.textContent = `${formatDate(now)} | ${now.toLocaleTimeString("de-DE")}`;
 }
 
 function updateSummary() {
@@ -183,8 +228,8 @@ function updateSummary() {
   els.selectedCount.textContent = String(items.length);
   els.sumFine.textContent = formatMoney(fine);
   els.sumWanted.textContent = wanted ? starsYellow(wanted) : "—";
+  els.aktenLine.textContent = buildCompactAkteLine(items);
   els.aktenText.value = buildAktenText(items, fine, wanted);
-  updateManualStars();
 }
 
 function updateUI() {
@@ -195,15 +240,24 @@ function updateUI() {
 function resetAll() {
   state.selected.clear();
   state.search = "";
+  state.extraWantedById = {};
   els.searchInput.value = "";
   els.plateInput.value = "";
   els.placeInput.value = "";
   els.azInput.value = "";
-  els.manualWantedInput.value = "0";
   els.manualFineInput.value = "0";
   els.rightsReadToggle.checked = false;
   els.copyStatus.textContent = "Nicht kopiert";
   updateUI();
+}
+
+async function copyText(value, successText, failText) {
+  try {
+    await navigator.clipboard.writeText(value || "");
+    els.copyStatus.textContent = successText;
+  } catch {
+    els.copyStatus.textContent = failText;
+  }
 }
 
 async function copyCurrentText() {
@@ -211,28 +265,60 @@ async function copyCurrentText() {
     els.copyStatus.textContent = "Rechte nicht vorgelesen";
     return;
   }
-
-  try {
-    await navigator.clipboard.writeText(els.aktenText.value || "");
-    els.copyStatus.textContent = "Kopiert";
-  } catch {
-    els.copyStatus.textContent = "Fehler beim Kopieren";
-  }
+  await copyText(els.aktenText.value, "Akte kopiert", "Fehler beim Kopieren");
 }
 
-function setupTabs() {
-  const buttons = document.querySelectorAll(".top-btn[data-tab]");
-  const tabs = document.querySelectorAll(".tab-content");
+async function copyCurrentLine() {
+  if (!els.rightsReadToggle.checked) {
+    els.copyStatus.textContent = "Rechte nicht vorgelesen";
+    return;
+  }
+  await copyText(els.aktenLine.textContent, "Zeile kopiert", "Fehler beim Kopieren");
+}
 
-  buttons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      buttons.forEach(b => b.classList.remove("active"));
-      tabs.forEach(tab => tab.classList.remove("active"));
-
-      btn.classList.add("active");
-      const target = document.getElementById(btn.dataset.tab);
-      if (target) target.classList.add("active");
+function setupTopButtons() {
+  const strafeBtn = $("btnStraftaten");
+  if (strafeBtn) {
+    strafeBtn.addEventListener("click", () => {
+      closeAllModals();
     });
+  }
+
+  document.querySelectorAll("[data-modal]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".top-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      openModal(btn.dataset.modal);
+    });
+  });
+}
+
+function openModal(id) {
+  closeAllModals();
+  const modal = $(id);
+  if (modal) modal.classList.remove("hidden");
+}
+
+function closeAllModals() {
+  els.modals.forEach(modal => modal.classList.add("hidden"));
+  document.querySelectorAll(".top-btn").forEach(b => b.classList.remove("active"));
+  const straftatenBtn = $("btnStraftaten");
+  if (straftatenBtn) straftatenBtn.classList.add("active");
+}
+
+function setupModals() {
+  els.modals.forEach(modal => {
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) closeAllModals();
+    });
+  });
+
+  document.querySelectorAll("[data-close-modal]").forEach(btn => {
+    btn.addEventListener("click", closeAllModals);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeAllModals();
   });
 }
 
@@ -248,18 +334,6 @@ function setupLayout() {
   });
 }
 
-function setupManualControls() {
-  document.querySelectorAll("[data-wanted-adjust]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const step = Number(btn.dataset.wantedAdjust || 0);
-      const current = Number(els.manualWantedInput.value || 0);
-      const next = Math.max(0, current + step);
-      els.manualWantedInput.value = String(next);
-      updateSummary();
-    });
-  });
-}
-
 els.searchInput.addEventListener("input", (e) => {
   state.search = e.target.value || "";
   renderCards();
@@ -269,7 +343,6 @@ els.searchInput.addEventListener("input", (e) => {
   els.plateInput,
   els.placeInput,
   els.azInput,
-  els.manualWantedInput,
   els.manualFineInput,
   els.rightsReadToggle
 ].forEach(el => {
@@ -279,20 +352,18 @@ els.searchInput.addEventListener("input", (e) => {
 
 els.btnReset.addEventListener("click", resetAll);
 els.btnCopy.addEventListener("click", copyCurrentText);
+els.btnCopyLine.addEventListener("click", copyCurrentLine);
 
 els.liveStamp.addEventListener("click", async () => {
-  try {
-    await navigator.clipboard.writeText(els.liveStamp.textContent || "");
-    els.copyStatus.textContent = "Zeit kopiert";
-  } catch {
-    els.copyStatus.textContent = "Zeit nicht kopiert";
-  }
+  await copyText(els.liveStamp.textContent, "Zeit kopiert", "Zeit nicht kopiert");
 });
 
-setupTabs();
+els.aktenLine.addEventListener("click", copyCurrentLine);
+
+setupTopButtons();
+setupModals();
 setupTheme();
 setupLayout();
-setupManualControls();
 updateLiveStamp();
 
 setInterval(() => {
