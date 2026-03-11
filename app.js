@@ -1,7 +1,6 @@
 const $ = (id) => document.getElementById(id);
 
 const LAW_DATA = [
-  // Psychische & Physische Integrität (StGB)
   { id: "stgb-3-1", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §3.1", name: "Beleidigung", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 1 },
   { id: "stgb-3-2", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §3.2", name: "Belästigung", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 1 },
   { id: "stgb-3-3", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §3.3", name: "Drohung", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
@@ -23,7 +22,6 @@ const LAW_DATA = [
   { id: "stgb-42", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §42", name: "Erpressung", fineType: "fixed", fine: 45000, fixedWanted: 3, grayWantedMax: 0 },
   { id: "stgb-43", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §43", name: "Androhung einer Straftat", fineType: "base_plus_per_active_wanted", fine: 20000, finePerWanted: 5000, fixedWanted: 0, grayWantedMax: 3, note: "20.000$ + 5.000$ pro aktiviertem Wanted" },
 
-  // Wirtschaftskriminalität (StGB)
   { id: "stgb-6-9", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §6 / §9", name: "Diebstahl / Betrug", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 3 },
   { id: "stgb-7", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §7", name: "Fahrzeug Diebstahl", fineType: "fixed", fine: 10000, fixedWanted: 2, grayWantedMax: 0 },
   { id: "stgb-10-1", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §10.1", name: "Besitz illegaler Gegenstände", fineType: "fixed", fine: 10000, fixedWanted: 2, grayWantedMax: 0 },
@@ -36,7 +34,6 @@ const LAW_DATA = [
   { id: "stgb-41-1", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §41.1", name: "Besitz staatliches Eigentum (Waffen)", fineType: "fixed", fine: 50000, fixedWanted: 3, grayWantedMax: 0, note: "Waffenscheinentzug" },
   { id: "stgb-41-2", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §41.2", name: "Besitz staatliches Eigentum (Gegenstände)", fineType: "fixed", fine: 50000, fixedWanted: 3, grayWantedMax: 0 },
 
-  // Umgang mit Beamten (StGB)
   { id: "stgb-15-1", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §15.1", name: "Nichtbeachten einer amtlichen Anweisung", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 2 },
   { id: "stgb-15-2", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §15.2", name: "Entziehung polizeilicher Maßnahmen", fineType: "fixed", fine: 10000, fixedWanted: 2, grayWantedMax: 0 },
   { id: "stgb-15-3", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §15.3", name: "Behinderung eines Beamten bei der Arbeit", fineType: "fixed", fine: 10000, fixedWanted: 1, grayWantedMax: 0 },
@@ -50,7 +47,6 @@ const LAW_DATA = [
   { id: "stgb-24", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §24", name: "Amtsanmaßung", fineType: "fixed", fine: 25000, fixedWanted: 2, grayWantedMax: 1 },
   { id: "stgb-29", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §29", name: "Missachtung eines Platzverweises", fineType: "fixed", fine: 20000, fixedWanted: 1, grayWantedMax: 1 },
 
-  // Straßenverkehrsordnung (StVO)
   { id: "stvo-2", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §2", name: "Gefährdung anderer Verkehrsteilnehmer", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 0 },
   { id: "stvo-4", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §4", name: "Missachten von Rechtsfahrgebot", fineType: "fixed", fine: 8000, fixedWanted: 0, grayWantedMax: 0 },
   { id: "stvo-5", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §5", name: "Überschreiten der Fahrzeugkapazitäten", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
@@ -79,21 +75,18 @@ const LAW_DATA = [
   { id: "stvo-27", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §27", name: "Fahren ohne KFZ Versicherung", fineType: "fixed", fine: 20000, fixedWanted: 0, grayWantedMax: 0 },
   { id: "stvo-28", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §28", name: "Sharing-Cars mit Anti-Radar wurde nicht aus dem Verkehr gezogen", fineType: "fixed", fine: 30000, fixedWanted: 3, grayWantedMax: 0 },
 
-  // Waffengesetz (WaffG)
   { id: "waffg-1", group: "Waffengesetz (WaffG)", section: "WAFFG", para: "WaffG §1", name: "Besitz legaler Waffen ohne Waffenschein", fineType: "per_active_wanted", finePerWanted: 10000, fixedWanted: 1, grayWantedMax: 1, note: "10.000$ pro aktiviertem Wanted" },
   { id: "waffg-5-1", group: "Waffengesetz (WaffG)", section: "WAFFG", para: "WaffG §5.1", name: "Besitz illegaler Waffen", fineType: "per_active_wanted", finePerWanted: 10000, fixedWanted: 2, grayWantedMax: 1, note: "10.000$ pro aktiviertem Wanted" },
   { id: "waffg-8-1", group: "Waffengesetz (WaffG)", section: "WAFFG", para: "WaffG §8.1", name: "Offenes Tragen einer Waffe", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 1 },
   { id: "waffg-8-2", group: "Waffengesetz (WaffG)", section: "WAFFG", para: "WaffG §8.2", name: "Tragen einer Waffe in staatl. Einrichtungen", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 1 },
   { id: "waffg-11", group: "Waffengesetz (WaffG)", section: "WAFFG", para: "WaffG §11", name: "Ungesetzlicher Waffenhandel (An- & Verkauf)", fineType: "fixed", fine: 25000, fixedWanted: 3, grayWantedMax: 0 },
 
-  // Sperrzonen / Absperrungen / Kapitalverbrechen (StGB)
   { id: "stgb-17-sperr", group: "Sperrzonen / Absperrungen / Kapitalverbrechen (StGB)", section: "STGB", para: "StGB §17", name: "Durchbrechen von Absperrungen", fineType: "fixed", fine: 15000, fixedWanted: 1, grayWantedMax: 1 },
   { id: "stgb-18", group: "Sperrzonen / Absperrungen / Kapitalverbrechen (StGB)", section: "STGB", para: "StGB §18", name: "Unerlaubtes Betreten eines militärischen Geländes", fineType: "fixed", fine: 50000, fixedWanted: 5, grayWantedMax: 0 },
   { id: "stgb-18-1", group: "Sperrzonen / Absperrungen / Kapitalverbrechen (StGB)", section: "STGB", para: "StGB §18.1", name: "Unerlaubtes Betreten von Sperrzonen", fineType: "fixed", fine: 25000, fixedWanted: 2, grayWantedMax: 1 },
   { id: "stgb-18-2", group: "Sperrzonen / Absperrungen / Kapitalverbrechen (StGB)", section: "STGB", para: "StGB §18.2", name: "Unerlaubtes Befahren von Sperrzonen", fineType: "fixed", fine: 25000, fixedWanted: 2, grayWantedMax: 1 },
   { id: "stgb-25", group: "Sperrzonen / Absperrungen / Kapitalverbrechen (StGB)", section: "STGB", para: "StGB §25", name: "Terrorismus (Deckt alle Strafen ab)", fineType: "fixed", fine: 25000, fixedWanted: 3, grayWantedMax: 0 },
 
-  // Betäubungsmittelgesetz (BtMG)
   { id: "btmg-2-1-kokain-klein", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §2.1", name: "Kokainbesitz Klein ab 11 - 30", fineType: "fixed", fine: 15000, fixedWanted: 0, grayWantedMax: 1 },
   { id: "btmg-2-1-weed-klein", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §2.1", name: "Marihuana Besitz Klein 21 - 30", fineType: "fixed", fine: 15000, fixedWanted: 0, grayWantedMax: 1 },
   { id: "btmg-2-1-mittel", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §2.1", name: "Drogenbesitz Mittel ab 31 - 50", fineType: "fixed", fine: 20000, fixedWanted: 1, grayWantedMax: 0 },
@@ -104,7 +97,6 @@ const LAW_DATA = [
   { id: "btmg-3-bis-50", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §3", name: "Verkauf von Medizinprodukten bis 50 Medizinischen Gegenständen", fineType: "fixed", fine: 20000, fixedWanted: 1, grayWantedMax: 1 },
   { id: "btmg-3-ab-51", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §3", name: "Verkauf von Medizinprodukten ab 51 Medizinischen Gegenständen", fineType: "fixed", fine: 25000, fixedWanted: 1, grayWantedMax: 2 },
 
-  // Strafprozessordnung (StPO)
   { id: "stpo-6", group: "Strafprozessordnung (StPO)", section: "STPO", para: "§6 StPO", name: "Bußgelder nicht bezahlt (500k voll)", fineType: "fixed", fine: 500000, fixedWanted: 5, grayWantedMax: 0 }
 ];
 
@@ -155,9 +147,14 @@ const els = {
   autoResetToggle: $("autoResetToggle"),
   pinSidebarToggle: $("pinSidebarToggle"),
   sidebar: $("sidebar"),
-  themeBtn: $("themeBtn"),
   fibcoCopyBtn: $("fibcoCopyBtn"),
-  fibcoPreview: $("fibcoPreview")
+  fibcoPreview: $("fibcoPreview"),
+  themeDropdown: $("themeDropdown"),
+  themeDropdownBtn: $("themeDropdownBtn"),
+  themeDropdownMenu: $("themeDropdownMenu"),
+  customColor1: $("customColor1"),
+  customColor2: $("customColor2"),
+  applyCustomTheme: $("applyCustomTheme")
 };
 
 const fibcoFieldIds = [
@@ -274,10 +271,7 @@ function renderWantedIcons(fixedWanted, selectedGray, grayMax) {
     html += `<span class="star-off">★</span>`;
   }
 
-  if (!html) {
-    html = `<span class="star-off">—</span>`;
-  }
-
+  if (!html) html = `<span class="star-off">—</span>`;
   return html;
 }
 
@@ -302,7 +296,7 @@ function getFineDisplayText(item) {
   const fineText = formatMoney(getEffectiveFine(item));
 
   if (els.repeatToggle?.checked && item.section === "STVO") {
-    return `${fineText} <small>(x2)</small>`;
+    return `${fineText} (x2)`;
   }
 
   return fineText;
@@ -316,9 +310,7 @@ function groupLaws(items) {
   });
 
   items.forEach((item) => {
-    if (!map.has(item.group)) {
-      map.set(item.group, []);
-    }
+    if (!map.has(item.group)) map.set(item.group, []);
     map.get(item.group).push(item);
   });
 
@@ -340,7 +332,6 @@ function renderCatalog() {
       const isSelected = state.selected.has(item.id);
       const selectedGray = getSelectedGrayWanted(item);
       const grayMax = Number(item.grayWantedMax || 0);
-      const fineText = getFineDisplayText(item);
 
       return `
         <article class="card ${isSelected ? "is-selected" : ""}" data-id="${escapeHtml(item.id)}">
@@ -350,7 +341,7 @@ function renderCatalog() {
           </div>
 
           <div class="card-name">${escapeHtml(item.name)}</div>
-          <div class="card-fine">${fineText}</div>
+          <div class="card-fine">${escapeHtml(getFineDisplayText(item))}</div>
           <div class="card-note">${escapeHtml(item.note || "")}</div>
 
           <div class="card-bottom">
@@ -391,6 +382,7 @@ function getHighestWanted(items) {
 
   let highest = Math.max(...items.map((item) => getActiveWanted(item)));
   const systemWanted = Math.max(0, Number(els.systemWantedInput?.value || 0));
+
   highest += systemWanted;
 
   if (els.remorseToggle?.checked && highest > 0) {
@@ -705,6 +697,74 @@ function setupFibco() {
   updateFibcoPreview();
 }
 
+function setActivePresetButton(themeName) {
+  document.querySelectorAll("[data-theme-preset]").forEach((btn) => {
+    btn.classList.toggle("is-active", btn.dataset.themePreset === themeName);
+  });
+}
+
+function applyPresetTheme(themeName) {
+  els.body.removeAttribute("style");
+  els.body.setAttribute("data-theme", themeName);
+  setActivePresetButton(themeName);
+}
+
+function applyCustomTheme(color1, color2) {
+  els.body.setAttribute("data-theme", "custom");
+  els.body.style.setProperty("--accent", color1);
+  els.body.style.setProperty("--accent-2", color2);
+  els.body.style.setProperty("--accent-soft", `${hexToRgba(color1, 0.12)}`);
+  els.body.style.setProperty("--accent-border", `${hexToRgba(color2, 0.3)}`);
+  setActivePresetButton("");
+}
+
+function hexToRgba(hex, alpha) {
+  const clean = hex.replace("#", "");
+  const full = clean.length === 3
+    ? clean.split("").map((char) => char + char).join("")
+    : clean;
+
+  const bigint = parseInt(full, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function toggleThemeMenu(force) {
+  const shouldOpen = typeof force === "boolean"
+    ? force
+    : els.themeDropdownMenu.classList.contains("hidden");
+
+  els.themeDropdownMenu.classList.toggle("hidden", !shouldOpen);
+}
+
+function setupThemeDropdown() {
+  els.themeDropdownBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    toggleThemeMenu();
+  });
+
+  els.themeDropdownMenu.addEventListener("click", (event) => {
+    event.stopPropagation();
+  });
+
+  document.querySelectorAll("[data-theme-preset]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      applyPresetTheme(btn.dataset.themePreset);
+    });
+  });
+
+  els.applyCustomTheme.addEventListener("click", () => {
+    applyCustomTheme(els.customColor1.value, els.customColor2.value);
+  });
+
+  document.addEventListener("click", () => {
+    toggleThemeMenu(false);
+  });
+}
+
 function setupInputs() {
   els.searchInput.addEventListener("input", (event) => {
     state.search = event.target.value || "";
@@ -742,12 +802,6 @@ function setupInputs() {
   els.btnCopyLine.addEventListener("click", copyLine);
   els.btnCopy.addEventListener("click", copyAkte);
   els.aktenLine.addEventListener("click", copyLine);
-
-  els.themeBtn.addEventListener("click", () => {
-    const current = els.body.getAttribute("data-theme") || "cyan";
-    const next = current === "cyan" ? "blue" : current === "blue" ? "violet" : "cyan";
-    els.body.setAttribute("data-theme", next);
-  });
 }
 
 function boot() {
@@ -758,7 +812,9 @@ function boot() {
   setupCatalogEvents();
   setupInputs();
   setupFibco();
+  setupThemeDropdown();
 
+  applyPresetTheme("mono");
   updateLiveStamp();
   updateUI();
 
