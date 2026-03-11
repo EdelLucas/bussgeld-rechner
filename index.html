@@ -128,7 +128,7 @@
           <div class="sidebar-row">
             <div>
               <div class="sidebar-name">§35 Abs. 1 — Reue</div>
-              <div class="sidebar-desc">Wanteds −2 (min. 1)</div>
+              <div class="sidebar-desc">Wanteds −2 (Minimum 1)</div>
             </div>
             <label class="switch">
               <input id="remorseToggle" type="checkbox" />
@@ -224,10 +224,11 @@
         <button class="modal-close" type="button" data-close-modal>✕</button>
       </div>
       <div class="modal-body">
-        <p>1. Straftaten anklicken.</p>
-        <p>2. Graue Wanteds pro Tat mit + / − anpassen.</p>
-        <p>3. Rechte vorgelesen aktivieren.</p>
-        <p>4. Aktenzeile oder komplette Akte kopieren.</p>
+        <p>1. Straftat anklicken.</p>
+        <p>2. Graue Wanteds mit + / − aktivieren.</p>
+        <p>3. Modifikationen rechts setzen.</p>
+        <p>4. Rechte vorgelesen aktivieren.</p>
+        <p>5. Zeile oder ganze Akte kopieren.</p>
       </div>
     </div>
   </div>
@@ -251,7 +252,7 @@
         <button class="modal-close" type="button" data-close-modal>✕</button>
       </div>
       <div class="modal-body">
-        <p>Platzhalter für Termine, Events oder Fristen.</p>
+        <p>Platzhalter für Termine, Fristen oder Ingame-Events.</p>
       </div>
     </div>
   </div>
@@ -320,42 +321,112 @@
   </div>
 
   <div id="fibcoModal" class="modal-backdrop hidden">
-    <div class="modal modal-lg">
+    <div class="modal modal-xl">
       <div class="modal-header">
         <div class="modal-title">FIBCO Akte</div>
         <button class="modal-close" type="button" data-close-modal>✕</button>
       </div>
-      <div class="modal-body">
-        <textarea class="textarea textarea-large">Name | CO-ID-1 | Datum der Straftat
 
-Codename: [Codename]
+      <div class="modal-body fibco-modal-body">
+        <div class="fibco-grid">
+          <div class="fibco-field">
+            <label for="fibcoName">Name</label>
+            <input id="fibcoName" data-fibco type="text" placeholder="Vorname Nachname" />
+          </div>
 
-Telefonnummer:
-Behörde:
-Familie:
+          <div class="fibco-field">
+            <label for="fibcoCoId">CO-ID</label>
+            <input id="fibcoCoId" data-fibco type="text" placeholder="CO-ID-1" />
+          </div>
 
-Reisepass:
-Dienstausweis:
-Personalakte:
-PDA Hauptseite:
-PDA Fahrzeugliste:
+          <div class="fibco-field">
+            <label for="fibcoDate">Datum der Straftat</label>
+            <input id="fibcoDate" data-fibco type="text" placeholder="TT.MM.YYYY" />
+          </div>
 
-[Vorfall]
-Am TT.MM.YYYY um HH:MM Uhr [...]
+          <div class="fibco-field">
+            <label for="fibcoCodename">Codename</label>
+            <input id="fibcoCodename" data-fibco type="text" placeholder="Codename" />
+          </div>
 
-[Befragung Tatverdächtiger]
-- ABC
+          <div class="fibco-field">
+            <label for="fibcoPhone">Telefonnummer</label>
+            <input id="fibcoPhone" data-fibco type="text" placeholder="Telefonnummer" />
+          </div>
 
-[Zeugen-/Aussagen]
-- ABC
+          <div class="fibco-field">
+            <label for="fibcoAgency">Behörde</label>
+            <input id="fibcoAgency" data-fibco type="text" placeholder="Behörde" />
+          </div>
 
-[Beweissammlung]
-- ABC
+          <div class="fibco-field">
+            <label for="fibcoFamily">Familie</label>
+            <input id="fibcoFamily" data-fibco type="text" placeholder="Familie" />
+          </div>
 
-[Tatvorwurf]
-- ABC
+          <div class="fibco-field">
+            <label for="fibcoPassport">Reisepass</label>
+            <input id="fibcoPassport" data-fibco type="text" placeholder="Link / ID / Eintrag" />
+          </div>
 
-[Schlussbetrachtung]</textarea>
+          <div class="fibco-field">
+            <label for="fibcoBadge">Dienstausweis</label>
+            <input id="fibcoBadge" data-fibco type="text" placeholder="Link / ID / Eintrag" />
+          </div>
+
+          <div class="fibco-field">
+            <label for="fibcoPersonnel">Personalakte</label>
+            <input id="fibcoPersonnel" data-fibco type="text" placeholder="Link / ID / Eintrag" />
+          </div>
+
+          <div class="fibco-field">
+            <label for="fibcoPdaMain">PDA Hauptseite</label>
+            <input id="fibcoPdaMain" data-fibco type="text" placeholder="Link / ID / Eintrag" />
+          </div>
+
+          <div class="fibco-field">
+            <label for="fibcoPdaVehicles">PDA Fahrzeugliste</label>
+            <input id="fibcoPdaVehicles" data-fibco type="text" placeholder="Link / ID / Eintrag" />
+          </div>
+
+          <div class="fibco-field fibco-field--full">
+            <label for="fibcoIncident">Vorfall</label>
+            <textarea id="fibcoIncident" data-fibco placeholder="Am TT.MM.YYYY um HH:MM Uhr ..."></textarea>
+          </div>
+
+          <div class="fibco-field fibco-field--full">
+            <label for="fibcoInterrogation">Befragung Tatverdächtiger</label>
+            <textarea id="fibcoInterrogation" data-fibco placeholder="- ABC"></textarea>
+          </div>
+
+          <div class="fibco-field fibco-field--full">
+            <label for="fibcoWitness">Zeugen- / Aussagen</label>
+            <textarea id="fibcoWitness" data-fibco placeholder="- ABC"></textarea>
+          </div>
+
+          <div class="fibco-field fibco-field--full">
+            <label for="fibcoEvidence">Beweissammlung</label>
+            <textarea id="fibcoEvidence" data-fibco placeholder="- ABC"></textarea>
+          </div>
+
+          <div class="fibco-field fibco-field--full">
+            <label for="fibcoAccusation">Tatvorwurf</label>
+            <textarea id="fibcoAccusation" data-fibco placeholder="- ABC"></textarea>
+          </div>
+
+          <div class="fibco-field fibco-field--full">
+            <label for="fibcoConclusion">Schlussbetrachtung</label>
+            <textarea id="fibcoConclusion" data-fibco placeholder="Zusammenfassung / Bewertung / weiteres Vorgehen"></textarea>
+          </div>
+        </div>
+
+        <div class="fibco-preview-wrap">
+          <div class="fibco-preview-head">
+            <div class="field-title">FIBCO-Vorschau</div>
+            <button id="fibcoCopyBtn" class="copy-btn copy-btn--primary" type="button">FIBCO kopieren</button>
+          </div>
+          <textarea id="fibcoPreview" class="textarea textarea-large" readonly></textarea>
+        </div>
       </div>
     </div>
   </div>
