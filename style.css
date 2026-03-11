@@ -1,276 +1,792 @@
-<!doctype html>
-<html lang="de">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Straftkatalog</title>
-  <link rel="icon" type="image/png" href="./favicon.png" />
-  <link rel="stylesheet" href="./style.css" />
-</head>
-<body class="theme-dark">
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-text">
-        <div class="title">Straftkatalog</div>
-        <div class="subtitle">Mobile Data Terminal — Akten-Generator</div>
-      </div>
-    </div>
+:root {
+  --bg: #0b1120;
+  --bg-2: #121a2b;
+  --bg-3: #09101d;
+  --panel: rgba(8, 14, 26, 0.94);
+  --panel-2: rgba(11, 19, 35, 0.96);
+  --card: linear-gradient(180deg, rgba(8, 20, 39, 0.98) 0%, rgba(5, 13, 28, 0.98) 100%);
+  --border: rgba(63, 87, 126, 0.36);
+  --border-2: rgba(61, 221, 255, 0.22);
+  --text: #f2f6ff;
+  --muted: #8ea2c8;
+  --muted-2: #6f84aa;
+  --accent: #19d2ff;
+  --accent-2: #00a7ff;
+  --green: #19d67a;
+  --gold: #f5b52d;
+  --shadow: 0 16px 40px rgba(0, 0, 0, 0.34);
+  --radius: 18px;
+  --radius-sm: 12px;
+}
 
-    <div class="top-actions">
-      <button class="top-btn active" type="button" id="btnStraftaten">⚖️ Straftaten</button>
-      <button class="top-btn" type="button" data-modal="anwaltModal">👨‍⚖️ Anwälte</button>
-      <button class="top-btn" type="button" data-modal="rechteModal">📜 Rechte</button>
-      <button class="top-btn" type="button" data-modal="belehrungModal">🚨 Belehrung</button>
-      <button class="top-btn" type="button" data-modal="fibcoModal">🕵️ FIBCO Akte</button>
+* {
+  box-sizing: border-box;
+}
 
-      <select id="themeSelect" class="top-select">
-        <option value="theme-dark">Midnight</option>
-        <option value="theme-light">Snow</option>
-        <option value="theme-alert">Police</option>
-        <option value="theme-purple">Neon Violet</option>
-        <option value="theme-pink">Rose</option>
-      </select>
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(34, 170, 255, 0.12), transparent 24%),
+    radial-gradient(circle at top right, rgba(111, 0, 255, 0.08), transparent 20%),
+    linear-gradient(180deg, #10192a 0%, #0b1220 100%);
+  color: var(--text);
+}
 
-      <select id="layoutSelect" class="top-select">
-        <option value="grid">Karten</option>
-        <option value="list">Liste</option>
-      </select>
-    </div>
-  </header>
+body.modal-open {
+  overflow: hidden;
+}
 
-  <main class="page-layout">
-    <section class="content">
-      <div class="hero-panel">
-        <div class="hero-left">
-          <div class="hero-title">⚖️ Straftatenübersicht</div>
-          <div class="hero-subtitle">Höchste Strafe und höchste Wanteds werden gewertet.</div>
-        </div>
-        <div class="hero-right">
-          <div class="hero-chip">🍏 App-Style UI</div>
-          <div class="hero-chip">🕒 Live-Zeit</div>
-          <div class="hero-chip">⭐ Graue Wanteds pro Tat</div>
-        </div>
-      </div>
+button,
+input,
+textarea {
+  font: inherit;
+}
 
-      <div class="search-row">
-        <input id="searchInput" class="search-input" type="search" placeholder="Suche nach Paragraph oder Bezeichnung..." />
-        <div class="selected-pill"><span id="selectedCount">0</span> ausgewählt</div>
-      </div>
+.app-shell {
+  min-height: 100vh;
+  padding: 16px;
+}
 
-      <div class="section-title">STRAFGESETZBUCH (STGB)</div>
-      <div id="cards" class="cards"></div>
-    </section>
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 74px;
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background:
+    linear-gradient(90deg, rgba(13, 28, 56, 0.98) 0%, rgba(25, 34, 53, 0.98) 55%, rgba(19, 31, 56, 0.98) 100%);
+  box-shadow: var(--shadow);
+}
 
-    <aside class="sidebar">
-      <button id="btnReset" class="reset-btn" type="button">↻ Zurücksetzen</button>
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 290px;
+}
 
-      <div class="panel">
-        <div class="panel-title">ZUSAMMENFASSUNG</div>
-        <div class="summary-grid">
-          <div class="summary-box">
-            <div class="summary-label">HÖCHSTE GELDSTRAFE</div>
-            <div class="summary-value" id="sumFine">$0</div>
-          </div>
-          <div class="summary-box">
-            <div class="summary-label">HÖCHSTE WANTEDS</div>
-            <div class="summary-value" id="sumWanted">—</div>
-          </div>
-        </div>
-      </div>
+.brand-badge {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 38px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: white;
+  background: linear-gradient(135deg, #00ccff, #1d9dff);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
+}
 
-      <div class="panel">
-        <div class="panel-title">AKTENSTEUERUNG</div>
+.brand-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 
-        <div class="setting-row">
-          <div>
-            <div class="setting-title">📖 Rechte vorgelesen</div>
-            <div class="setting-desc">Ohne das wird nichts kopiert</div>
-          </div>
-          <label class="switch-wrap">
-            <input id="rightsReadToggle" type="checkbox" />
-            <span class="switch"></span>
-          </label>
-        </div>
+.brand-title {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+}
 
-        <div class="field-block">
-          <label class="setting-title">💵 Freie Zusatz-Geldstrafe</label>
-          <input id="manualFineInput" class="text-input" type="number" min="0" step="1000" value="0" />
-          <div class="setting-desc">Wird auf die höchste Geldstrafe aufgeschlagen</div>
-        </div>
+.brand-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+}
 
-        <div class="field-block">
-          <label class="setting-title">🚗 Kennzeichen & Ort</label>
-          <div class="two-grid">
-            <input id="plateInput" class="text-input" placeholder="z.B. LS-AB-123" />
-            <input id="placeInput" class="text-input" placeholder="z.B. Vinewood" />
-          </div>
-        </div>
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  justify-content: center;
+  flex-wrap: wrap;
+}
 
-        <div class="field-block">
-          <label class="setting-title">🗂️ Aktenzeichen</label>
-          <input id="azInput" class="text-input" placeholder="z.B. AZ-2026-001" />
-        </div>
-      </div>
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgba(93, 118, 164, 0.28);
+  border-radius: 12px;
+  background: rgba(7, 18, 35, 0.92);
+  color: #dbe9ff;
+  cursor: pointer;
+  transition: 0.18s ease;
+}
 
-      <div class="panel">
-        <div class="panel-title">LIVE-KOPIERFELD</div>
-        <div id="liveStamp" class="live-stamp">--.--.---- | --:--:--</div>
+.icon-btn:hover {
+  border-color: rgba(25, 210, 255, 0.45);
+  transform: translateY(-1px);
+}
 
-        <div class="copy-line-wrap">
-          <div class="copy-line-label">Kurze Aktenzeile</div>
-          <div id="aktenLine" class="copy-line-box">--.--.---- | --:--:-- - —</div>
-        </div>
+.icon-btn span {
+  font-size: 14px;
+  font-weight: 600;
+}
 
-        <textarea id="aktenText" class="textarea" readonly placeholder="Wähle Straftaten aus..."></textarea>
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
 
-        <div class="panel-footer">
-          <span id="copyStatus">Nicht kopiert</span>
-          <div class="copy-actions">
-            <button id="btnCopyLine" class="copy-btn small" type="button">Zeile kopieren</button>
-            <button id="btnCopy" class="copy-btn" type="button">Akte kopieren</button>
-          </div>
-        </div>
-      </div>
-    </aside>
-  </main>
+.toggle-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
 
-  <!-- Anwälte Modal -->
-  <div id="anwaltModal" class="modal-backdrop hidden">
-    <div class="modal">
-      <div class="modal-header">
-        <div class="modal-title">👨‍⚖️ Anwaltsregister</div>
-        <button class="modal-close" type="button" data-close-modal>✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="register-group">
-          <div class="register-title">Justizminister</div>
-          <div class="register-entry">—</div>
-        </div>
-        <div class="register-group">
-          <div class="register-title">Staatsanwälte</div>
-          <div class="register-entry">—</div>
-        </div>
-        <div class="register-group">
-          <div class="register-title">Rechtsanwälte</div>
-          <div class="register-entry">—</div>
-        </div>
-        <div class="register-group">
-          <div class="register-title">Organanwälte</div>
-          <div class="register-entry">—</div>
-        </div>
-      </div>
-    </div>
-  </div>
+.toggle-row input {
+  display: none;
+}
 
-  <!-- Rechte Modal -->
-  <div id="rechteModal" class="modal-backdrop hidden">
-    <div class="modal">
-      <div class="modal-header">
-        <div class="modal-title">📜 Rechte des Beklagten</div>
-        <button class="modal-close" type="button" data-close-modal>✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="long-text">
-          Sie haben das Recht zu schweigen, alles was Sie sagen kann und wird gegen Sie verwendet werden.
-          Ab 2 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt, den Sie selbst benennen müssen.
-          Wenn kein Anwalt verfügbar ist, wird Ihnen keiner gestellt. Die Judikative übernimmt der Exekutivbeamte.
-          Wenn ein Anwalt hinzugezogen wird, kann es länger als 25 Minuten dauern.
-          Haben Sie ihre Rechte verstanden?
-        </div>
-      </div>
-    </div>
-  </div>
+.toggle-ui {
+  position: relative;
+  width: 46px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(72, 91, 126, 0.54);
+  transition: 0.2s ease;
+}
 
-  <!-- Belehrung Modal -->
-  <div id="belehrungModal" class="modal-backdrop hidden">
-    <div class="modal">
-      <div class="modal-header">
-        <div class="modal-title">🚨 Belehrung / Haftbefehl / Beschluss</div>
-        <button class="modal-close" type="button" data-close-modal>✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="text-section">
-          <div class="register-title">Belehrung</div>
-          <div class="long-text">
-            „Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird vor Gericht gegen Sie verwendet werden.
-            Sie haben das Recht, zu jeder Vernehmung einen Rechtsanwalt hinzuzuziehen. Haben Sie das verstanden?“
-          </div>
-        </div>
+.toggle-ui::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: 0.2s ease;
+}
 
-        <div class="text-section">
-          <div class="register-title">Haftbefehl</div>
-          <div class="long-text">
-            "Die Justiz hat einen Haftbefehl gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen,
-            kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Haftbefehl vor Gericht zu ziehen,
-            falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung
-            gegen den Haftbefehl einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen
-            Gerichtsprozess ablehnen, wird der Haftbefehl von den ausgewählten Beamten vollstreckt. Im weiteren Verlauf
-            erhalten Sie eine staatliche Berufssperre von X Tagen nach §19 (4) Beamten Dienst Gesetzbuch. Während dieser Zeit
-            dürfen Sie keinem Staatsdienst nachgehen. Wenn Sie flüchten haben Sie kein Recht mehr auf einen Rechtsanwalt.”
-          </div>
-        </div>
+.toggle-row input:checked + .toggle-ui {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
 
-        <div class="text-section">
-          <div class="register-title">Beschluss</div>
-          <div class="long-text">
-            "Die Justiz hat einen Beschluss gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen,
-            kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Beschluss vor Gericht zu ziehen,
-            falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung
-            gegen den Beschluss einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen
-            Gerichtsprozess ablehnen, wird der Beschluss von den ausgewählten Beamten vollstreckt. Wenn Sie flüchten
-            haben Sie kein Recht mehr auf einen Rechtsanwalt."
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+.toggle-row input:checked + .toggle-ui::after {
+  transform: translateX(22px);
+}
 
-  <!-- FIBCO Modal -->
-  <div id="fibcoModal" class="modal-backdrop hidden">
-    <div class="modal modal-large">
-      <div class="modal-header">
-        <div class="modal-title">🕵️ FIBCO Akte</div>
-        <button class="modal-close" type="button" data-close-modal>✕</button>
-      </div>
-      <div class="modal-body">
-        <textarea id="fibcoText" class="textarea large">Name | CO-ID-1 | Datum der Straftat
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 370px;
+  gap: 16px;
+  align-items: start;
+}
 
-Codename: [Codename]
+.content-area {
+  min-width: 0;
+}
 
-Telefonnummer:
-Behörde:
-Familie:
+.searchbar-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 14px;
+}
 
-Reisepass:
-Dienstausweis:
-Personalakte:
-PDA Hauptseite:
-PDA Fahrzeugliste:
+.search-input {
+  width: 100%;
+  height: 50px;
+  padding: 0 18px;
+  border: 1px solid rgba(61, 221, 255, 0.18);
+  border-radius: 14px;
+  background: rgba(4, 10, 21, 0.96);
+  color: var(--text);
+  outline: none;
+  box-shadow: inset 0 0 0 1px rgba(18, 42, 75, 0.4);
+}
 
-[Vorfall]
-Am TT.MM.YYYY um HH:MM Uhr […]
+.search-input::placeholder {
+  color: #6e83a7;
+}
 
-[Befragung Tatverdächtiger]
+.search-input:focus {
+  border-color: rgba(25, 210, 255, 0.45);
+  box-shadow:
+    0 0 0 4px rgba(25, 210, 255, 0.08),
+    inset 0 0 0 1px rgba(18, 42, 75, 0.4);
+}
 
-- ABC
+.selected-info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 128px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(6, 32, 56, 0.95);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+}
 
-[Zeugen-/aussagen]
+.section-head {
+  display: flex;
+  align-items: center;
+  min-height: 50px;
+  padding: 0 16px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border-2);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 14px 14px 0;
+  background: linear-gradient(90deg, rgba(18, 86, 110, 0.88), rgba(23, 48, 74, 0.92));
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
 
-- ABC
+.cards {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
 
-[Beweissammlung]
+.card {
+  position: relative;
+  min-height: 116px;
+  padding: 14px;
+  border: 1px solid rgba(50, 74, 114, 0.34);
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+  cursor: pointer;
+  transition: 0.18s ease;
+  overflow: hidden;
+}
 
-- ABC
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(25, 210, 255, 0.05), transparent 45%);
+  pointer-events: none;
+}
 
-[Tatvorwurf]
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(25, 210, 255, 0.34);
+}
 
-- ABC
+.card.selected {
+  border-color: rgba(25, 210, 255, 0.72);
+  box-shadow:
+    0 0 0 1px rgba(25, 210, 255, 0.18),
+    0 18px 32px rgba(0, 0, 0, 0.26);
+}
 
-[Schlussbetrachtung]</textarea>
-      </div>
-    </div>
-  </div>
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
 
-  <script type="module" src="./app.js"></script>
-</body>
-</html>
+.card-para {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.card-icon {
+  color: #5d7398;
+  font-size: 14px;
+}
+
+.card-name {
+  min-height: 44px;
+  margin-bottom: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #eef5ff;
+}
+
+.card-fine {
+  margin-bottom: 12px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--green);
+}
+
+.card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.stars-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+}
+
+.star-on,
+.star-off {
+  font-size: 14px;
+}
+
+.star-on {
+  color: var(--gold);
+}
+
+.star-off {
+  color: rgba(255, 255, 255, 0.12);
+}
+
+.gray-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  border: 1px solid rgba(70, 95, 140, 0.28);
+  border-radius: 999px;
+  background: rgba(5, 12, 25, 0.75);
+}
+
+.gray-btn {
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(39, 54, 82, 0.95);
+  color: #dce8ff;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.gray-btn:hover {
+  background: rgba(61, 221, 255, 0.16);
+}
+
+.gray-count {
+  min-width: 14px;
+  text-align: center;
+  color: #9bb0d2;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.sidebar.is-pinned {
+  position: sticky;
+  top: 16px;
+}
+
+.reset-btn {
+  height: 52px;
+  border: 1px solid rgba(93, 118, 164, 0.22);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.03);
+  color: #aab9d4;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.reset-btn:hover {
+  border-color: rgba(25, 210, 255, 0.36);
+  color: #eaf4ff;
+}
+
+.panel {
+  padding: 16px;
+  border: 1px solid rgba(59, 79, 115, 0.28);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(5, 11, 22, 0.98), rgba(5, 9, 18, 0.98));
+  box-shadow: var(--shadow);
+}
+
+.panel-title {
+  margin-bottom: 14px;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: #788eaf;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.summary-box {
+  padding: 16px 14px;
+  border-radius: 14px;
+  background: rgba(3, 8, 18, 0.92);
+  border: 1px solid rgba(41, 60, 93, 0.4);
+  text-align: center;
+}
+
+.summary-label {
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: var(--muted-2);
+}
+
+.summary-value {
+  font-size: 20px;
+  font-weight: 900;
+  color: #f7fbff;
+}
+
+.option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(38, 54, 83, 0.42);
+}
+
+.option-row:first-of-type {
+  padding-top: 0;
+  border-top: none;
+}
+
+.option-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.option-desc,
+.field-note {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--muted-2);
+}
+
+.switch {
+  position: relative;
+  display: inline-flex;
+  width: 48px;
+  height: 28px;
+  flex: 0 0 auto;
+}
+
+.switch input {
+  display: none;
+}
+
+.switch span {
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: rgba(72, 91, 126, 0.54);
+  transition: 0.2s ease;
+}
+
+.switch span::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  transition: 0.2s ease;
+}
+
+.switch input:checked + span {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+.switch input:checked + span::after {
+  transform: translateX(20px);
+}
+
+.field-group {
+  margin-top: 14px;
+}
+
+.field-title,
+.field-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #cddaf2;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.field-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid rgba(40, 62, 96, 0.42);
+  border-radius: 12px;
+  background: rgba(3, 9, 20, 0.92);
+  color: var(--text);
+  outline: none;
+}
+
+.field-input:focus {
+  border-color: rgba(25, 210, 255, 0.48);
+  box-shadow: 0 0 0 4px rgba(25, 210, 255, 0.08);
+}
+
+.live-stamp,
+.copy-box,
+.textarea {
+  width: 100%;
+  border: 1px solid rgba(40, 62, 96, 0.42);
+  border-radius: 12px;
+  background: rgba(3, 9, 20, 0.92);
+  color: var(--text);
+}
+
+.live-stamp,
+.copy-box {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 12px;
+}
+
+.copy-box {
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+.textarea {
+  min-height: 168px;
+  padding: 12px;
+  resize: vertical;
+}
+
+.textarea-large {
+  min-height: 420px;
+}
+
+.copy-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.copy-status {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.copy-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.copy-btn {
+  min-height: 40px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.copy-btn.primary {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  color: #04101d;
+}
+
+.copy-btn.secondary {
+  background: rgba(255,255,255,0.06);
+  color: #dbe9ff;
+  border: 1px solid rgba(66, 86, 123, 0.36);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(2, 7, 15, 0.72);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.modal {
+  width: min(720px, 100%);
+  max-height: min(88vh, 900px);
+  overflow: auto;
+  border: 1px solid rgba(61, 221, 255, 0.18);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(10, 20, 37, 0.98), rgba(7, 14, 26, 0.98));
+  box-shadow: 0 30px 80px rgba(0,0,0,0.45);
+}
+
+.modal-lg {
+  width: min(900px, 100%);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(46, 65, 97, 0.44);
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.modal-close {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  color: white;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-body.stacked {
+  display: grid;
+  gap: 18px;
+}
+
+.modal-text {
+  line-height: 1.6;
+  color: #dbe7fb;
+}
+
+.register-block + .register-block {
+  margin-top: 16px;
+}
+
+.register-heading {
+  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--accent);
+}
+
+.register-item {
+  color: #dce6f8;
+}
+
+@media (max-width: 1700px) {
+  .cards {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1450px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 340px;
+  }
+
+  .cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1180px) {
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .brand,
+  .toolbar,
+  .toolbar-right {
+    justify-content: flex-start;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar.is-pinned {
+    position: static;
+  }
+
+  .cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .searchbar-wrap {
+    grid-template-columns: 1fr;
+  }
+
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .summary-grid,
+  .field-grid,
+  .copy-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .copy-footer {
+    display: grid;
+  }
+}
+
+@media (max-width: 560px) {
+  .app-shell {
+    padding: 10px;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .icon-btn span {
+    display: none;
+  }
+}
