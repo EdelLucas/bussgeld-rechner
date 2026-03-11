@@ -1,51 +1,122 @@
 const $ = (id) => document.getElementById(id);
 
 const LAW_DATA = [
-  { id: "stgb-3-1", section: "STGB", para: "StGB §3.1", name: "Beleidigung", fine: 10000, wanted: 0 },
-  { id: "stgb-3-2", section: "STGB", para: "StGB §3.2", name: "Belästigung", fine: 10000, wanted: 0 },
-  { id: "stgb-3-3", section: "STGB", para: "StGB §3.3", name: "Drohung", fine: 5000, wanted: 1 },
-  { id: "stgb-4-1", section: "STGB", para: "StGB §4.1", name: "Versuchter Mord / Mord", fine: 30000, wanted: 4 },
-  { id: "stgb-4-2", section: "STGB", para: "StGB §4.2", name: "Körperverletzung", fine: 15000, wanted: 2 },
-  { id: "stgb-4-3", section: "STGB", para: "StGB §4.3", name: "Körperverletzung mit Todesfolge", fine: 20000, wanted: 3 },
-  { id: "stgb-4-4", section: "STGB", para: "StGB §4.4", name: "Gewaltsame Drohung", fine: 5000, wanted: 1 },
-  { id: "stgb-5", section: "STGB", para: "StGB §5", name: "Fahrlässige Tötung", fine: 20000, wanted: 3 },
-  { id: "stgb-6", section: "STGB", para: "StGB §6", name: "Sexuelle Belästigung", fine: 30000, wanted: 1 },
-  { id: "stgb-8", section: "STGB", para: "StGB §8", name: "Diebstahl", fine: 5000, wanted: 0 },
-  { id: "stgb-9", section: "STGB", para: "StGB §9", name: "Fahrzeugdiebstahl", fine: 10000, wanted: 2 },
-  { id: "stgb-10", section: "STGB", para: "StGB §10", name: "Betrug", fine: 5000, wanted: 0 },
-  { id: "stgb-10-1", section: "STGB", para: "StGB §10.1", name: "Besitz illegaler Gegenstände", fine: 10000, wanted: 2 },
-  { id: "stgb-11", section: "STGB", para: "StGB §11", name: "Raub", fine: 25000, wanted: 3 },
-  { id: "stgb-12-1", section: "STGB", para: "StGB §12.1", name: "Geschäftsraub / Ammu Rob", fine: 35000, wanted: 2 },
-  { id: "stgb-12-3", section: "STGB", para: "StGB §12.3", name: "ATM Raub", fine: 5000, wanted: 1 },
-  { id: "stgb-13", section: "STGB", para: "StGB §13", name: "Einbruch", fine: 15000, wanted: 2 },
-  { id: "stgb-14", section: "STGB", para: "StGB §14", name: "Steuerhinterziehung", fine: 50000, wanted: 3 },
-  { id: "stgb-15-1", section: "STGB", para: "StGB §15.1", name: "Nichtbeachten einer amtlichen Anweisung", fine: 10000, wanted: 0 },
-  { id: "stgb-15-2", section: "STGB", para: "StGB §15.2", name: "Entziehung polizeilicher Maßnahmen", fine: 10000, wanted: 2 },
-  { id: "stgb-15-3", section: "STGB", para: "StGB §15.3", name: "Behinderung eines Beamten bei der Arbeit", fine: 10000, wanted: 1 },
-  { id: "stgb-15-4", section: "STGB", para: "StGB §15.4", name: "Bestechung von Beamten", fine: 10000, wanted: 2 },
-  { id: "stgb-15-5", section: "STGB", para: "StGB §15.5", name: "Widerstand gegen Vollstreckungsbeamte", fine: 20000, wanted: 2 },
-  { id: "stgb-15-6", section: "STGB", para: "StGB §15.6", name: "Behinderung des EMS bei der Arbeit", fine: 10000, wanted: 0 },
-  { id: "stgb-15-7", section: "STGB", para: "StGB §15.7", name: "Nichtausweisen bei polizeilichen / medizinischen Maßnahmen", fine: 15000, wanted: 1 },
-  { id: "stgb-16", section: "STGB", para: "StGB §16", name: "Befreiung von Gefangenen", fine: 30000, wanted: 3 },
-  { id: "stgb-17", section: "STGB", para: "StGB §17", name: "Durchbrechen von Absperrungen", fine: 25000, wanted: 1 },
-  { id: "stgb-18", section: "STGB", para: "StGB §18", name: "Unerlaubtes Betreten eines militärischen Geländes", fine: 50000, wanted: 5 },
-  { id: "stgb-18-1", section: "STGB", para: "StGB §18.1", name: "Unerlaubtes Betreten von Sperrzonen", fine: 25000, wanted: 2 },
-  { id: "stgb-18-2", section: "STGB", para: "StGB §18.2", name: "Unerlaubtes Befahren von Sperrzonen", fine: 25000, wanted: 2 },
-  { id: "stgb-19", section: "STGB", para: "StGB §19", name: "Falsche Namensangabe", fine: 10000, wanted: 0 },
-  { id: "stgb-20", section: "STGB", para: "StGB §20", name: "Sachbeschädigung", fine: 5000, wanted: 0 },
-  { id: "stgb-21", section: "STGB", para: "StGB §21", name: "Unterlassene Hilfeleistung", fine: 5000, wanted: 0 },
-  { id: "stgb-23", section: "STGB", para: "StGB §23", name: "Missbrauch von Notruf", fine: 30000, wanted: 0 },
-  { id: "stgb-24", section: "STGB", para: "StGB §24", name: "Amtsanmaßung", fine: 25000, wanted: 2 },
-  { id: "stgb-25", section: "STGB", para: "StGB §25", name: "Terrorismus", fine: 25000, wanted: 3 },
+  // Psychische & Physische Integrität (StGB)
+  { id: "stgb-3-1", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §3.1", name: "Beleidigung", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 1 },
+  { id: "stgb-3-2", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §3.2", name: "Belästigung", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 1 },
+  { id: "stgb-3-3", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §3.3", name: "Drohung", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stgb-4-1", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §4.1", name: "Versuchter Mord / Mord", fineType: "fixed", fine: 30000, fixedWanted: 4, grayWantedMax: 0 },
+  { id: "stgb-4-2", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §4.2", name: "Körperverletzung", fineType: "fixed", fine: 15000, fixedWanted: 2, grayWantedMax: 0 },
+  { id: "stgb-4-3", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §4.3", name: "Körperverletzung mit Todesfolge", fineType: "fixed", fine: 20000, fixedWanted: 3, grayWantedMax: 0 },
+  { id: "stgb-4-4", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §4.4", name: "Gewaltsame Drohung", fineType: "per_active_wanted", finePerWanted: 5000, fixedWanted: 1, grayWantedMax: 1, note: "5.000$ pro aktiviertem Wanted" },
+  { id: "stgb-4-5", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §4.5", name: "Fahrlässige Tötung", fineType: "fixed", fine: 20000, fixedWanted: 3, grayWantedMax: 0 },
+  { id: "stgb-5", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §5", name: "Sexuelle Belästigung", fineType: "base_plus_per_active_wanted", fine: 30000, finePerWanted: 10000, fixedWanted: 1, grayWantedMax: 2, note: "30.000$ + 10.000$ pro aktiviertem Wanted" },
+  { id: "stgb-20", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §20", name: "Sachbeschädigung", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 2 },
+  { id: "stgb-21", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §21", name: "Unterlassene Hilfeleistung", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stgb-26", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §26", name: "Prostitution", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stgb-27", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §27", name: "Freiheitsberaubung / Geiselnahmen / Entführung", fineType: "fixed", fine: 30000, fixedWanted: 3, grayWantedMax: 0 },
+  { id: "stgb-28", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §28", name: "Errichtung von Straßenbarrikaden", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 2 },
+  { id: "stgb-31", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §31", name: "Verhalten in der Öffentlichkeit", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stgb-32", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §32", name: "Rassismus / Nachstellung (Stalking)", fineType: "fixed", fine: 15000, fixedWanted: 3, grayWantedMax: 0 },
+  { id: "stgb-38", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §38", name: "Fischwilderei", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stgb-39", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §39", name: "Verleumdung", fineType: "fixed", fine: 30000, fixedWanted: 0, grayWantedMax: 3 },
+  { id: "stgb-42", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §42", name: "Erpressung", fineType: "fixed", fine: 45000, fixedWanted: 3, grayWantedMax: 0 },
+  { id: "stgb-43", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §43", name: "Androhung einer Straftat", fineType: "base_plus_per_active_wanted", fine: 20000, finePerWanted: 5000, fixedWanted: 0, grayWantedMax: 3, note: "20.000$ + 5.000$ pro aktiviertem Wanted" },
 
-  { id: "stvo-1", section: "STVO", para: "StVO §1", name: "Geschwindigkeitsüberschreitung", fine: 2500, wanted: 0 },
-  { id: "stvo-2", section: "STVO", para: "StVO §2", name: "Gefährdung im Straßenverkehr", fine: 8000, wanted: 1 },
-  { id: "stvo-3", section: "STVO", para: "StVO §3", name: "Rotlichtverstoß", fine: 4000, wanted: 0 },
-  { id: "stvo-4", section: "STVO", para: "StVO §4", name: "Fahren ohne Fahrerlaubnis", fine: 12000, wanted: 1 },
-  { id: "stvo-5", section: "STVO", para: "StVO §5", name: "Illegales Parken", fine: 1500, wanted: 0 },
-  { id: "stvo-6", section: "STVO", para: "StVO §6", name: "Geisterfahrt", fine: 15000, wanted: 2 },
-  { id: "stvo-7", section: "STVO", para: "StVO §7", name: "Fahrerflucht", fine: 20000, wanted: 2 },
-  { id: "stvo-8", section: "STVO", para: "StVO §8", name: "Illegales Straßenrennen", fine: 25000, wanted: 2 }
+  // Wirtschaftskriminalität (StGB)
+  { id: "stgb-6-9", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §6 / §9", name: "Diebstahl / Betrug", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 3 },
+  { id: "stgb-7", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §7", name: "Fahrzeug Diebstahl", fineType: "fixed", fine: 10000, fixedWanted: 2, grayWantedMax: 0 },
+  { id: "stgb-10-1", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §10.1", name: "Besitz illegaler Gegenstände", fineType: "fixed", fine: 10000, fixedWanted: 2, grayWantedMax: 0 },
+  { id: "stgb-11", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §11", name: "Raub", fineType: "fixed", fine: 25000, fixedWanted: 3, grayWantedMax: 0 },
+  { id: "stgb-12-1", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §12.1", name: "Geschäfts Raub / Ammu Rob", fineType: "fixed", fine: 35000, fixedWanted: 2, grayWantedMax: 0 },
+  { id: "stgb-12-3", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §12.3", name: "ATM Raub", fineType: "fixed", fine: 5000, fixedWanted: 1, grayWantedMax: 0 },
+  { id: "stgb-13", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §13", name: "Einbruch", fineType: "fixed", fine: 15000, fixedWanted: 2, grayWantedMax: 0 },
+  { id: "stgb-14", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §14", name: "Steuerhinterziehung", fineType: "fixed", fine: 50000, fixedWanted: 3, grayWantedMax: 0 },
+  { id: "stgb-30", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §30", name: "Hausfriedensbruch", fineType: "fixed", fine: 25000, fixedWanted: 3, grayWantedMax: 0 },
+  { id: "stgb-41-1", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §41.1", name: "Besitz staatliches Eigentum (Waffen)", fineType: "fixed", fine: 50000, fixedWanted: 3, grayWantedMax: 0, note: "Waffenscheinentzug" },
+  { id: "stgb-41-2", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §41.2", name: "Besitz staatliches Eigentum (Gegenstände)", fineType: "fixed", fine: 50000, fixedWanted: 3, grayWantedMax: 0 },
+
+  // Umgang mit Beamten (StGB)
+  { id: "stgb-15-1", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §15.1", name: "Nichtbeachten einer amtlichen Anweisung", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 2 },
+  { id: "stgb-15-2", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §15.2", name: "Entziehung polizeilicher Maßnahmen", fineType: "fixed", fine: 10000, fixedWanted: 2, grayWantedMax: 0 },
+  { id: "stgb-15-3", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §15.3", name: "Behinderung eines Beamten bei der Arbeit", fineType: "fixed", fine: 10000, fixedWanted: 1, grayWantedMax: 0 },
+  { id: "stgb-15-6", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §15.6", name: "Behinderung des EMS bei der Arbeit", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 2 },
+  { id: "stgb-15-4", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §15.4", name: "Bestechung von Beamten", fineType: "fixed", fine: 10000, fixedWanted: 2, grayWantedMax: 0 },
+  { id: "stgb-15-5", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §15.5", name: "Widerstand gegen Vollstreckungsbeamte", fineType: "fixed", fine: 20000, fixedWanted: 2, grayWantedMax: 0 },
+  { id: "stgb-15-7", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §15.7", name: "Nicht ausweisen bei einer polizeilichen / Medizinischen Maßnahme", fineType: "fixed", fine: 15000, fixedWanted: 1, grayWantedMax: 0 },
+  { id: "stgb-16", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §16", name: "Befreiung von Gefangenen", fineType: "per_active_wanted", finePerWanted: 10000, fixedWanted: 3, grayWantedMax: 2, note: "10.000$ pro aktiviertem Wanted" },
+  { id: "stgb-19", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §19", name: "Falsche Namensangabe", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 1 },
+  { id: "stgb-23", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §23", name: "Missbrauch von Notruf", fineType: "fixed", fine: 30000, fixedWanted: 0, grayWantedMax: 2 },
+  { id: "stgb-24", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §24", name: "Amtsanmaßung", fineType: "fixed", fine: 25000, fixedWanted: 2, grayWantedMax: 1 },
+  { id: "stgb-29", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §29", name: "Missachtung eines Platzverweises", fineType: "fixed", fine: 20000, fixedWanted: 1, grayWantedMax: 1 },
+
+  // Straßenverkehrsordnung (StVO)
+  { id: "stvo-2", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §2", name: "Gefährdung anderer Verkehrsteilnehmer", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-4", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §4", name: "Missachten von Rechtsfahrgebot", fineType: "fixed", fine: 8000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-5", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §5", name: "Überschreiten der Fahrzeugkapazitäten", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-6", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §6", name: "Fahren mit demoliertem Fahrzeug", fineType: "fixed", fine: 2000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-7", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §7", name: "Fahren ohne Licht (Dunkelheit, Wetterverhältnissen)", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-8-10-40", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §8", name: "Geschwindigkeitsüberschreitung 10 - 40 km/h", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-8-41-60", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §8", name: "Geschwindigkeitsüberschreitung 41 - 60 km/h", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-8-61-100", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §8", name: "Geschwindigkeitsüberschreitung 61 - 100 km/h", fineType: "fixed", fine: 15000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-8-101plus", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §8", name: "Geschwindigkeitsüberschreitung ab 101 km/h", fineType: "fixed", fine: 20000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-9-art-3", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §9 Art. 3", name: "Fahren ohne gültige Zulassung", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-10-art-1", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §10 Art. 1", name: "Missachten von Rechts vor Links", fineType: "fixed", fine: 1000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-10-art-2", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §10 Art. 2", name: "Missachten von Verkehrsschildern", fineType: "fixed", fine: 2000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-10-art-4", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §10 Art. 4", name: "Fahren ohne genügend Tankkapazität", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-10-art-6", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §10 Art. 6", name: "Nutzung eines Mobilgeräts am Steuer", fineType: "fixed", fine: 3000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-10-art-7", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §10 Art. 7", name: "Lärmbelästigung / Unnötiges Hupen", fineType: "fixed", fine: 20000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-10-art-9-1", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §10 Art. 9(1)", name: "Überholen auf der rechten Fahrbahn", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-10-art-12", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §10 Art. 12", name: "Fahren abseits von gekennzeichneten Wegen", fineType: "fixed", fine: 8000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-10-art-16", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §10 Art. 16", name: "Fahren auf der entgegengesetzten Fahrtrichtung", fineType: "fixed", fine: 30000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-12-1", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §12.1", name: "Falsch Parken / Halten", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-12-3", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §12.3", name: "Bergung aus nicht befahrbarem Gelände", fineType: "fixed", fine: 20000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-17-art-1-2", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §17 Art. 1+2", name: "Fahren im berauschten Zustand", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 2 },
+  { id: "stvo-19", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §19", name: "Fahren ohne Erste-Hilfe-Kit (Kofferraum)", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-20", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §20", name: "Fahren ohne Gurt (nicht angeschnallt)", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-24", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §24", name: "Fahrerflucht", fineType: "fixed", fine: 10000, fixedWanted: 1, grayWantedMax: 0 },
+  { id: "stvo-26", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §26", name: "Abschleppkosten", fineType: "fixed", fine: 15000, fixedWanted: 0, grayWantedMax: 0, note: "15.000$ / 20.000$" },
+  { id: "stvo-27", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §27", name: "Fahren ohne KFZ Versicherung", fineType: "fixed", fine: 20000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-28", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §28", name: "Sharing-Cars mit Anti-Radar wurde nicht aus dem Verkehr gezogen", fineType: "fixed", fine: 30000, fixedWanted: 3, grayWantedMax: 0 },
+
+  // Waffengesetz (WaffG)
+  { id: "waffg-1", group: "Waffengesetz (WaffG)", section: "WAFFG", para: "WaffG §1", name: "Besitz legaler Waffen ohne Waffenschein", fineType: "per_active_wanted", finePerWanted: 10000, fixedWanted: 1, grayWantedMax: 1, note: "10.000$ pro aktiviertem Wanted" },
+  { id: "waffg-5-1", group: "Waffengesetz (WaffG)", section: "WAFFG", para: "WaffG §5.1", name: "Besitz illegaler Waffen", fineType: "per_active_wanted", finePerWanted: 10000, fixedWanted: 2, grayWantedMax: 1, note: "10.000$ pro aktiviertem Wanted" },
+  { id: "waffg-8-1", group: "Waffengesetz (WaffG)", section: "WAFFG", para: "WaffG §8.1", name: "Offenes Tragen einer Waffe", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 1 },
+  { id: "waffg-8-2", group: "Waffengesetz (WaffG)", section: "WAFFG", para: "WaffG §8.2", name: "Tragen einer Waffe in staatl. Einrichtungen", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 1 },
+  { id: "waffg-11", group: "Waffengesetz (WaffG)", section: "WAFFG", para: "WaffG §11", name: "Ungesetzlicher Waffenhandel (An- & Verkauf)", fineType: "fixed", fine: 25000, fixedWanted: 3, grayWantedMax: 0 },
+
+  // Sperrzonen / Absperrungen / Kapitalverbrechen (StGB)
+  { id: "stgb-17-sperr", group: "Sperrzonen / Absperrungen / Kapitalverbrechen (StGB)", section: "STGB", para: "StGB §17", name: "Durchbrechen von Absperrungen", fineType: "fixed", fine: 15000, fixedWanted: 1, grayWantedMax: 1 },
+  { id: "stgb-18", group: "Sperrzonen / Absperrungen / Kapitalverbrechen (StGB)", section: "STGB", para: "StGB §18", name: "Unerlaubtes Betreten eines militärischen Geländes", fineType: "fixed", fine: 50000, fixedWanted: 5, grayWantedMax: 0 },
+  { id: "stgb-18-1", group: "Sperrzonen / Absperrungen / Kapitalverbrechen (StGB)", section: "STGB", para: "StGB §18.1", name: "Unerlaubtes Betreten von Sperrzonen", fineType: "fixed", fine: 25000, fixedWanted: 2, grayWantedMax: 1 },
+  { id: "stgb-18-2", group: "Sperrzonen / Absperrungen / Kapitalverbrechen (StGB)", section: "STGB", para: "StGB §18.2", name: "Unerlaubtes Befahren von Sperrzonen", fineType: "fixed", fine: 25000, fixedWanted: 2, grayWantedMax: 1 },
+  { id: "stgb-25", group: "Sperrzonen / Absperrungen / Kapitalverbrechen (StGB)", section: "STGB", para: "StGB §25", name: "Terrorismus (Deckt alle Strafen ab)", fineType: "fixed", fine: 25000, fixedWanted: 3, grayWantedMax: 0 },
+
+  // Betäubungsmittelgesetz (BtMG)
+  { id: "btmg-2-1-kokain-klein", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §2.1", name: "Kokainbesitz Klein ab 11 - 30", fineType: "fixed", fine: 15000, fixedWanted: 0, grayWantedMax: 1 },
+  { id: "btmg-2-1-weed-klein", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §2.1", name: "Marihuana Besitz Klein 21 - 30", fineType: "fixed", fine: 15000, fixedWanted: 0, grayWantedMax: 1 },
+  { id: "btmg-2-1-mittel", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §2.1", name: "Drogenbesitz Mittel ab 31 - 50", fineType: "fixed", fine: 20000, fixedWanted: 1, grayWantedMax: 0 },
+  { id: "btmg-2-1-gross", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §2.1", name: "Drogenbesitz Groß 50+", fineType: "fixed", fine: 30000, fixedWanted: 2, grayWantedMax: 0 },
+  { id: "btmg-2-2", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §2.2", name: "Drogenhandel (An- & Verkauf)", fineType: "fixed", fine: 30000, fixedWanted: 3, grayWantedMax: 0 },
+  { id: "btmg-2-1-herstellung", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §2.1", name: "Drogen Herstellung", fineType: "fixed", fine: 30000, fixedWanted: 3, grayWantedMax: 0 },
+  { id: "btmg-3-bis-20", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §3", name: "Verkauf von Medizinprodukten bis 20 Medizinischen Gegenständen", fineType: "fixed", fine: 10000, fixedWanted: 1, grayWantedMax: 0 },
+  { id: "btmg-3-bis-50", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §3", name: "Verkauf von Medizinprodukten bis 50 Medizinischen Gegenständen", fineType: "fixed", fine: 20000, fixedWanted: 1, grayWantedMax: 1 },
+  { id: "btmg-3-ab-51", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §3", name: "Verkauf von Medizinprodukten ab 51 Medizinischen Gegenständen", fineType: "fixed", fine: 25000, fixedWanted: 1, grayWantedMax: 2 },
+
+  // Strafprozessordnung (StPO)
+  { id: "stpo-6", group: "Strafprozessordnung (StPO)", section: "STPO", para: "§6 StPO", name: "Bußgelder nicht bezahlt (500k voll)", fineType: "fixed", fine: 500000, fixedWanted: 5, grayWantedMax: 0 }
+];
+
+const GROUP_ORDER = [
+  "Psychische & Physische Integrität (StGB)",
+  "Wirtschaftskriminalität (StGB)",
+  "Umgang mit Beamten (StGB)",
+  "Straßenverkehrsordnung (StVO)",
+  "Waffengesetz (WaffG)",
+  "Sperrzonen / Absperrungen / Kapitalverbrechen (StGB)",
+  "Betäubungsmittelgesetz (BtMG)",
+  "Strafprozessordnung (StPO)"
 ];
 
 const state = {
@@ -84,8 +155,36 @@ const els = {
   autoResetToggle: $("autoResetToggle"),
   pinSidebarToggle: $("pinSidebarToggle"),
   sidebar: $("sidebar"),
-  themeBtn: $("themeBtn")
+  themeBtn: $("themeBtn"),
+  fibcoCopyBtn: $("fibcoCopyBtn"),
+  fibcoPreview: $("fibcoPreview")
 };
+
+const fibcoFieldIds = [
+  "fibcoName",
+  "fibcoCoId",
+  "fibcoDate",
+  "fibcoCodename",
+  "fibcoPhone",
+  "fibcoAgency",
+  "fibcoFamily",
+  "fibcoPassport",
+  "fibcoBadge",
+  "fibcoPersonnel",
+  "fibcoPdaMain",
+  "fibcoPdaVehicles",
+  "fibcoIncident",
+  "fibcoInterrogation",
+  "fibcoWitness",
+  "fibcoEvidence",
+  "fibcoAccusation",
+  "fibcoConclusion"
+];
+
+function formatMoney(value) {
+  const amount = Math.round(Number(value) || 0);
+  return `$${amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+}
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -94,11 +193,6 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
-}
-
-function formatMoney(value) {
-  const amount = Math.round(Number(value) || 0);
-  return `$${amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
 }
 
 function getDate(now = new Date()) {
@@ -119,9 +213,11 @@ function getFilteredLaws() {
 
   return LAW_DATA.filter((law) => {
     return (
+      law.group.toLowerCase().includes(q) ||
       law.section.toLowerCase().includes(q) ||
       law.para.toLowerCase().includes(q) ||
-      law.name.toLowerCase().includes(q)
+      law.name.toLowerCase().includes(q) ||
+      (law.note || "").toLowerCase().includes(q)
     );
   });
 }
@@ -130,41 +226,103 @@ function getSelectedItems() {
   return LAW_DATA.filter((law) => state.selected.has(law.id));
 }
 
-function getExtraWanted(id) {
-  return Number(state.extraWantedById[id] || 0);
+function getSelectedGrayWanted(item) {
+  const raw = Number(state.extraWantedById[item.id] || 0);
+  return Math.max(0, Math.min(raw, Number(item.grayWantedMax || 0)));
 }
 
-function getEffectiveWanted(item) {
-  return Math.max(0, Number(item.wanted || 0) + getExtraWanted(item.id));
+function getActiveWanted(item) {
+  return Number(item.fixedWanted || 0) + getSelectedGrayWanted(item);
 }
 
-function renderStarRow(count) {
-  const safe = Math.max(0, Number(count) || 0);
+function getDisplayFine(item) {
+  const activeWanted = getActiveWanted(item);
+
+  if (item.fineType === "per_active_wanted") {
+    return Number(item.finePerWanted || 0) * activeWanted;
+  }
+
+  if (item.fineType === "base_plus_per_active_wanted") {
+    return Number(item.fine || 0) + (Number(item.finePerWanted || 0) * activeWanted);
+  }
+
+  return Number(item.fine || 0);
+}
+
+function getEffectiveFine(item) {
+  let fine = getDisplayFine(item);
+
+  if (els.repeatToggle?.checked && item.section === "STVO") {
+    fine *= 2;
+  }
+
+  return fine;
+}
+
+function renderWantedIcons(fixedWanted, selectedGray, grayMax) {
   let html = "";
 
-  for (let i = 0; i < safe; i += 1) {
+  for (let i = 0; i < fixedWanted; i += 1) {
     html += `<span class="star-on">★</span>`;
   }
 
-  for (let i = safe; i < 5; i += 1) {
+  for (let i = 0; i < selectedGray; i += 1) {
+    html += `<span class="star-on">★</span>`;
+  }
+
+  for (let i = selectedGray; i < grayMax; i += 1) {
     html += `<span class="star-off">★</span>`;
+  }
+
+  if (!html) {
+    html = `<span class="star-off">—</span>`;
   }
 
   return html;
 }
 
-function groupBySection(items) {
-  return items.reduce((acc, item) => {
-    if (!acc[item.section]) acc[item.section] = [];
-    acc[item.section].push(item);
-    return acc;
-  }, {});
+function renderSummaryWantedIcons(count) {
+  if (count <= 0) return "—";
+
+  const capped = Math.min(count, 5);
+  let icons = "";
+
+  for (let i = 0; i < capped; i += 1) {
+    icons += `<span class="star-on">★</span>`;
+  }
+
+  for (let i = capped; i < 5; i += 1) {
+    icons += `<span class="star-off">★</span>`;
+  }
+
+  return `<span class="wanted-inline">${icons}<strong>${count}</strong></span>`;
 }
 
-function getSectionTitle(section) {
-  if (section === "STGB") return "STRAFGESETZBUCH (STGB)";
-  if (section === "STVO") return "STRAẞENVERKEHRSORDNUNG (STVO)";
-  return section;
+function getFineDisplayText(item) {
+  const fineText = formatMoney(getEffectiveFine(item));
+
+  if (els.repeatToggle?.checked && item.section === "STVO") {
+    return `${fineText} <small>(x2)</small>`;
+  }
+
+  return fineText;
+}
+
+function groupLaws(items) {
+  const map = new Map();
+
+  GROUP_ORDER.forEach((group) => {
+    map.set(group, []);
+  });
+
+  items.forEach((item) => {
+    if (!map.has(item.group)) {
+      map.set(item.group, []);
+    }
+    map.get(item.group).push(item);
+  });
+
+  return Array.from(map.entries()).filter(([, laws]) => laws.length > 0);
 }
 
 function renderCatalog() {
@@ -175,75 +333,67 @@ function renderCatalog() {
     return;
   }
 
-  const groups = groupBySection(filtered);
+  const grouped = groupLaws(filtered);
 
-  els.sections.innerHTML = Object.entries(groups)
-    .map(([section, items]) => {
-      const cards = items.map((item) => {
-        const selected = state.selected.has(item.id);
-        const extraWanted = getExtraWanted(item.id);
-        const effectiveWanted = getEffectiveWanted(item);
-
-        return `
-          <article class="card ${selected ? "is-selected" : ""}" data-id="${escapeHtml(item.id)}">
-            <div class="card-top">
-              <div class="card-para">${escapeHtml(item.para)}</div>
-              <div class="card-link">↗</div>
-            </div>
-
-            <div class="card-name">${escapeHtml(item.name)}</div>
-            <div class="card-fine">${formatMoney(item.fine)}</div>
-
-            <div class="card-bottom">
-              <div class="card-stars">${renderStarRow(effectiveWanted)}</div>
-
-              <div class="gray-wanted-tools" data-stop-click="true">
-                <button class="gray-btn" type="button" data-minus="${escapeHtml(item.id)}">−</button>
-                <div class="gray-count">${extraWanted}</div>
-                <button class="gray-btn" type="button" data-plus="${escapeHtml(item.id)}">+</button>
-              </div>
-            </div>
-          </article>
-        `;
-      }).join("");
+  els.sections.innerHTML = grouped.map(([groupName, items]) => {
+    const cards = items.map((item) => {
+      const isSelected = state.selected.has(item.id);
+      const selectedGray = getSelectedGrayWanted(item);
+      const grayMax = Number(item.grayWantedMax || 0);
+      const fineText = getFineDisplayText(item);
 
       return `
-        <section class="catalog-section">
-          <div class="section-title">${getSectionTitle(section)}</div>
-          <div class="cards">${cards}</div>
-        </section>
+        <article class="card ${isSelected ? "is-selected" : ""}" data-id="${escapeHtml(item.id)}">
+          <div class="card-top">
+            <div class="card-para">${escapeHtml(item.para)}</div>
+            <div class="card-link">↗</div>
+          </div>
+
+          <div class="card-name">${escapeHtml(item.name)}</div>
+          <div class="card-fine">${fineText}</div>
+          <div class="card-note">${escapeHtml(item.note || "")}</div>
+
+          <div class="card-bottom">
+            <div class="card-stars">${renderWantedIcons(item.fixedWanted, selectedGray, grayMax)}</div>
+
+            ${
+              grayMax > 0
+                ? `
+                  <div class="gray-wanted-tools" data-stop-click="true">
+                    <button class="gray-btn" type="button" data-minus="${escapeHtml(item.id)}">−</button>
+                    <div class="gray-count">${selectedGray}/${grayMax}</div>
+                    <button class="gray-btn" type="button" data-plus="${escapeHtml(item.id)}">+</button>
+                  </div>
+                `
+                : ""
+            }
+          </div>
+        </article>
       `;
-    })
-    .join("");
+    }).join("");
+
+    return `
+      <section class="catalog-section">
+        <div class="section-title">${escapeHtml(groupName)}</div>
+        <div class="cards">${cards}</div>
+      </section>
+    `;
+  }).join("");
 }
 
 function getHighestFine(items) {
   if (!items.length) return 0;
-
-  const repeatStvo = !!els.repeatToggle.checked;
-
-  return Math.max(
-    ...items.map((item) => {
-      let fine = Number(item.fine || 0);
-
-      if (repeatStvo && item.section === "STVO") {
-        fine *= 2;
-      }
-
-      return fine;
-    })
-  );
+  return Math.max(...items.map((item) => getEffectiveFine(item)));
 }
 
 function getHighestWanted(items) {
   if (!items.length) return 0;
 
-  let highest = Math.max(...items.map((item) => getEffectiveWanted(item)));
-  const systemWanted = Math.max(0, Number(els.systemWantedInput.value || 0));
-
+  let highest = Math.max(...items.map((item) => getActiveWanted(item)));
+  const systemWanted = Math.max(0, Number(els.systemWantedInput?.value || 0));
   highest += systemWanted;
 
-  if (els.remorseToggle.checked && highest > 0) {
+  if (els.remorseToggle?.checked && highest > 0) {
     highest = Math.max(1, highest - 2);
   }
 
@@ -254,7 +404,6 @@ function buildCompactLine(items) {
   const date = getDate();
   const time = getTime(new Date(), false);
   const paras = items.map((item) => item.para).join(" + ");
-
   return `${date} | ${time} - ${paras || "—"}`;
 }
 
@@ -278,16 +427,16 @@ function buildLongText(items, highestFine, highestWanted) {
     lines.push("- —");
   } else {
     items.forEach((item) => {
-      let fine = Number(item.fine || 0);
+      const activeWanted = getActiveWanted(item);
+      const graySelected = getSelectedGrayWanted(item);
+      let row = `- ${item.para} ${item.name} | ${formatMoney(getEffectiveFine(item))} | Wanteds: ${activeWanted}`;
 
-      if (els.repeatToggle.checked && item.section === "STVO") {
-        fine *= 2;
+      if (graySelected > 0) {
+        row += ` | Graue Wanteds aktiviert: ${graySelected}/${item.grayWantedMax}`;
       }
 
-      let row = `- ${item.para} ${item.name} | ${formatMoney(fine)} | Wanteds: ${getEffectiveWanted(item)}`;
-
-      if (getExtraWanted(item.id) > 0) {
-        row += ` | Graue Wanteds: +${getExtraWanted(item.id)}`;
+      if (item.note) {
+        row += ` | Hinweis: ${item.note}`;
       }
 
       lines.push(row);
@@ -325,13 +474,7 @@ function updateSummary() {
 
   els.selectedCount.textContent = String(items.length);
   els.sumFine.textContent = formatMoney(highestFine);
-
-  if (highestWanted > 0) {
-    els.sumWanted.innerHTML = `<span class="wanted-inline">${renderStarRow(Math.min(highestWanted, 5))} <strong>${highestWanted}</strong></span>`;
-  } else {
-    els.sumWanted.textContent = "—";
-  }
-
+  els.sumWanted.innerHTML = renderSummaryWantedIcons(highestWanted);
   els.aktenLine.textContent = buildCompactLine(items);
   els.aktenText.value = state.longMode
     ? buildLongText(items, highestFine, highestWanted)
@@ -446,32 +589,120 @@ function setupCatalogEvents() {
     const card = event.target.closest(".card");
 
     if (plus) {
-      const id = plus.dataset.plus;
-      state.extraWantedById[id] = getExtraWanted(id) + 1;
+      const item = LAW_DATA.find((law) => law.id === plus.dataset.plus);
+      if (!item) return;
+
+      const current = getSelectedGrayWanted(item);
+      state.extraWantedById[item.id] = Math.min(current + 1, Number(item.grayWantedMax || 0));
       updateUI();
       return;
     }
 
     if (minus) {
-      const id = minus.dataset.minus;
-      state.extraWantedById[id] = Math.max(0, getExtraWanted(id) - 1);
+      const item = LAW_DATA.find((law) => law.id === minus.dataset.minus);
+      if (!item) return;
+
+      const current = getSelectedGrayWanted(item);
+      state.extraWantedById[item.id] = Math.max(current - 1, 0);
       updateUI();
       return;
     }
 
     if (!card) return;
-
     const id = card.dataset.id;
     if (!id) return;
 
-    if (state.selected.has(id)) {
-      state.selected.delete(id);
-    } else {
-      state.selected.add(id);
-    }
+    if (state.selected.has(id)) state.selected.delete(id);
+    else state.selected.add(id);
 
     updateUI();
   });
+}
+
+function getFibcoValue(id, fallback = "") {
+  const el = $(id);
+  return el ? el.value.trim() : fallback;
+}
+
+function buildFibcoTemplate() {
+  const name = getFibcoValue("fibcoName", "Name");
+  const coId = getFibcoValue("fibcoCoId", "CO-ID-1");
+  const date = getFibcoValue("fibcoDate", "Datum der Straftat");
+  const codename = getFibcoValue("fibcoCodename", "[Codename]");
+  const phone = getFibcoValue("fibcoPhone");
+  const agency = getFibcoValue("fibcoAgency");
+  const family = getFibcoValue("fibcoFamily");
+  const passport = getFibcoValue("fibcoPassport");
+  const badge = getFibcoValue("fibcoBadge");
+  const personnel = getFibcoValue("fibcoPersonnel");
+  const pdaMain = getFibcoValue("fibcoPdaMain");
+  const pdaVehicles = getFibcoValue("fibcoPdaVehicles");
+  const incident = getFibcoValue("fibcoIncident", "Am TT.MM.YYYY um HH:MM Uhr […]");
+  const interrogation = getFibcoValue("fibcoInterrogation", "- ABC");
+  const witness = getFibcoValue("fibcoWitness", "- ABC");
+  const evidence = getFibcoValue("fibcoEvidence", "- ABC");
+  const accusation = getFibcoValue("fibcoAccusation", "- ABC");
+  const conclusion = getFibcoValue("fibcoConclusion", "[Schlussbetrachtung]");
+
+  return [
+    `${name} | ${coId} | ${date}`,
+    "",
+    `Codename: ${codename}`,
+    "",
+    `Telefonnummer: ${phone}`,
+    `Behörde: ${agency}`,
+    `Familie: ${family}`,
+    "",
+    `Reisepass: ${passport}`,
+    `Dienstausweis: ${badge}`,
+    `Personalakte: ${personnel}`,
+    `PDA Hauptseite: ${pdaMain}`,
+    `PDA Fahrzeugliste: ${pdaVehicles}`,
+    "",
+    `[Vorfall]`,
+    `${incident}`,
+    "",
+    `[Befragung Tatverdächtiger]`,
+    `${interrogation}`,
+    "",
+    `[Zeugen-/Aussagen]`,
+    `${witness}`,
+    "",
+    `[Beweissammlung]`,
+    `${evidence}`,
+    "",
+    `[Tatvorwurf]`,
+    `${accusation}`,
+    "",
+    `[Schlussbetrachtung]`,
+    `${conclusion}`
+  ].join("\n");
+}
+
+function updateFibcoPreview() {
+  if (!els.fibcoPreview) return;
+  els.fibcoPreview.value = buildFibcoTemplate();
+}
+
+async function copyFibco() {
+  try {
+    await navigator.clipboard.writeText(els.fibcoPreview.value || "");
+  } catch {}
+}
+
+function setupFibco() {
+  fibcoFieldIds.forEach((id) => {
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener("input", updateFibcoPreview);
+    el.addEventListener("change", updateFibcoPreview);
+  });
+
+  if (els.fibcoCopyBtn) {
+    els.fibcoCopyBtn.addEventListener("click", copyFibco);
+  }
+
+  updateFibcoPreview();
 }
 
 function setupInputs() {
@@ -526,6 +757,7 @@ function boot() {
   setupModals();
   setupCatalogEvents();
   setupInputs();
+  setupFibco();
 
   updateLiveStamp();
   updateUI();
