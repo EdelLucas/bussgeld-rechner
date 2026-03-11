@@ -1,332 +1,627 @@
-window.Rechner = {
-  mount(root){
-    root.innerHTML = `
-      <div class="panel">
-        <div class="title">⚖ Strafrechner</div>
+function $(id) {
+  return document.getElementById(id);
+}
 
-        <div class="row">
-          <div class="col" style="min-width:620px">
-            <input id="search" placeholder="Suche... (Paragraph / Name)"/>
-            <div id="cards" style="margin-top:12px; max-height:72vh; overflow:auto; padding-right:6px"></div>
-          </div>
+function formatMoney(value) {
+  const amount = Math.round(Number(value) || 0);
+  return `$${amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+}
 
-          <div class="col">
-            <div class="panel" style="box-shadow:none">
-              <div class="row">
-                <div class="col">
-                  <div class="small">HÖCHSTE STRAFE</div>
-                  <div id="outM" style="font-size:30px; font-weight:900; margin-top:6px; color:var(--gold)">$0</div>
-                </div>
-                <div class="col">
-                  <div class="small">WANTEDS (nur höchster)</div>
-                  <div id="outW" style="font-size:30px; font-weight:900; margin-top:6px; color:#f1fa8c">0</div>
-                </div>
-              </div>
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
-              <hr/>
+function getDate(now = new Date()) {
+  return now.toLocaleDateString("de-DE");
+}
 
-              <div class="row" style="align-items:center">
-                <div class="col small">Rechte verlesen?</div>
-                <div class="col" style="text-align:right"><button id="swRights" class="btnMini">AUS</button></div>
-              </div>
+function getTime(now = new Date(), withSeconds = true) {
+  return now.toLocaleTimeString("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: withSeconds ? "2-digit" : undefined
+  });
+}
 
-              <div class="row" style="align-items:center; margin-top:10px">
-                <div class="col small">Reue (§35) (−2 Wanteds, min. 1)</div>
-                <div class="col" style="text-align:right"><button id="sw35" class="btnMini">AUS</button></div>
-              </div>
+export function initUI({ lawData, groupOrder, fibcoFieldIds }) {
+  const state = {
+    selected: new Set(),
+    extraWantedById: {},
+    search: "",
+    longMode: false,
+    autoReset: false
+  };
 
-              <div class="row" style="align-items:center; margin-top:10px">
-                <div class="col small">Haftbefehl/Beschluss Grund</div>
-                <div class="col" style="text-align:right"><button id="swGrund" class="btnMini">AUS</button></div>
-              </div>
+  const els = {
+    body: document.body,
+    sections: $("catalogSections"),
+    searchInput: $("searchInput"),
+    selectedCount: $("selectedCount"),
+    sumFine: $("sumFine"),
+    sumWanted: $("sumWanted"),
+    btnReset: $("btnReset"),
+    btnCopy: $("btnCopy"),
+    btnCopyLine: $("btnCopyLine"),
+    copyStatus: $("copyStatus"),
+    aktenLine: $("aktenLine"),
+    aktenText: $("aktenText"),
+    liveStamp: $("liveStamp"),
+    rightsReadToggle: $("rightsReadToggle"),
+    remorseToggle: $("remorseToggle"),
+    repeatToggle: $("repeatToggle"),
+    transportToggle: $("transportToggle"),
+    systemWantedInput: $("systemWantedInput"),
+    plateInput: $("plateInput"),
+    placeInput: $("placeInput"),
+    azInput: $("azInput"),
+    modeToggle: $("modeToggle"),
+    shortLabel: $("shortLabel"),
+    longLabel: $("longLabel"),
+    autoResetToggle: $("autoResetToggle"),
+    pinSidebarToggle: $("pinSidebarToggle"),
+    sidebar: $("sidebar"),
+    fibcoCopyBtn: $("fibcoCopyBtn"),
+    fibcoPreview: $("fibcoPreview")
+  };
 
-              <input id="inGrund" placeholder="Grund / Aktenzeichen..." style="margin-top:10px; display:none"/>
+  function getFilteredLaws() {
+    const q = state.search.trim().toLowerCase();
+    if (!q) return lawData;
 
-              <hr/>
+    return lawData.filter((law) => {
+      return (
+        law.group.toLowerCase().includes(q) ||
+        law.section.toLowerCase().includes(q) ||
+        law.para.toLowerCase().includes(q) ||
+        law.name.toLowerCase().includes(q) ||
+        (law.note || "").toLowerCase().includes(q)
+      );
+    });
+  }
 
-              <div class="small" style="color:var(--accent); font-weight:900">AKTEN-EINTRAG (klicken)</div>
-              <div id="entry" style="margin-top:8px; background:#0a0c10; border:1px dashed #2a2f38; border-radius:14px; padding:12px; min-height:64px; font-size:13px; color:var(--muted); cursor:copy">
-                Wähle Strafen...
-              </div>
+  function getSelectedItems() {
+    return lawData.filter((law) => state.selected.has(law.id));
+  }
 
-              <div class="row" style="margin-top:12px">
-                <button id="btnRechte" class="btnMini">Rechte</button>
-                <button id="btnBelehr" class="btnMini">Belehrungen</button>
-                <button id="btnAnw" class="btnMini">Anwälte</button>
-              </div>
+  function getSelectedGrayWanted(item) {
+    const raw = Number(state.extraWantedById[item.id] || 0);
+    return Math.max(0, Math.min(raw, Number(item.grayWantedMax || 0)));
+  }
 
-              <div class="row" style="margin-top:12px">
-                <button id="btnReset" class="btnMini danger">Reset</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+  function getActiveWanted(item) {
+    return Number(item.fixedWanted || 0) + getSelectedGrayWanted(item);
+  }
 
-      <div id="modal" class="modalOverlay">
-        <div class="modalBox">
-          <div class="modalHead">
-            <div id="modalTitle" class="modalTitle"></div>
-            <button id="modalClose" class="btnMini">Schließen</button>
-          </div>
-          <div id="modalBody" class="modalBody"></div>
-        </div>
-      </div>
-    `;
+  function getDisplayFine(item) {
+    const activeWanted = getActiveWanted(item);
 
-    const laws = loadLaws();
-
-    const state = {
-      selected: [],        // {id, p,n,m,w,gs}
-      gsActive: {},        // id -> number
-      rights: false,
-      reue: false,
-      grundActive: false,
-      grund: ""
-    };
-
-    const $ = (sel)=>root.querySelector(sel);
-    const cards = $("#cards");
-    const search = $("#search");
-    const outM = $("#outM");
-    const outW = $("#outW");
-    const entry = $("#entry");
-    const inGrund = $("#inGrund");
-    const swRights = $("#swRights");
-    const sw35 = $("#sw35");
-    const swGrund = $("#swGrund");
-
-    const modal = $("#modal");
-    const modalTitle = $("#modalTitle");
-    const modalBody = $("#modalBody");
-    const modalClose = $("#modalClose");
-
-    function formatNow(){
-      const d = new Date();
-      const pad = (n)=> String(n).padStart(2,"0");
-      return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    if (item.fineType === "per_active_wanted") {
+      return Number(item.finePerWanted || 0) * activeWanted;
     }
 
-    function openModal(title, html){
-      modalTitle.textContent = title;
-      modalBody.innerHTML = html;
-      modal.style.display = "flex";
-    }
-    function closeModal(){ modal.style.display = "none"; }
-
-    modalClose.onclick = closeModal;
-    modal.onclick = (e)=>{ if(e.target === modal) closeModal(); };
-
-    $("#btnAnw").onclick = ()=> openModal("ANWÄLTE", `
-      <iframe
-        src="https://docs.google.com/spreadsheets/d/1DufMS-4hxX75e9bJk_z3jSHqCcO6JmimoqYh6M94zP0/edit?gid=690010630#gid=690010630"
-        style="width:100%; height:62vh; border:none; border-radius:12px"></iframe>
-    `);
-
-    $("#btnRechte").onclick = ()=> openModal("RECHTE", `
-      <div style="font-size:14px; line-height:1.45">
-        Sie haben das Recht zu schweigen, alles was Sie sagen kann und wird gegen Sie verwendet werden.
-        Ab 3 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt, den Sie selbst benennen müssen.
-        Wenn kein Anwalt verfügbar ist, wird Ihnen keiner gestellt. Die Judikative übernimmt der Exekutivbeamte.
-        Wenn ein Anwalt hinzugezogen wird, kann es länger als 25 Minuten dauern. Haben Sie ihre Rechte verstanden?
-      </div>
-    `);
-
-    $("#btnBelehr").onclick = ()=> openModal("BELEHRUNGEN", `
-      <div style="font-size:14px; line-height:1.45">
-        <b style="color:var(--gold)">Belehrung Haftbefehl</b><br/>
-        "Die Justiz hat einen Haftbefehl gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Haftbefehl vor Gericht zu ziehen, falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung gegen den Haftbefehl einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen Gerichtsprozess ablehnen, wird der Haftbefehl von den ausgewählten Beamten vollstreckt. Im weiteren Verlauf erhalten Sie eine staatliche Berufssperre von X Tagen nach §19 (4) Beamten Dienst Gesetzbuch. Während dieser Zeit dürfen Sie keinem Staatsdienst nachgehen. Wenn Sie flüchten haben Sie kein Recht mehr auf einen Rechtsanwalt.” 
-        <hr/>
-        <b style="color:var(--gold)">Belehrung Beschluss</b><br/>
-        "Die Justiz hat einen Beschluss gegen Sie erlassen, Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden. Sie haben das Recht gegen den Beschluss vor Gericht zu ziehen, falls Sie dies möchten, müssen Sie innerhalb von 48 Stunden eine Klage über einen Rechtsanwalt bei der Regierung gegen den Beschluss einreichen. Sollte dies nicht in der genannten Frist geschehen oder sollten Sie einen Gerichtsprozess ablehnen, wird der Beschluss von den ausgewählten Beamten vollstreckt. Wenn Sie flüchten haben Sie kein Recht mehr auf einen Rechtsanwalt."
-        <hr/>
-        <b style="color:var(--gold)">Belehrung Befragung</b><br/>
-        „Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird vor Gericht gegen Sie verwendet werden. Sie haben das Recht, zu jeder Vernehmung einen Rechtsanwalt hinzuzuziehen. Haben Sie das verstanden?“
-      </div>
-    `);
-
-    function toggleBtn(btn, on){
-      btn.textContent = on ? "AN" : "AUS";
-      btn.style.borderColor = on ? "rgba(255,46,126,.65)" : "#2a2f38";
-      btn.style.background = on ? "rgba(255,46,126,.10)" : "#0a0c10";
+    if (item.fineType === "base_plus_per_active_wanted") {
+      return Number(item.fine || 0) + (Number(item.finePerWanted || 0) * activeWanted);
     }
 
-    function getItemWanted(itemId){
-      const item = state.selected.find(x=>x.id===itemId);
-      if(!item) return 0;
-      const extra = state.gsActive[itemId] || 0;
-      return (item.w || 0) + extra;
+    return Number(item.fine || 0);
+  }
+
+  function getEffectiveFine(item) {
+    let fine = getDisplayFine(item);
+
+    if (els.repeatToggle?.checked && item.section === "STVO") {
+      fine *= 2;
     }
 
-    function update(){
-      // höchste Strafe (max money)
-      let maxM = 0;
-      // Wanteds: NUR höchster, nicht summieren
-      let maxW = 0;
+    return fine;
+  }
 
-      for (const l of state.selected){
-        if ((l.m || 0) > maxM) maxM = l.m || 0;
-        const w = getItemWanted(l.id);
-        if (w > maxW) maxW = w;
+  function renderWantedIcons(fixedWanted, selectedGray, grayMax) {
+    let html = "";
+
+    for (let i = 0; i < fixedWanted; i += 1) {
+      html += `<span class="star-on">★</span>`;
+    }
+
+    for (let i = 0; i < selectedGray; i += 1) {
+      html += `<span class="star-on">★</span>`;
+    }
+
+    for (let i = selectedGray; i < grayMax; i += 1) {
+      html += `<span class="star-off">★</span>`;
+    }
+
+    if (!html) {
+      html = `<span class="star-off">—</span>`;
+    }
+
+    return html;
+  }
+
+  function renderSummaryWantedIcons(count) {
+    if (count <= 0) return "—";
+
+    const capped = Math.min(count, 5);
+    let icons = "";
+
+    for (let i = 0; i < capped; i += 1) {
+      icons += `<span class="star-on">★</span>`;
+    }
+
+    for (let i = capped; i < 5; i += 1) {
+      icons += `<span class="star-off">★</span>`;
+    }
+
+    return `<span class="wanted-inline">${icons}<strong>${count}</strong></span>`;
+  }
+
+  function getFineDisplayText(item) {
+    const fineText = formatMoney(getEffectiveFine(item));
+
+    if (els.repeatToggle?.checked && item.section === "STVO") {
+      return `${fineText} (x2)`;
+    }
+
+    return fineText;
+  }
+
+  function groupLaws(items) {
+    const map = new Map();
+
+    groupOrder.forEach((group) => {
+      map.set(group, []);
+    });
+
+    items.forEach((item) => {
+      if (!map.has(item.group)) {
+        map.set(item.group, []);
       }
+      map.get(item.group).push(item);
+    });
 
-      // Reue: -2, min 1 (nur wenn überhaupt Wanteds >0)
-      if (state.reue && maxW > 0) maxW = Math.max(1, maxW - 2);
+    return Array.from(map.entries()).filter(([, laws]) => laws.length > 0);
+  }
 
-      outM.textContent = "$" + Number(maxM).toLocaleString();
-      outW.textContent = String(maxW);
+  function renderCatalog() {
+    const filtered = getFilteredLaws();
 
-      if(!state.rights && (state.selected.length || state.grundActive)){
-        entry.textContent = "⚠️ RECHTE VERGESSEN!";
-        entry.style.color = "#ff6b6b";
+    if (!filtered.length) {
+      els.sections.innerHTML = `<div class="empty-card">Keine Treffer gefunden.</div>`;
+      return;
+    }
+
+    const grouped = groupLaws(filtered);
+
+    els.sections.innerHTML = grouped.map(([groupName, items]) => {
+      const cards = items.map((item) => {
+        const isSelected = state.selected.has(item.id);
+        const selectedGray = getSelectedGrayWanted(item);
+        const grayMax = Number(item.grayWantedMax || 0);
+
+        return `
+          <article class="card ${isSelected ? "is-selected" : ""}" data-id="${escapeHtml(item.id)}">
+            <div class="card-top">
+              <div class="card-para">${escapeHtml(item.para)}</div>
+              <div class="card-link">↗</div>
+            </div>
+
+            <div class="card-name">${escapeHtml(item.name)}</div>
+            <div class="card-fine">${escapeHtml(getFineDisplayText(item))}</div>
+            <div class="card-note">${escapeHtml(item.note || "")}</div>
+
+            <div class="card-bottom">
+              <div class="card-stars">${renderWantedIcons(item.fixedWanted, selectedGray, grayMax)}</div>
+
+              ${
+                grayMax > 0
+                  ? `
+                    <div class="gray-wanted-tools" data-stop-click="true">
+                      <button class="gray-btn" type="button" data-minus="${escapeHtml(item.id)}">−</button>
+                      <div class="gray-count">${selectedGray}/${grayMax}</div>
+                      <button class="gray-btn" type="button" data-plus="${escapeHtml(item.id)}">+</button>
+                    </div>
+                  `
+                  : ""
+              }
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      return `
+        <section class="catalog-section">
+          <div class="section-title">${escapeHtml(groupName)}</div>
+          <div class="cards">${cards}</div>
+        </section>
+      `;
+    }).join("");
+  }
+
+  function getHighestFine(items) {
+    if (!items.length) return 0;
+    return Math.max(...items.map((item) => getEffectiveFine(item)));
+  }
+
+  function getHighestWanted(items) {
+    if (!items.length) return 0;
+
+    let highest = Math.max(...items.map((item) => getActiveWanted(item)));
+    const systemWanted = Math.max(0, Number(els.systemWantedInput?.value || 0));
+
+    highest += systemWanted;
+
+    if (els.remorseToggle?.checked && highest > 0) {
+      highest = Math.max(1, highest - 2);
+    }
+
+    return highest;
+  }
+
+  function buildCompactLine(items) {
+    const date = getDate();
+    const time = getTime(new Date(), false);
+    const paras = items.map((item) => item.para).join(" + ");
+    return `${date} | ${time} - ${paras || "—"}`;
+  }
+
+  function buildLongText(items, highestFine, highestWanted) {
+    const lines = [];
+    const az = els.azInput.value.trim();
+    const plate = els.plateInput.value.trim();
+    const place = els.placeInput.value.trim();
+
+    lines.push(`Datum: ${getDate()}`);
+    lines.push(`Uhrzeit: ${getTime()}`);
+
+    if (az) lines.push(`Aktenzeichen: ${az}`);
+    if (plate) lines.push(`Kennzeichen: ${plate}`);
+    if (place) lines.push(`Ort: ${place}`);
+
+    lines.push("");
+    lines.push("Straftaten:");
+
+    if (!items.length) {
+      lines.push("- —");
+    } else {
+      items.forEach((item) => {
+        const activeWanted = getActiveWanted(item);
+        const graySelected = getSelectedGrayWanted(item);
+        let row = `- ${item.para} ${item.name} | ${formatMoney(getEffectiveFine(item))} | Wanteds: ${activeWanted}`;
+
+        if (graySelected > 0) {
+          row += ` | Graue Wanteds aktiviert: ${graySelected}/${item.grayWantedMax}`;
+        }
+
+        if (item.note) {
+          row += ` | Hinweis: ${item.note}`;
+        }
+
+        lines.push(row);
+      });
+    }
+
+    lines.push("");
+    lines.push(`Höchste Geldstrafe: ${formatMoney(highestFine)}`);
+    lines.push(`Höchste Wanteds: ${highestWanted || "—"}`);
+    lines.push(`Rechte vorgelesen: ${els.rightsReadToggle.checked ? "Ja" : "Nein"}`);
+    lines.push(`TV-Abtransport: ${els.transportToggle.checked ? "Ja" : "Nein"}`);
+    lines.push(`Aktenzeile: ${buildCompactLine(items)}`);
+
+    return lines.join("\n");
+  }
+
+  function updateLiveStamp() {
+    els.liveStamp.textContent = `${getDate()} | ${getTime()}`;
+  }
+
+  function updateModeLabels() {
+    if (state.longMode) {
+      els.shortLabel.classList.remove("is-active");
+      els.longLabel.classList.add("is-active");
+    } else {
+      els.shortLabel.classList.add("is-active");
+      els.longLabel.classList.remove("is-active");
+    }
+  }
+
+  function updateSummary() {
+    const items = getSelectedItems();
+    const highestFine = getHighestFine(items);
+    const highestWanted = getHighestWanted(items);
+
+    els.selectedCount.textContent = String(items.length);
+    els.sumFine.textContent = formatMoney(highestFine);
+    els.sumWanted.innerHTML = renderSummaryWantedIcons(highestWanted);
+    els.aktenLine.textContent = buildCompactLine(items);
+    els.aktenText.value = state.longMode
+      ? buildLongText(items, highestFine, highestWanted)
+      : buildCompactLine(items);
+
+    updateModeLabels();
+  }
+
+  function updateUI() {
+    renderCatalog();
+    updateSummary();
+  }
+
+  function resetAll() {
+    state.selected.clear();
+    state.extraWantedById = {};
+    state.search = "";
+
+    els.searchInput.value = "";
+    els.systemWantedInput.value = "0";
+    els.plateInput.value = "";
+    els.placeInput.value = "";
+    els.azInput.value = "";
+    els.remorseToggle.checked = false;
+    els.repeatToggle.checked = false;
+    els.transportToggle.checked = false;
+    els.rightsReadToggle.checked = false;
+    els.copyStatus.textContent = "Nicht kopiert";
+
+    updateUI();
+  }
+
+  async function copyToClipboard(text, okText, failText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      els.copyStatus.textContent = okText;
+
+      if (state.autoReset) {
+        setTimeout(() => {
+          resetAll();
+        }, 250);
+      }
+    } catch {
+      els.copyStatus.textContent = failText;
+    }
+  }
+
+  async function copyLine() {
+    if (!els.rightsReadToggle.checked) {
+      els.copyStatus.textContent = "Rechte nicht vorgelesen";
+      return;
+    }
+
+    await copyToClipboard(
+      els.aktenLine.textContent,
+      "Zeile kopiert",
+      "Zeile konnte nicht kopiert werden"
+    );
+  }
+
+  async function copyAkte() {
+    if (!els.rightsReadToggle.checked) {
+      els.copyStatus.textContent = "Rechte nicht vorgelesen";
+      return;
+    }
+
+    await copyToClipboard(
+      els.aktenText.value,
+      "Akte kopiert",
+      "Akte konnte nicht kopiert werden"
+    );
+  }
+
+  function closeAllModals() {
+    document.body.classList.remove("modal-open");
+    document.querySelectorAll(".modal-backdrop").forEach((modal) => {
+      modal.classList.add("hidden");
+    });
+  }
+
+  function openModal(id) {
+    const modal = $(id);
+    if (!modal) return;
+    document.body.classList.add("modal-open");
+    modal.classList.remove("hidden");
+  }
+
+  function setupModals() {
+    document.querySelectorAll("[data-modal]").forEach((btn) => {
+      btn.addEventListener("click", () => openModal(btn.dataset.modal));
+    });
+
+    document.querySelectorAll("[data-close-modal]").forEach((btn) => {
+      btn.addEventListener("click", closeAllModals);
+    });
+
+    document.querySelectorAll(".modal-backdrop").forEach((modal) => {
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) closeAllModals();
+      });
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeAllModals();
+      }
+    });
+  }
+
+  function setupCatalogEvents() {
+    els.sections.addEventListener("click", (event) => {
+      const plus = event.target.closest("[data-plus]");
+      const minus = event.target.closest("[data-minus]");
+      const card = event.target.closest(".card");
+
+      if (plus) {
+        const item = lawData.find((law) => law.id === plus.dataset.plus);
+        if (!item) return;
+
+        const current = getSelectedGrayWanted(item);
+        state.extraWantedById[item.id] = Math.min(current + 1, Number(item.grayWantedMax || 0));
+        updateUI();
         return;
       }
 
-      const parts = [];
-      parts.push(formatNow());
+      if (minus) {
+        const item = lawData.find((law) => law.id === minus.dataset.minus);
+        if (!item) return;
 
-      if(state.grundActive && state.grund.trim()) parts.push(`Grund: ${state.grund.trim()}`);
-      if(state.selected.length) parts.push(state.selected.map(x=>x.p).join(", "));
-      if(state.reue && state.selected.length) parts.push("§35");
+        const current = getSelectedGrayWanted(item);
+        state.extraWantedById[item.id] = Math.max(current - 1, 0);
+        updateUI();
+        return;
+      }
 
-      entry.textContent = state.selected.length || state.grundActive ? parts.join(" | ") : "Wähle Strafen...";
-      entry.style.color = "var(--muted)";
-    }
+      if (!card) return;
+      const id = card.dataset.id;
+      if (!id) return;
 
-    function render(){
-      cards.innerHTML = "";
+      if (state.selected.has(id)) state.selected.delete(id);
+      else state.selected.add(id);
 
-      laws.forEach((cat, catIdx)=>{
-        const wrap = document.createElement("div");
-        wrap.className = "panel";
-        wrap.style.boxShadow = "none";
-        wrap.style.marginBottom = "12px";
-
-        const head = document.createElement("div");
-        head.className = "title";
-        head.style.color = "var(--accent)";
-        head.style.fontSize = "14px";
-        head.textContent = cat.cat;
-
-        const table = document.createElement("table");
-        table.className = "table";
-
-        const tbody = document.createElement("tbody");
-
-        cat.items.forEach((i, itemIdx)=>{
-          const id = `${catIdx}-${itemIdx}`;
-          const tr = document.createElement("tr");
-
-          const isSel = state.selected.some(s=>s.id===id);
-          tr.style.background = isSel ? "rgba(255,46,126,.08)" : "transparent";
-          tr.style.cursor = "pointer";
-
-          tr.onclick = ()=> {
-            const idx = state.selected.findIndex(s=>s.id===id);
-            if(idx>-1){
-              state.selected.splice(idx,1);
-              delete state.gsActive[id];
-            } else {
-              state.selected.push({ id, ...i });
-            }
-            render();
-            update();
-          };
-
-          // Stars: base wanteds = filled; gs stars = clickable hollow that turns gold
-          const baseW = i.w || 0;
-          const gsMax = i.gs || 0;
-          const gsOn = state.gsActive[id] || 0;
-
-          let starsHtml = "";
-          for(let s=0; s<baseW; s++){
-            starsHtml += `<span style="color:var(--gold); font-weight:900">★</span>`;
-          }
-          for(let s=1; s<=gsMax; s++){
-            const on = s <= gsOn;
-            starsHtml += `<span class="gsStar" data-gs="${s}" data-id="${id}" style="cursor:pointer; color:${on ? "var(--gold)" : "rgba(255,255,255,.22)"}; font-weight:900; margin-left:2px">☆</span>`;
-          }
-
-          tr.innerHTML = `
-            <td style="width:120px; color:var(--accent); font-weight:900">${i.p}</td>
-            <td style="width:55%">${i.n}</td>
-            <td style="width:160px">${starsHtml}</td>
-            <td style="width:120px; text-align:right; color:var(--gold); font-weight:900">$${Number(i.m||0).toLocaleString()}</td>
-          `;
-
-          tbody.appendChild(tr);
-
-          // attach GS handlers after row is in DOM
-          setTimeout(()=>{
-            tr.querySelectorAll(".gsStar").forEach(st=>{
-              st.onclick = (ev)=>{
-                ev.stopPropagation();
-                const itemId = st.getAttribute("data-id");
-                const val = Number(st.getAttribute("data-gs"));
-                state.gsActive[itemId] = state.gsActive[itemId] === val ? val - 1 : val;
-                render();
-                update();
-              };
-            });
-          }, 0);
-        });
-
-        table.appendChild(tbody);
-        wrap.appendChild(head);
-        wrap.appendChild(table);
-        cards.appendChild(wrap);
-      });
-    }
-
-    // Search
-    search.oninput = ()=>{
-      const q = search.value.toLowerCase();
-      cards.querySelectorAll("tr").forEach(tr=>{
-        tr.style.display = tr.innerText.toLowerCase().includes(q) ? "" : "none";
-      });
-    };
-
-    // switches
-    toggleBtn(swRights, state.rights);
-    toggleBtn(sw35, state.reue);
-    toggleBtn(swGrund, state.grundActive);
-
-    swRights.onclick = ()=>{ state.rights=!state.rights; toggleBtn(swRights,state.rights); update(); };
-    sw35.onclick = ()=>{ state.reue=!state.reue; toggleBtn(sw35,state.reue); update(); };
-    swGrund.onclick = ()=>{
-      state.grundActive=!state.grundActive;
-      toggleBtn(swGrund,state.grundActive);
-      inGrund.style.display = state.grundActive ? "block" : "none";
-      update();
-    };
-    inGrund.oninput = ()=>{ state.grund = inGrund.value; update(); };
-
-    // copy
-    entry.onclick = async ()=>{
-      const txt = entry.textContent || "";
-      if(txt.includes("⚠️")) return;
-      try{ await navigator.clipboard.writeText(txt); }catch{}
-    };
-
-    // reset
-    $("#btnReset").onclick = ()=>{
-      state.selected = [];
-      state.gsActive = {};
-      state.rights = false;
-      state.reue = false;
-      state.grundActive = false;
-      state.grund = "";
-      search.value = "";
-      inGrund.value = "";
-      inGrund.style.display = "none";
-      toggleBtn(swRights, state.rights);
-      toggleBtn(sw35, state.reue);
-      toggleBtn(swGrund, state.grundActive);
-      render();
-      update();
-    };
-
-    render();
-    update();
+      updateUI();
+    });
   }
-};
+
+  function getFibcoValue(id, fallback = "") {
+    const el = $(id);
+    return el ? el.value.trim() : fallback;
+  }
+
+  function buildFibcoTemplate() {
+    const name = getFibcoValue("fibcoName", "Name");
+    const coId = getFibcoValue("fibcoCoId", "CO-ID-1");
+    const date = getFibcoValue("fibcoDate", "Datum der Straftat");
+    const codename = getFibcoValue("fibcoCodename", "[Codename]");
+    const phone = getFibcoValue("fibcoPhone");
+    const agency = getFibcoValue("fibcoAgency");
+    const family = getFibcoValue("fibcoFamily");
+    const passport = getFibcoValue("fibcoPassport");
+    const badge = getFibcoValue("fibcoBadge");
+    const personnel = getFibcoValue("fibcoPersonnel");
+    const pdaMain = getFibcoValue("fibcoPdaMain");
+    const pdaVehicles = getFibcoValue("fibcoPdaVehicles");
+    const incident = getFibcoValue("fibcoIncident", "Am TT.MM.YYYY um HH:MM Uhr […]");
+    const interrogation = getFibcoValue("fibcoInterrogation", "- ABC");
+    const witness = getFibcoValue("fibcoWitness", "- ABC");
+    const evidence = getFibcoValue("fibcoEvidence", "- ABC");
+    const accusation = getFibcoValue("fibcoAccusation", "- ABC");
+    const conclusion = getFibcoValue("fibcoConclusion", "[Schlussbetrachtung]");
+
+    return [
+      `${name} | ${coId} | ${date}`,
+      "",
+      `Codename: ${codename}`,
+      "",
+      `Telefonnummer: ${phone}`,
+      `Behörde: ${agency}`,
+      `Familie: ${family}`,
+      "",
+      `Reisepass: ${passport}`,
+      `Dienstausweis: ${badge}`,
+      `Personalakte: ${personnel}`,
+      `PDA Hauptseite: ${pdaMain}`,
+      `PDA Fahrzeugliste: ${pdaVehicles}`,
+      "",
+      `[Vorfall]`,
+      `${incident}`,
+      "",
+      `[Befragung Tatverdächtiger]`,
+      `${interrogation}`,
+      "",
+      `[Zeugen-/Aussagen]`,
+      `${witness}`,
+      "",
+      `[Beweissammlung]`,
+      `${evidence}`,
+      "",
+      `[Tatvorwurf]`,
+      `${accusation}`,
+      "",
+      `[Schlussbetrachtung]`,
+      `${conclusion}`
+    ].join("\n");
+  }
+
+  function updateFibcoPreview() {
+    if (!els.fibcoPreview) return;
+    els.fibcoPreview.value = buildFibcoTemplate();
+  }
+
+  async function copyFibco() {
+    try {
+      await navigator.clipboard.writeText(els.fibcoPreview.value || "");
+    } catch {
+      // ignorieren
+    }
+  }
+
+  function setupFibco() {
+    fibcoFieldIds.forEach((id) => {
+      const el = $(id);
+      if (!el) return;
+      el.addEventListener("input", updateFibcoPreview);
+      el.addEventListener("change", updateFibcoPreview);
+    });
+
+    if (els.fibcoCopyBtn) {
+      els.fibcoCopyBtn.addEventListener("click", copyFibco);
+    }
+
+    updateFibcoPreview();
+  }
+
+  function setupInputs() {
+    els.searchInput.addEventListener("input", (event) => {
+      state.search = event.target.value || "";
+      renderCatalog();
+    });
+
+    [
+      els.remorseToggle,
+      els.repeatToggle,
+      els.transportToggle,
+      els.rightsReadToggle,
+      els.systemWantedInput,
+      els.plateInput,
+      els.placeInput,
+      els.azInput
+    ].forEach((el) => {
+      el.addEventListener("input", updateSummary);
+      el.addEventListener("change", updateSummary);
+    });
+
+    els.modeToggle.addEventListener("change", () => {
+      state.longMode = !!els.modeToggle.checked;
+      updateSummary();
+    });
+
+    els.autoResetToggle.addEventListener("change", () => {
+      state.autoReset = !!els.autoResetToggle.checked;
+    });
+
+    els.pinSidebarToggle.addEventListener("change", () => {
+      els.sidebar.classList.toggle("is-pinned", !!els.pinSidebarToggle.checked);
+    });
+
+    els.btnReset.addEventListener("click", resetAll);
+    els.btnCopyLine.addEventListener("click", copyLine);
+    els.btnCopy.addEventListener("click", copyAkte);
+    els.aktenLine.addEventListener("click", copyLine);
+  }
+
+  state.longMode = !!els.modeToggle.checked;
+  state.autoReset = !!els.autoResetToggle.checked;
+
+  setupModals();
+  setupCatalogEvents();
+  setupInputs();
+  setupFibco();
+  updateLiveStamp();
+  updateUI();
+
+  setInterval(() => {
+    updateLiveStamp();
+    updateSummary();
+  }, 1000);
+}
