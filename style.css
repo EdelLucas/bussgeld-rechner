@@ -1,6 +1,5 @@
 :root {
   --bg: #0b1220;
-  --bg-soft: #0f182a;
   --surface: rgba(7, 14, 25, 0.94);
   --surface-2: rgba(9, 17, 31, 0.98);
   --surface-3: rgba(14, 23, 39, 0.9);
@@ -331,7 +330,7 @@ svg {
   background: linear-gradient(90deg, rgba(19, 90, 113, 0.92), rgba(20, 41, 66, 0.92));
   font-size: 15px;
   font-weight: 900;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
 }
 
 .cards {
@@ -342,7 +341,7 @@ svg {
 
 .card {
   position: relative;
-  min-height: 122px;
+  min-height: 132px;
   padding: 14px;
   border: 1px solid rgba(59, 81, 119, 0.28);
   border-radius: 16px;
@@ -391,6 +390,7 @@ svg {
 
 .card-link {
   color: #61779c;
+  font-size: 14px;
 }
 
 .card-name {
@@ -402,10 +402,18 @@ svg {
 }
 
 .card-fine {
-  margin-bottom: 12px;
+  margin-bottom: 6px;
   color: var(--good);
   font-size: 15px;
   font-weight: 900;
+}
+
+.card-note {
+  min-height: 18px;
+  margin-bottom: 10px;
+  color: var(--muted-2);
+  font-size: 11px;
+  line-height: 1.3;
 }
 
 .card-bottom {
@@ -420,6 +428,7 @@ svg {
   align-items: center;
   gap: 3px;
   min-height: 22px;
+  flex-wrap: wrap;
 }
 
 .star-on {
@@ -459,7 +468,7 @@ svg {
 }
 
 .gray-count {
-  min-width: 14px;
+  min-width: 30px;
   text-align: center;
   color: var(--muted);
   font-size: 12px;
@@ -539,7 +548,9 @@ svg {
 .summary-value .wanted-inline {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .sidebar-row {
@@ -581,7 +592,9 @@ svg {
 .field-input,
 .textarea,
 .copy-box,
-.live-stamp {
+.live-stamp,
+.fibco-field input,
+.fibco-field textarea {
   width: 100%;
   border: 1px solid rgba(44, 59, 86, 0.48);
   border-radius: 12px;
@@ -590,13 +603,22 @@ svg {
   outline: none;
 }
 
-.field-input {
+.field-input,
+.fibco-field input {
   height: 42px;
   padding: 0 12px;
 }
 
+.fibco-field textarea {
+  min-height: 92px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+
 .field-input:focus,
-.textarea:focus {
+.textarea:focus,
+.fibco-field input:focus,
+.fibco-field textarea:focus {
   border-color: var(--accent-border);
   box-shadow: 0 0 0 4px var(--accent-soft);
 }
@@ -692,6 +714,10 @@ svg {
   width: min(900px, 100%);
 }
 
+.modal-xl {
+  width: min(1200px, 100%);
+}
+
 .modal-header {
   display: flex;
   align-items: center;
@@ -726,12 +752,50 @@ svg {
 }
 
 .empty-card {
-  grid-column: 1 / -1;
   padding: 16px;
   border: 1px solid var(--border);
   border-radius: 16px;
   background: rgba(6, 12, 22, 0.9);
   color: var(--muted);
+}
+
+.fibco-modal-body {
+  display: grid;
+  gap: 18px;
+}
+
+.fibco-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.fibco-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fibco-field label {
+  color: #cedaf0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.fibco-field--full {
+  grid-column: 1 / -1;
+}
+
+.fibco-preview-wrap {
+  display: grid;
+  gap: 10px;
+}
+
+.fibco-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 @media (max-width: 1680px) {
@@ -770,6 +834,17 @@ svg {
 
   .cards {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .fibco-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fibco-preview-head {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 
