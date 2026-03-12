@@ -42,6 +42,11 @@
       autoReset: false
     };
 
+    const fibcoState = {
+      search: "",
+      selectedLawIds: new Set()
+    };
+
     const els = {
       body: document.body,
       sections: $("catalogSections"),
@@ -71,7 +76,11 @@
       pinSidebarToggle: $("pinSidebarToggle"),
       sidebar: $("sidebar"),
       fibcoCopyBtn: $("fibcoCopyBtn"),
-      fibcoPreview: $("fibcoPreview")
+      fibcoPreview: $("fibcoPreview"),
+      fibcoLawSearch: $("fibcoLawSearch"),
+      fibcoLawResults: $("fibcoLawResults"),
+      fibcoLawSelected: $("fibcoLawSelected"),
+      fibcoAccusationExtra: $("fibcoAccusationExtra")
     };
 
     function getFilteredLaws() {
@@ -141,10 +150,7 @@
         html += `<span class="star-off">★</span>`;
       }
 
-      if (!html) {
-        html = `<span class="star-off">—</span>`;
-      }
-
+      if (!html) html = `<span class="star-off">—</span>`;
       return html;
     }
 
@@ -154,13 +160,8 @@
       const capped = Math.min(count, 5);
       let icons = "";
 
-      for (let i = 0; i < capped; i += 1) {
-        icons += `<span class="star-on">★</span>`;
-      }
-
-      for (let i = capped; i < 5; i += 1) {
-        icons += `<span class="star-off">★</span>`;
-      }
+      for (let i = 0; i < capped; i += 1) icons += `<span class="star-on">★</span>`;
+      for (let i = capped; i < 5; i += 1) icons += `<span class="star-off">★</span>`;
 
       return `<span class="wanted-inline">${icons}<strong>${count}</strong></span>`;
     }
@@ -178,14 +179,10 @@
     function groupLaws(items) {
       const map = new Map();
 
-      groupOrder.forEach((group) => {
-        map.set(group, []);
-      });
+      groupOrder.forEach((group) => map.set(group, []));
 
       items.forEach((item) => {
-        if (!map.has(item.group)) {
-          map.set(item.group, []);
-        }
+        if (!map.has(item.group)) map.set(item.group, []);
         map.get(item.group).push(item);
       });
 
@@ -300,13 +297,8 @@
           const graySelected = getSelectedGrayWanted(item);
           let row = `- ${item.para} ${item.name} | ${formatMoney(getEffectiveFine(item))} | Wanteds: ${activeWanted}`;
 
-          if (graySelected > 0) {
-            row += ` | Graue Wanteds aktiviert: ${graySelected}/${item.grayWantedMax}`;
-          }
-
-          if (item.note) {
-            row += ` | Hinweis: ${item.note}`;
-          }
+          if (graySelected > 0) row += ` | Graue Wanteds aktiviert: ${graySelected}/${item.grayWantedMax}`;
+          if (item.note) row += ` | Hinweis: ${item.note}`;
 
           lines.push(row);
         });
@@ -348,6 +340,7 @@
       if (els.sumFine) els.sumFine.textContent = formatMoney(highestFine);
       if (els.sumWanted) els.sumWanted.innerHTML = renderSummaryWantedIcons(highestWanted);
       if (els.aktenLine) els.aktenLine.textContent = buildCompactLine(items);
+
       if (els.aktenText) {
         els.aktenText.value = state.longMode
           ? buildLongText(items, highestFine, highestWanted)
@@ -387,9 +380,7 @@
         if (els.copyStatus) els.copyStatus.textContent = okText;
 
         if (state.autoReset) {
-          setTimeout(() => {
-            resetAll();
-          }, 250);
+          setTimeout(() => resetAll(), 250);
         }
       } catch {
         if (els.copyStatus) els.copyStatus.textContent = failText;
@@ -452,9 +443,7 @@
       });
 
       document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") {
-          closeAllModals();
-        }
+        if (event.key === "Escape") closeAllModals();
       });
     }
 
@@ -491,11 +480,8 @@
         const id = card.dataset.id;
         if (!id) return;
 
-        if (state.selected.has(id)) {
-          state.selected.delete(id);
-        } else {
-          state.selected.add(id);
-        }
+        if (state.selected.has(id)) state.selected.delete(id);
+        else state.selected.add(id);
 
         updateUI();
       });
@@ -504,6 +490,24 @@
     function getFibcoValue(id, fallback = "") {
       const el = $(id);
       return el ? el.value.trim() : fallback;
+    }
+
+    function getSelectedFibcoLawItems() {
+      return lawData.filter((law) => fibcoState.selectedLawIds.has(law.id));
+    }
+
+    function buildFibcoAccusationBlock() {
+      const selectedLaws = getSelectedFibcoLawItems()
+        .map((law) => `- ${law.para} ${law.name}`);
+
+      const extra = els.fibcoAccusationExtra ? els.fibcoAccusationExtra.value.trim() : "";
+
+      const parts = [];
+
+      if (selectedLaws.length) parts.push(selectedLaws.join("\n"));
+      if (extra) parts.push(extra);
+
+      return parts.join("\n\n").trim() || "- ABC";
     }
 
     function buildFibcoTemplate() {
@@ -523,7 +527,7 @@
       const interrogation = getFibcoValue("fibcoInterrogation", "- ABC");
       const witness = getFibcoValue("fibcoWitness", "- ABC");
       const evidence = getFibcoValue("fibcoEvidence", "- ABC");
-      const accusation = getFibcoValue("fibcoAccusation", "- ABC");
+      const accusation = buildFibcoAccusationBlock();
       const conclusion = getFibcoValue("fibcoConclusion", "[Schlussbetrachtung]");
 
       return [
@@ -566,6 +570,47 @@
       els.fibcoPreview.value = buildFibcoTemplate();
     }
 
+    function renderFibcoLawPicker() {
+      if (!els.fibcoLawResults || !els.fibcoLawSelected) return;
+
+      const q = fibcoState.search.trim().toLowerCase();
+
+      const available = lawData
+        .filter((law) => !fibcoState.selectedLawIds.has(law.id))
+        .filter((law) => {
+          if (!q) return true;
+          return (
+            law.para.toLowerCase().includes(q) ||
+            law.name.toLowerCase().includes(q) ||
+            law.group.toLowerCase().includes(q)
+          );
+        })
+        .slice(0, 25);
+
+      els.fibcoLawResults.innerHTML = available.length
+        ? available.map((law) => `
+            <button class="fibco-law-option" type="button" data-add-law="${escapeHtml(law.id)}">
+              <div>
+                <div class="fibco-law-option-para">${escapeHtml(law.para)}</div>
+                <div class="fibco-law-option-name">${escapeHtml(law.name)}</div>
+              </div>
+              <strong>+</strong>
+            </button>
+          `).join("")
+        : `<div class="empty-card">Keine passenden Gesetze gefunden.</div>`;
+
+      const selected = getSelectedFibcoLawItems();
+
+      els.fibcoLawSelected.innerHTML = selected.length
+        ? selected.map((law) => `
+            <div class="fibco-chip">
+              <span>${escapeHtml(law.para)} — ${escapeHtml(law.name)}</span>
+              <button type="button" data-remove-law="${escapeHtml(law.id)}">×</button>
+            </div>
+          `).join("")
+        : `<div class="empty-card">Noch nichts ausgewählt.</div>`;
+    }
+
     async function copyFibco() {
       try {
         await navigator.clipboard.writeText(els.fibcoPreview ? els.fibcoPreview.value : "");
@@ -580,10 +625,45 @@
         el.addEventListener("change", updateFibcoPreview);
       });
 
+      if (els.fibcoAccusationExtra) {
+        els.fibcoAccusationExtra.addEventListener("input", updateFibcoPreview);
+        els.fibcoAccusationExtra.addEventListener("change", updateFibcoPreview);
+      }
+
+      if (els.fibcoLawSearch) {
+        els.fibcoLawSearch.addEventListener("input", (event) => {
+          fibcoState.search = event.target.value || "";
+          renderFibcoLawPicker();
+        });
+      }
+
+      if (els.fibcoLawResults) {
+        els.fibcoLawResults.addEventListener("click", (event) => {
+          const btn = event.target.closest("[data-add-law]");
+          if (!btn) return;
+
+          fibcoState.selectedLawIds.add(btn.dataset.addLaw);
+          renderFibcoLawPicker();
+          updateFibcoPreview();
+        });
+      }
+
+      if (els.fibcoLawSelected) {
+        els.fibcoLawSelected.addEventListener("click", (event) => {
+          const btn = event.target.closest("[data-remove-law]");
+          if (!btn) return;
+
+          fibcoState.selectedLawIds.delete(btn.dataset.removeLaw);
+          renderFibcoLawPicker();
+          updateFibcoPreview();
+        });
+      }
+
       if (els.fibcoCopyBtn) {
         els.fibcoCopyBtn.addEventListener("click", copyFibco);
       }
 
+      renderFibcoLawPicker();
       updateFibcoPreview();
     }
 
