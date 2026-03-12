@@ -1,4 +1,4 @@
-export const LAW_DATA = [
+window.LAW_DATA = [
   { id: "stgb-3-1", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §3.1", name: "Beleidigung", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 1 },
   { id: "stgb-3-2", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §3.2", name: "Belästigung", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 1 },
   { id: "stgb-3-3", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §3.3", name: "Drohung", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
@@ -98,7 +98,7 @@ export const LAW_DATA = [
   { id: "stpo-6", group: "Strafprozessordnung (StPO)", section: "STPO", para: "§6 StPO", name: "Bußgelder nicht bezahlt (500k voll)", fineType: "fixed", fine: 500000, fixedWanted: 5, grayWantedMax: 0 }
 ];
 
-export const GROUP_ORDER = [
+window.GROUP_ORDER = [
   "Psychische & Physische Integrität (StGB)",
   "Wirtschaftskriminalität (StGB)",
   "Umgang mit Beamten (StGB)",
@@ -109,7 +109,7 @@ export const GROUP_ORDER = [
   "Strafprozessordnung (StPO)"
 ];
 
-export const FIBCO_FIELD_IDS = [
+window.FIBCO_FIELD_IDS = [
   "fibcoName",
   "fibcoCoId",
   "fibcoDate",
