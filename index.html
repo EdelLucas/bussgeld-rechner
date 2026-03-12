@@ -460,11 +460,30 @@
             <textarea id="fibcoEvidence" data-fibco placeholder="- ABC"></textarea>
           </div>
 
-          <div class="fibco-field fibco-field--full">
-            <label for="fibcoAccusation">Tatvorwurf</label>
-            <textarea id="fibcoAccusation" data-fibco placeholder="- ABC"></textarea>
-          </div>
+         <div class="fibco-field fibco-field--full">
+  <label for="fibcoLawSearch">Tatvorwurf</label>
 
+  <div class="fibco-law-picker">
+    <input
+      id="fibcoLawSearch"
+      class="field-input"
+      type="search"
+      placeholder="Gesetz suchen, z. B. §14 oder Raub"
+    />
+
+    <div id="fibcoLawResults" class="fibco-law-results"></div>
+
+    <div class="fibco-law-selected-wrap">
+      <div class="fibco-mini-title">Ausgewählte Gesetze</div>
+      <div id="fibcoLawSelected" class="fibco-law-selected"></div>
+    </div>
+
+    <textarea
+      id="fibcoAccusationExtra"
+      placeholder="Zusätzlicher Freitext zum Tatvorwurf ..."
+    ></textarea>
+  </div>
+           
           <div class="fibco-field fibco-field--full">
             <label for="fibcoConclusion">Schlussbetrachtung</label>
             <textarea id="fibcoConclusion" data-fibco placeholder="Zusammenfassung / Bewertung / weiteres Vorgehen"></textarea>
@@ -488,4 +507,5 @@
   <script src="./app.js"></script>
 </body>
 </html>
+
 
