@@ -1124,3 +1124,330 @@ svg {
     font-size: 13px;
   }
 }
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  background:
+    radial-gradient(circle at top left, var(--page-glow-1), transparent 26%),
+    radial-gradient(circle at top right, var(--page-glow-2), transparent 22%),
+    linear-gradient(180deg, var(--page-start) 0%, var(--page-end) 100%);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.08) transparent;
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: linear-gradient(90deg, var(--topbar-start) 0%, var(--topbar-mid) 50%, var(--topbar-end) 100%);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 250px;
+  flex: 0 0 auto;
+}
+
+.brand-title {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.brand-subtitle {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.top-rail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.top-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  min-width: 42px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--button-bg);
+  color: #ebedf3;
+  cursor: pointer;
+  transition: 0.18s ease;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+  overflow: hidden;
+}
+
+.top-btn:hover,
+.top-btn:focus-visible {
+  border-color: var(--accent-border);
+  gap: 8px;
+}
+
+.top-btn--pill {
+  padding: 0 11px;
+}
+
+.top-btn--pill span {
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: max-width 0.18s ease, opacity 0.18s ease, margin 0.18s ease;
+}
+
+.top-btn--pill:hover span,
+.top-btn--pill:focus-visible span {
+  max-width: 120px;
+  opacity: 1;
+}
+
+.top-btn--static {
+  gap: 8px;
+}
+
+.top-btn--static span {
+  max-width: 120px;
+  opacity: 1;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.mode-label,
+.mini-toggle,
+.theme-menu-title,
+.theme-color-field,
+.sidebar-desc,
+.summary-label,
+.copy-status,
+.card-note {
+  font-size: 12px;
+}
+
+.card-para {
+  font-size: 13px;
+}
+
+.card-name {
+  min-height: 38px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.card-fine {
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.section-title {
+  min-height: 46px;
+  padding: 0 14px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.panel-title,
+.sidebar-name,
+.field-title {
+  font-size: 13px;
+}
+
+.summary-value {
+  font-size: 17px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 16px;
+  align-items: start;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.sidebar.is-pinned {
+  position: sticky;
+  top: 16px;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.06);
+  border-radius: 999px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.10);
+}
+
+.fibco-law-picker {
+  display: grid;
+  gap: 10px;
+}
+
+.fibco-law-results {
+  display: grid;
+  gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.fibco-law-results::-webkit-scrollbar,
+.fibco-law-selected::-webkit-scrollbar {
+  width: 6px;
+}
+
+.fibco-law-results::-webkit-scrollbar-thumb,
+.fibco-law-selected::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.06);
+  border-radius: 999px;
+}
+
+.fibco-law-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  background: var(--field-bg);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.fibco-law-option:hover {
+  border-color: var(--accent-border);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.fibco-law-option-para {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.fibco-law-option-name {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.fibco-law-selected-wrap {
+  display: grid;
+  gap: 8px;
+}
+
+.fibco-mini-title {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.fibco-law-selected {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 120px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.fibco-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--pill-bg);
+  border: 1px solid var(--accent-border);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.fibco-chip button {
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  color: white;
+  cursor: pointer;
+}
+
+.fibco-chip button:hover {
+  background: rgba(255,255,255,0.14);
+}
+
+@media (max-width: 1250px) {
+  .topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar-left,
+  .topbar-right {
+    flex-wrap: wrap;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .sidebar.is-pinned {
+    position: static;
+  }
+}
