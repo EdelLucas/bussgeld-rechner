@@ -1,11 +1,14 @@
-import { LAW_DATA, GROUP_ORDER, FIBCO_FIELD_IDS } from "./data.js";
-import { initThemeControls } from "./theme.js";
-import { initUI } from "./ui.js";
+document.addEventListener("DOMContentLoaded", function () {
+  if (!window.LAW_DATA || !window.initUI || !window.initThemeControls) {
+    console.error("Dateien fehlen oder wurden in falscher Reihenfolge geladen.");
+    return;
+  }
 
-initUI({
-  lawData: LAW_DATA,
-  groupOrder: GROUP_ORDER,
-  fibcoFieldIds: FIBCO_FIELD_IDS
+  window.initUI({
+    lawData: window.LAW_DATA,
+    groupOrder: window.GROUP_ORDER,
+    fibcoFieldIds: window.FIBCO_FIELD_IDS
+  });
+
+  window.initThemeControls();
 });
-
-initThemeControls();
