@@ -4,13 +4,1051 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Strafkatalog</title>
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="icon" type="image/png" href="./favicon.png" />
+  <style>
+    :root {
+      --bg: #0b0b0c;
+      --surface: rgba(10, 10, 11, 0.95);
+      --surface-2: rgba(18, 18, 20, 0.98);
+      --surface-3: rgba(30, 30, 34, 0.92);
+      --card: linear-gradient(180deg, rgba(16, 16, 18, 1) 0%, rgba(8, 8, 10, 1) 100%);
+      --border: rgba(255, 255, 255, 0.12);
+      --text: #ffffff;
+      --muted: #b7b7bf;
+      --muted-2: #8f8f97;
+      --good: #28d07f;
+      --warning: #f5b432;
+      --shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+      --radius-xl: 22px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-sm: 12px;
+      --accent: #ffffff;
+      --accent-2: #8f8f97;
+      --accent-soft: rgba(255, 255, 255, 0.08);
+      --accent-border: rgba(255, 255, 255, 0.2);
+    }
+
+    body[data-theme="mono"] {
+      --accent: #ffffff;
+      --accent-2: #8c8c94;
+      --accent-soft: rgba(255, 255, 255, 0.08);
+      --accent-border: rgba(255, 255, 255, 0.2);
+    }
+
+    body[data-theme="redblue"] {
+      --accent: #ff4d5e;
+      --accent-2: #2d7dff;
+      --accent-soft: rgba(255, 77, 94, 0.12);
+      --accent-border: rgba(91, 126, 255, 0.3);
+    }
+
+    body[data-theme="pinkpurple"] {
+      --accent: #ff69c7;
+      --accent-2: #8a4dff;
+      --accent-soft: rgba(255, 105, 199, 0.12);
+      --accent-border: rgba(138, 77, 255, 0.3);
+    }
+
+    body[data-theme="ice"] {
+      --accent: #8ae7ff;
+      --accent-2: #1dd8ff;
+      --accent-soft: rgba(29, 216, 255, 0.14);
+      --accent-border: rgba(29, 216, 255, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.05), transparent 24%),
+        radial-gradient(circle at top right, rgba(255,255,255,0.03), transparent 20%),
+        linear-gradient(180deg, #111214 0%, #090a0c 100%);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.08) transparent;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+    }
+
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.12);
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .app {
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 18px;
+      margin-bottom: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      background:
+        linear-gradient(
+          90deg,
+          rgba(19, 19, 23, 0.98) 0%,
+          rgba(22, 22, 26, 0.98) 50%,
+          rgba(18, 18, 24, 0.98) 100%
+        );
+      box-shadow: var(--shadow);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 280px;
+    }
+
+    .brand-logo {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+      border-radius: 12px;
+      display: block;
+      flex: 0 0 auto;
+    }
+
+    .brand-badge-fallback {
+      display: none;
+      place-items: center;
+      width: 56px;
+      height: 36px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      flex: 0 0 auto;
+    }
+
+    .brand-title {
+      font-size: 17px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .brand-subtitle {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .topbar-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .top-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-width: 46px;
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(11, 12, 15, 0.92);
+      color: #ebedf3;
+      cursor: pointer;
+      transition: 0.18s ease;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+
+    .top-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--accent-border);
+    }
+
+    .top-btn--pill {
+      width: auto;
+      padding: 0 14px;
+      font-weight: 700;
+    }
+
+    .top-btn--active {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #05080d;
+      border-color: transparent;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .mode-switch {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .mode-label {
+      color: var(--muted-2);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .mode-label.is-active {
+      color: var(--accent);
+    }
+
+    .mini-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-flex;
+      width: 48px;
+      height: 26px;
+      flex: 0 0 auto;
+    }
+
+    .switch input {
+      display: none;
+    }
+
+    .switch span {
+      width: 100%;
+      height: 100%;
+      border-radius: 999px;
+      background: rgba(82, 82, 92, 0.62);
+      transition: 0.2s ease;
+    }
+
+    .switch span::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: white;
+      transition: 0.2s ease;
+    }
+
+    .switch input:checked + span {
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+
+    .switch input:checked + span::after {
+      transform: translateX(22px);
+    }
+
+    .switch--compact {
+      width: 44px;
+      height: 24px;
+    }
+
+    .switch--compact span::after {
+      width: 18px;
+      height: 18px;
+    }
+
+    .switch--compact input:checked + span::after {
+      transform: translateX(20px);
+    }
+
+    .theme-dropdown {
+      position: relative;
+    }
+
+    .theme-menu {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      z-index: 100;
+      width: 320px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(9, 10, 13, 0.98);
+      box-shadow: 0 24px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    .theme-menu-title {
+      margin-bottom: 10px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--muted);
+    }
+
+    .theme-presets {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .theme-preset {
+      min-height: 40px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .theme-preset:hover,
+    .theme-preset.is-active {
+      border-color: var(--accent-border);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .theme-menu-divider {
+      height: 1px;
+      margin: 14px 0;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .theme-custom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .theme-color-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .theme-color-field input[type="color"] {
+      width: 100%;
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: transparent;
+      padding: 4px;
+      cursor: pointer;
+    }
+
+    .theme-apply-btn {
+      width: 100%;
+      margin-top: 12px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .content {
+      min-width: 0;
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      top: 50%;
+      left: 14px;
+      transform: translateY(-50%);
+      color: var(--muted-2);
+      pointer-events: none;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      height: 46px;
+      padding: 0 16px 0 42px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(6, 7, 10, 0.98);
+      color: var(--text);
+      outline: none;
+    }
+
+    .search-wrap input:focus {
+      border-color: var(--accent-border);
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+
+    .search-wrap input::placeholder {
+      color: var(--muted-2);
+    }
+
+    .selected-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 120px;
+      min-height: 34px;
+      padding: 0 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .catalog-section + .catalog-section {
+      margin-top: 14px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      min-height: 50px;
+      padding: 0 16px;
+      margin-bottom: 12px;
+      border-left: 4px solid var(--accent);
+      border-radius: 0 16px 16px 0;
+      background: linear-gradient(
+        90deg,
+        rgba(35, 35, 40, 0.92),
+        rgba(22, 22, 26, 0.92)
+      );
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      position: relative;
+      min-height: 132px;
+      padding: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      background: var(--card);
+      overflow: hidden;
+      cursor: pointer;
+      transition: 0.18s ease;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(180deg, rgba(255,255,255,0.025), transparent 38%);
+      pointer-events: none;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-border);
+    }
+
+    .card.is-selected {
+      border-color: var(--accent-border);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.02),
+        0 0 0 1px var(--accent-border),
+        0 18px 30px rgba(0,0,0,0.28);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .card-para {
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .card-link {
+      color: var(--muted-2);
+      font-size: 14px;
+    }
+
+    .card-name {
+      min-height: 42px;
+      margin-bottom: 10px;
+      font-size: 15px;
+      font-weight: 750;
+      line-height: 1.25;
+    }
+
+    .card-fine {
+      margin-bottom: 6px;
+      color: var(--good);
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .card-note {
+      min-height: 18px;
+      margin-bottom: 10px;
+      color: var(--muted-2);
+      font-size: 11px;
+      line-height: 1.3;
+    }
+
+    .card-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .card-stars {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      min-height: 22px;
+      flex-wrap: wrap;
+    }
+
+    .star-on {
+      color: var(--warning);
+      font-size: 14px;
+    }
+
+    .star-off {
+      color: rgba(255, 255, 255, 0.12);
+      font-size: 14px;
+    }
+
+    .gray-wanted-tools {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 999px;
+      background: rgba(5, 12, 24, 0.75);
+    }
+
+    .gray-btn {
+      width: 24px;
+      height: 24px;
+      border: none;
+      border-radius: 999px;
+      background: rgba(39, 54, 82, 0.95);
+      color: #dce7f9;
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1;
+    }
+
+    .gray-btn:hover {
+      background: rgba(255,255,255,0.12);
+    }
+
+    .gray-count {
+      min-width: 30px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .sidebar.is-pinned {
+      position: sticky;
+      top: 16px;
+    }
+
+    .reset-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 52px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+      color: #d1d1d6;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .reset-btn:hover {
+      border-color: var(--accent-border);
+    }
+
+    .panel {
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(7, 8, 10, 0.98), rgba(5, 6, 8, 0.98));
+      box-shadow: var(--shadow);
+    }
+
+    .panel-title {
+      margin-bottom: 14px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .summary-box {
+      padding: 16px 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      background: rgba(4, 5, 7, 0.92);
+      text-align: center;
+    }
+
+    .summary-label {
+      margin-bottom: 10px;
+      color: var(--muted-2);
+      font-size: 12px;
+    }
+
+    .summary-value {
+      font-size: 19px;
+      font-weight: 900;
+    }
+
+    .summary-value .wanted-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .sidebar-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .sidebar-row:first-of-type {
+      padding-top: 0;
+      border-top: none;
+    }
+
+    .sidebar-name,
+    .field-title {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .sidebar-desc {
+      margin-top: 2px;
+      color: var(--muted-2);
+      font-size: 12px;
+    }
+
+    .field-block {
+      margin-top: 14px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .field-input,
+    .textarea,
+    .copy-box,
+    .live-stamp,
+    .fibco-field input,
+    .fibco-field textarea {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      background: rgba(4, 5, 7, 0.96);
+      color: var(--text);
+      outline: none;
+    }
+
+    .field-input,
+    .fibco-field input {
+      height: 42px;
+      padding: 0 12px;
+    }
+
+    .fibco-field textarea {
+      min-height: 92px;
+      padding: 10px 12px;
+      resize: vertical;
+    }
+
+    .field-input:focus,
+    .textarea:focus,
+    .fibco-field input:focus,
+    .fibco-field textarea:focus {
+      border-color: var(--accent-border);
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+
+    .live-stamp,
+    .copy-box {
+      display: flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 0 12px;
+    }
+
+    .copy-box {
+      cursor: pointer;
+      line-height: 1.35;
+    }
+
+    .textarea {
+      min-height: 170px;
+      padding: 12px;
+      resize: vertical;
+    }
+
+    .textarea-large {
+      min-height: 420px;
+    }
+
+    .copy-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .copy-status {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .copy-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .copy-btn {
+      min-height: 40px;
+      padding: 0 14px;
+      border-radius: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .copy-btn--secondary {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: #dce7f9;
+    }
+
+    .copy-btn--primary {
+      border: none;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: #04121e;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(2, 6, 14, 0.74);
+      backdrop-filter: blur(7px);
+      z-index: 999;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .modal {
+      width: min(720px, 100%);
+      max-height: 88vh;
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(11, 11, 14, 0.98), rgba(7, 8, 10, 0.98));
+      box-shadow: 0 32px 80px rgba(0,0,0,0.45);
+    }
+
+    .modal-lg {
+      width: min(900px, 100%);
+    }
+
+    .modal-xl {
+      width: min(1200px, 100%);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .modal-close {
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      color: white;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .list-block + .list-block,
+    .text-section + .text-section {
+      margin-top: 16px;
+    }
+
+    .empty-card {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(6, 12, 22, 0.9);
+      color: var(--muted);
+    }
+
+    .fibco-modal-body {
+      display: grid;
+      gap: 18px;
+    }
+
+    .fibco-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .fibco-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .fibco-field label {
+      color: #cedaf0;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .fibco-field--full {
+      grid-column: 1 / -1;
+    }
+
+    .fibco-preview-wrap {
+      display: grid;
+      gap: 10px;
+    }
+
+    .fibco-preview-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    @media (max-width: 1680px) {
+      .cards {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 1450px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr) 360px;
+      }
+
+      .cards {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 1250px) {
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar-center,
+      .topbar-right {
+        justify-content: flex-start;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar.is-pinned {
+        position: static;
+      }
+
+      .cards {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 900px) {
+      .fibco-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .fibco-preview-head {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .theme-menu {
+        right: auto;
+        left: 0;
+        width: min(320px, calc(100vw - 32px));
+      }
+    }
+
+    @media (max-width: 820px) {
+      .search-row,
+      .summary-grid,
+      .field-grid,
+      .copy-footer {
+        grid-template-columns: 1fr;
+      }
+
+      .copy-footer {
+        display: grid;
+      }
+
+      .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .app {
+        padding: 10px;
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .mini-toggle {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .theme-presets,
+      .theme-custom-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .top-btn--pill span {
+        font-size: 13px;
+      }
+    }
+  </style>
 </head>
 <body data-theme="mono">
   <div class="app">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-badge">MDT</div>
+        <img
+          src="./assets/logo.png"
+          alt="Logo"
+          class="brand-logo"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';"
+        />
+        <div class="brand-badge-fallback">MDT</div>
         <div class="brand-copy">
           <div class="brand-title">Strafkatalog</div>
           <div class="brand-subtitle">Mobile Data Terminal — Akten-Generator</div>
@@ -472,6 +1510,842 @@
     </div>
   </div>
 
-  <script type="module" src="./app.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const LAW_DATA = [
+      { id: "stgb-3-1", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §3.1", name: "Beleidigung", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 1 },
+      { id: "stgb-3-2", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §3.2", name: "Belästigung", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 1 },
+      { id: "stgb-3-3", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §3.3", name: "Drohung", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stgb-4-1", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §4.1", name: "Versuchter Mord / Mord", fineType: "fixed", fine: 30000, fixedWanted: 4, grayWantedMax: 0 },
+      { id: "stgb-4-2", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §4.2", name: "Körperverletzung", fineType: "fixed", fine: 15000, fixedWanted: 2, grayWantedMax: 0 },
+      { id: "stgb-4-3", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §4.3", name: "Körperverletzung mit Todesfolge", fineType: "fixed", fine: 20000, fixedWanted: 3, grayWantedMax: 0 },
+      { id: "stgb-4-4", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §4.4", name: "Gewaltsame Drohung", fineType: "per_active_wanted", finePerWanted: 5000, fixedWanted: 1, grayWantedMax: 1, note: "5.000$ pro aktiviertem Wanted" },
+      { id: "stgb-4-5", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §4.5", name: "Fahrlässige Tötung", fineType: "fixed", fine: 20000, fixedWanted: 3, grayWantedMax: 0 },
+      { id: "stgb-5", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §5", name: "Sexuelle Belästigung", fineType: "base_plus_per_active_wanted", fine: 30000, finePerWanted: 10000, fixedWanted: 1, grayWantedMax: 2, note: "30.000$ + 10.000$ pro aktiviertem Wanted" },
+      { id: "stgb-20", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §20", name: "Sachbeschädigung", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 2 },
+      { id: "stgb-21", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §21", name: "Unterlassene Hilfeleistung", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stgb-26", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §26", name: "Prostitution", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stgb-27", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §27", name: "Freiheitsberaubung / Geiselnahmen / Entführung", fineType: "fixed", fine: 30000, fixedWanted: 3, grayWantedMax: 0 },
+      { id: "stgb-28", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §28", name: "Errichtung von Straßenbarrikaden", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 2 },
+      { id: "stgb-31", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §31", name: "Verhalten in der Öffentlichkeit", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stgb-32", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §32", name: "Rassismus / Nachstellung (Stalking)", fineType: "fixed", fine: 15000, fixedWanted: 3, grayWantedMax: 0 },
+      { id: "stgb-38", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §38", name: "Fischwilderei", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stgb-39", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §39", name: "Verleumdung", fineType: "fixed", fine: 30000, fixedWanted: 0, grayWantedMax: 3 },
+      { id: "stgb-42", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §42", name: "Erpressung", fineType: "fixed", fine: 45000, fixedWanted: 3, grayWantedMax: 0 },
+      { id: "stgb-43", group: "Psychische & Physische Integrität (StGB)", section: "STGB", para: "StGB §43", name: "Androhung einer Straftat", fineType: "base_plus_per_active_wanted", fine: 20000, finePerWanted: 5000, fixedWanted: 0, grayWantedMax: 3, note: "20.000$ + 5.000$ pro aktiviertem Wanted" },
+
+      { id: "stgb-6-9", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §6 / §9", name: "Diebstahl / Betrug", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 3 },
+      { id: "stgb-7", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §7", name: "Fahrzeug Diebstahl", fineType: "fixed", fine: 10000, fixedWanted: 2, grayWantedMax: 0 },
+      { id: "stgb-10-1", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §10.1", name: "Besitz illegaler Gegenstände", fineType: "fixed", fine: 10000, fixedWanted: 2, grayWantedMax: 0 },
+      { id: "stgb-11", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §11", name: "Raub", fineType: "fixed", fine: 25000, fixedWanted: 3, grayWantedMax: 0 },
+      { id: "stgb-12-1", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §12.1", name: "Geschäfts Raub / Ammu Rob", fineType: "fixed", fine: 35000, fixedWanted: 2, grayWantedMax: 0 },
+      { id: "stgb-12-3", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §12.3", name: "ATM Raub", fineType: "fixed", fine: 5000, fixedWanted: 1, grayWantedMax: 0 },
+      { id: "stgb-13", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §13", name: "Einbruch", fineType: "fixed", fine: 15000, fixedWanted: 2, grayWantedMax: 0 },
+      { id: "stgb-14", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §14", name: "Steuerhinterziehung", fineType: "fixed", fine: 50000, fixedWanted: 3, grayWantedMax: 0 },
+      { id: "stgb-30", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §30", name: "Hausfriedensbruch", fineType: "fixed", fine: 25000, fixedWanted: 3, grayWantedMax: 0 },
+      { id: "stgb-41-1", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §41.1", name: "Besitz staatliches Eigentum (Waffen)", fineType: "fixed", fine: 50000, fixedWanted: 3, grayWantedMax: 0, note: "Waffenscheinentzug" },
+      { id: "stgb-41-2", group: "Wirtschaftskriminalität (StGB)", section: "STGB", para: "StGB §41.2", name: "Besitz staatliches Eigentum (Gegenstände)", fineType: "fixed", fine: 50000, fixedWanted: 3, grayWantedMax: 0 },
+
+      { id: "stgb-15-1", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §15.1", name: "Nichtbeachten einer amtlichen Anweisung", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 2 },
+      { id: "stgb-15-2", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §15.2", name: "Entziehung polizeilicher Maßnahmen", fineType: "fixed", fine: 10000, fixedWanted: 2, grayWantedMax: 0 },
+      { id: "stgb-15-3", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §15.3", name: "Behinderung eines Beamten bei der Arbeit", fineType: "fixed", fine: 10000, fixedWanted: 1, grayWantedMax: 0 },
+      { id: "stgb-15-6", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §15.6", name: "Behinderung des EMS bei der Arbeit", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 2 },
+      { id: "stgb-15-4", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §15.4", name: "Bestechung von Beamten", fineType: "fixed", fine: 10000, fixedWanted: 2, grayWantedMax: 0 },
+      { id: "stgb-15-5", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §15.5", name: "Widerstand gegen Vollstreckungsbeamte", fineType: "fixed", fine: 20000, fixedWanted: 2, grayWantedMax: 0 },
+      { id: "stgb-15-7", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §15.7", name: "Nicht ausweisen bei einer polizeilichen / Medizinischen Maßnahme", fineType: "fixed", fine: 15000, fixedWanted: 1, grayWantedMax: 0 },
+      { id: "stgb-16", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §16", name: "Befreiung von Gefangenen", fineType: "per_active_wanted", finePerWanted: 10000, fixedWanted: 3, grayWantedMax: 2, note: "10.000$ pro aktiviertem Wanted" },
+      { id: "stgb-19", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §19", name: "Falsche Namensangabe", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 1 },
+      { id: "stgb-23", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §23", name: "Missbrauch von Notruf", fineType: "fixed", fine: 30000, fixedWanted: 0, grayWantedMax: 2 },
+      { id: "stgb-24", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §24", name: "Amtsanmaßung", fineType: "fixed", fine: 25000, fixedWanted: 2, grayWantedMax: 1 },
+      { id: "stgb-29", group: "Umgang mit Beamten (StGB)", section: "STGB", para: "StGB §29", name: "Missachtung eines Platzverweises", fineType: "fixed", fine: 20000, fixedWanted: 1, grayWantedMax: 1 },
+
+      { id: "stvo-2", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §2", name: "Gefährdung anderer Verkehrsteilnehmer", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-4", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §4", name: "Missachten von Rechtsfahrgebot", fineType: "fixed", fine: 8000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-5", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §5", name: "Überschreiten der Fahrzeugkapazitäten", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-6", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §6", name: "Fahren mit demoliertem Fahrzeug", fineType: "fixed", fine: 2000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-7", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §7", name: "Fahren ohne Licht (Dunkelheit, Wetterverhältnissen)", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-8-10-40", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §8", name: "Geschwindigkeitsüberschreitung 10 - 40 km/h", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-8-41-60", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §8", name: "Geschwindigkeitsüberschreitung 41 - 60 km/h", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-8-61-100", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §8", name: "Geschwindigkeitsüberschreitung 61 - 100 km/h", fineType: "fixed", fine: 15000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-8-101plus", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §8", name: "Geschwindigkeitsüberschreitung ab 101 km/h", fineType: "fixed", fine: 20000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-9-art-3", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §9 Art. 3", name: "Fahren ohne gültige Zulassung", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-10-art-1", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §10 Art. 1", name: "Missachten von Rechts vor Links", fineType: "fixed", fine: 1000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-10-art-2", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §10 Art. 2", name: "Missachten von Verkehrsschildern", fineType: "fixed", fine: 2000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-10-art-4", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §10 Art. 4", name: "Fahren ohne genügend Tankkapazität", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-10-art-6", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §10 Art. 6", name: "Nutzung eines Mobilgeräts am Steuer", fineType: "fixed", fine: 3000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-10-art-7", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §10 Art. 7", name: "Lärmbelästigung / Unnötiges Hupen", fineType: "fixed", fine: 20000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-10-art-9-1", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §10 Art. 9(1)", name: "Überholen auf der rechten Fahrbahn", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-10-art-12", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §10 Art. 12", name: "Fahren abseits von gekennzeichneten Wegen", fineType: "fixed", fine: 8000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-10-art-16", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §10 Art. 16", name: "Fahren auf der entgegengesetzten Fahrtrichtung", fineType: "fixed", fine: 30000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-12-1", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §12.1", name: "Falsch Parken / Halten", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-12-3", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §12.3", name: "Bergung aus nicht befahrbarem Gelände", fineType: "fixed", fine: 20000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-17-art-1-2", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §17 Art. 1+2", name: "Fahren im berauschten Zustand", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 2 },
+      { id: "stvo-19", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §19", name: "Fahren ohne Erste-Hilfe-Kit (Kofferraum)", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-20", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §20", name: "Fahren ohne Gurt (nicht angeschnallt)", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-24", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §24", name: "Fahrerflucht", fineType: "fixed", fine: 10000, fixedWanted: 1, grayWantedMax: 0 },
+      { id: "stvo-26", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §26", name: "Abschleppkosten", fineType: "fixed", fine: 15000, fixedWanted: 0, grayWantedMax: 0, note: "15.000$ / 20.000$" },
+      { id: "stvo-27", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §27", name: "Fahren ohne KFZ Versicherung", fineType: "fixed", fine: 20000, fixedWanted: 0, grayWantedMax: 0 },
+      { id: "stvo-28", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §28", name: "Sharing-Cars mit Anti-Radar wurde nicht aus dem Verkehr gezogen", fineType: "fixed", fine: 30000, fixedWanted: 3, grayWantedMax: 0 },
+
+      { id: "waffg-1", group: "Waffengesetz (WaffG)", section: "WAFFG", para: "WaffG §1", name: "Besitz legaler Waffen ohne Waffenschein", fineType: "per_active_wanted", finePerWanted: 10000, fixedWanted: 1, grayWantedMax: 1, note: "10.000$ pro aktiviertem Wanted" },
+      { id: "waffg-5-1", group: "Waffengesetz (WaffG)", section: "WAFFG", para: "WaffG §5.1", name: "Besitz illegaler Waffen", fineType: "per_active_wanted", finePerWanted: 10000, fixedWanted: 2, grayWantedMax: 1, note: "10.000$ pro aktiviertem Wanted" },
+      { id: "waffg-8-1", group: "Waffengesetz (WaffG)", section: "WAFFG", para: "WaffG §8.1", name: "Offenes Tragen einer Waffe", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 1 },
+      { id: "waffg-8-2", group: "Waffengesetz (WaffG)", section: "WAFFG", para: "WaffG §8.2", name: "Tragen einer Waffe in staatl. Einrichtungen", fineType: "fixed", fine: 5000, fixedWanted: 0, grayWantedMax: 1 },
+      { id: "waffg-11", group: "Waffengesetz (WaffG)", section: "WAFFG", para: "WaffG §11", name: "Ungesetzlicher Waffenhandel (An- & Verkauf)", fineType: "fixed", fine: 25000, fixedWanted: 3, grayWantedMax: 0 },
+
+      { id: "stgb-17-sperr", group: "Sperrzonen / Absperrungen / Kapitalverbrechen (StGB)", section: "STGB", para: "StGB §17", name: "Durchbrechen von Absperrungen", fineType: "fixed", fine: 15000, fixedWanted: 1, grayWantedMax: 1 },
+      { id: "stgb-18", group: "Sperrzonen / Absperrungen / Kapitalverbrechen (StGB)", section: "STGB", para: "StGB §18", name: "Unerlaubtes Betreten eines militärischen Geländes", fineType: "fixed", fine: 50000, fixedWanted: 5, grayWantedMax: 0 },
+      { id: "stgb-18-1", group: "Sperrzonen / Absperrungen / Kapitalverbrechen (StGB)", section: "STGB", para: "StGB §18.1", name: "Unerlaubtes Betreten von Sperrzonen", fineType: "fixed", fine: 25000, fixedWanted: 2, grayWantedMax: 1 },
+      { id: "stgb-18-2", group: "Sperrzonen / Absperrungen / Kapitalverbrechen (StGB)", section: "STGB", para: "StGB §18.2", name: "Unerlaubtes Befahren von Sperrzonen", fineType: "fixed", fine: 25000, fixedWanted: 2, grayWantedMax: 1 },
+      { id: "stgb-25", group: "Sperrzonen / Absperrungen / Kapitalverbrechen (StGB)", section: "STGB", para: "StGB §25", name: "Terrorismus (Deckt alle Strafen ab)", fineType: "fixed", fine: 25000, fixedWanted: 3, grayWantedMax: 0 },
+
+      { id: "btmg-2-1-kokain-klein", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §2.1", name: "Kokainbesitz Klein ab 11 - 30", fineType: "fixed", fine: 15000, fixedWanted: 0, grayWantedMax: 1 },
+      { id: "btmg-2-1-weed-klein", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §2.1", name: "Marihuana Besitz Klein 21 - 30", fineType: "fixed", fine: 15000, fixedWanted: 0, grayWantedMax: 1 },
+      { id: "btmg-2-1-mittel", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §2.1", name: "Drogenbesitz Mittel ab 31 - 50", fineType: "fixed", fine: 20000, fixedWanted: 1, grayWantedMax: 0 },
+      { id: "btmg-2-1-gross", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §2.1", name: "Drogenbesitz Groß 50+", fineType: "fixed", fine: 30000, fixedWanted: 2, grayWantedMax: 0 },
+      { id: "btmg-2-2", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §2.2", name: "Drogenhandel (An- & Verkauf)", fineType: "fixed", fine: 30000, fixedWanted: 3, grayWantedMax: 0 },
+      { id: "btmg-2-1-herstellung", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §2.1", name: "Drogen Herstellung", fineType: "fixed", fine: 30000, fixedWanted: 3, grayWantedMax: 0 },
+      { id: "btmg-3-bis-20", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §3", name: "Verkauf von Medizinprodukten bis 20 Medizinischen Gegenständen", fineType: "fixed", fine: 10000, fixedWanted: 1, grayWantedMax: 0 },
+      { id: "btmg-3-bis-50", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §3", name: "Verkauf von Medizinprodukten bis 50 Medizinischen Gegenständen", fineType: "fixed", fine: 20000, fixedWanted: 1, grayWantedMax: 1 },
+      { id: "btmg-3-ab-51", group: "Betäubungsmittelgesetz (BtMG)", section: "BTMG", para: "BtMG §3", name: "Verkauf von Medizinprodukten ab 51 Medizinischen Gegenständen", fineType: "fixed", fine: 25000, fixedWanted: 1, grayWantedMax: 2 },
+
+      { id: "stpo-6", group: "Strafprozessordnung (StPO)", section: "STPO", para: "§6 StPO", name: "Bußgelder nicht bezahlt (500k voll)", fineType: "fixed", fine: 500000, fixedWanted: 5, grayWantedMax: 0 }
+    ];
+
+    const GROUP_ORDER = [
+      "Psychische & Physische Integrität (StGB)",
+      "Wirtschaftskriminalität (StGB)",
+      "Umgang mit Beamten (StGB)",
+      "Straßenverkehrsordnung (StVO)",
+      "Waffengesetz (WaffG)",
+      "Sperrzonen / Absperrungen / Kapitalverbrechen (StGB)",
+      "Betäubungsmittelgesetz (BtMG)",
+      "Strafprozessordnung (StPO)"
+    ];
+
+    const FIBCO_FIELD_IDS = [
+      "fibcoName",
+      "fibcoCoId",
+      "fibcoDate",
+      "fibcoCodename",
+      "fibcoPhone",
+      "fibcoAgency",
+      "fibcoFamily",
+      "fibcoPassport",
+      "fibcoBadge",
+      "fibcoPersonnel",
+      "fibcoPdaMain",
+      "fibcoPdaVehicles",
+      "fibcoIncident",
+      "fibcoInterrogation",
+      "fibcoWitness",
+      "fibcoEvidence",
+      "fibcoAccusation",
+      "fibcoConclusion"
+    ];
+
+    const state = {
+      selected: new Set(),
+      extraWantedById: {},
+      search: "",
+      longMode: false,
+      autoReset: false
+    };
+
+    const els = {
+      body: document.body,
+      sections: $("catalogSections"),
+      searchInput: $("searchInput"),
+      selectedCount: $("selectedCount"),
+      sumFine: $("sumFine"),
+      sumWanted: $("sumWanted"),
+      btnReset: $("btnReset"),
+      btnCopy: $("btnCopy"),
+      btnCopyLine: $("btnCopyLine"),
+      copyStatus: $("copyStatus"),
+      aktenLine: $("aktenLine"),
+      aktenText: $("aktenText"),
+      liveStamp: $("liveStamp"),
+      rightsReadToggle: $("rightsReadToggle"),
+      remorseToggle: $("remorseToggle"),
+      repeatToggle: $("repeatToggle"),
+      transportToggle: $("transportToggle"),
+      systemWantedInput: $("systemWantedInput"),
+      plateInput: $("plateInput"),
+      placeInput: $("placeInput"),
+      azInput: $("azInput"),
+      modeToggle: $("modeToggle"),
+      shortLabel: $("shortLabel"),
+      longLabel: $("longLabel"),
+      autoResetToggle: $("autoResetToggle"),
+      pinSidebarToggle: $("pinSidebarToggle"),
+      sidebar: $("sidebar"),
+      fibcoCopyBtn: $("fibcoCopyBtn"),
+      fibcoPreview: $("fibcoPreview"),
+      themeDropdown: $("themeDropdown"),
+      themeDropdownBtn: $("themeDropdownBtn"),
+      themeDropdownMenu: $("themeDropdownMenu"),
+      customColor1: $("customColor1"),
+      customColor2: $("customColor2"),
+      applyCustomTheme: $("applyCustomTheme")
+    };
+
+    function formatMoney(value) {
+      const amount = Math.round(Number(value) || 0);
+      return `$${amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function getDate(now = new Date()) {
+      return now.toLocaleDateString("de-DE");
+    }
+
+    function getTime(now = new Date(), withSeconds = true) {
+      return now.toLocaleTimeString("de-DE", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: withSeconds ? "2-digit" : undefined
+      });
+    }
+
+    function hexToRgba(hex, alpha) {
+      const clean = hex.replace("#", "");
+      const full = clean.length === 3
+        ? clean.split("").map((char) => char + char).join("")
+        : clean;
+
+      const bigint = Number.parseInt(full, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function getFilteredLaws() {
+      const q = state.search.trim().toLowerCase();
+      if (!q) return LAW_DATA;
+
+      return LAW_DATA.filter((law) => {
+        return (
+          law.group.toLowerCase().includes(q) ||
+          law.section.toLowerCase().includes(q) ||
+          law.para.toLowerCase().includes(q) ||
+          law.name.toLowerCase().includes(q) ||
+          (law.note || "").toLowerCase().includes(q)
+        );
+      });
+    }
+
+    function getSelectedItems() {
+      return LAW_DATA.filter((law) => state.selected.has(law.id));
+    }
+
+    function getSelectedGrayWanted(item) {
+      const raw = Number(state.extraWantedById[item.id] || 0);
+      return Math.max(0, Math.min(raw, Number(item.grayWantedMax || 0)));
+    }
+
+    function getActiveWanted(item) {
+      return Number(item.fixedWanted || 0) + getSelectedGrayWanted(item);
+    }
+
+    function getDisplayFine(item) {
+      const activeWanted = getActiveWanted(item);
+
+      if (item.fineType === "per_active_wanted") {
+        return Number(item.finePerWanted || 0) * activeWanted;
+      }
+
+      if (item.fineType === "base_plus_per_active_wanted") {
+        return Number(item.fine || 0) + (Number(item.finePerWanted || 0) * activeWanted);
+      }
+
+      return Number(item.fine || 0);
+    }
+
+    function getEffectiveFine(item) {
+      let fine = getDisplayFine(item);
+
+      if (els.repeatToggle?.checked && item.section === "STVO") {
+        fine *= 2;
+      }
+
+      return fine;
+    }
+
+    function renderWantedIcons(fixedWanted, selectedGray, grayMax) {
+      let html = "";
+
+      for (let i = 0; i < fixedWanted; i += 1) {
+        html += `<span class="star-on">★</span>`;
+      }
+
+      for (let i = 0; i < selectedGray; i += 1) {
+        html += `<span class="star-on">★</span>`;
+      }
+
+      for (let i = selectedGray; i < grayMax; i += 1) {
+        html += `<span class="star-off">★</span>`;
+      }
+
+      if (!html) {
+        html = `<span class="star-off">—</span>`;
+      }
+
+      return html;
+    }
+
+    function renderSummaryWantedIcons(count) {
+      if (count <= 0) return "—";
+
+      const capped = Math.min(count, 5);
+      let icons = "";
+
+      for (let i = 0; i < capped; i += 1) {
+        icons += `<span class="star-on">★</span>`;
+      }
+
+      for (let i = capped; i < 5; i += 1) {
+        icons += `<span class="star-off">★</span>`;
+      }
+
+      return `<span class="wanted-inline">${icons}<strong>${count}</strong></span>`;
+    }
+
+    function getFineDisplayText(item) {
+      const fineText = formatMoney(getEffectiveFine(item));
+
+      if (els.repeatToggle?.checked && item.section === "STVO") {
+        return `${fineText} (x2)`;
+      }
+
+      return fineText;
+    }
+
+    function groupLaws(items) {
+      const map = new Map();
+
+      GROUP_ORDER.forEach((group) => {
+        map.set(group, []);
+      });
+
+      items.forEach((item) => {
+        if (!map.has(item.group)) {
+          map.set(item.group, []);
+        }
+        map.get(item.group).push(item);
+      });
+
+      return Array.from(map.entries()).filter(([, laws]) => laws.length > 0);
+    }
+
+    function renderCatalog() {
+      const filtered = getFilteredLaws();
+
+      if (!filtered.length) {
+        els.sections.innerHTML = `<div class="empty-card">Keine Treffer gefunden.</div>`;
+        return;
+      }
+
+      const grouped = groupLaws(filtered);
+
+      els.sections.innerHTML = grouped.map(([groupName, items]) => {
+        const cards = items.map((item) => {
+          const isSelected = state.selected.has(item.id);
+          const selectedGray = getSelectedGrayWanted(item);
+          const grayMax = Number(item.grayWantedMax || 0);
+
+          return `
+            <article class="card ${isSelected ? "is-selected" : ""}" data-id="${escapeHtml(item.id)}">
+              <div class="card-top">
+                <div class="card-para">${escapeHtml(item.para)}</div>
+                <div class="card-link">↗</div>
+              </div>
+
+              <div class="card-name">${escapeHtml(item.name)}</div>
+              <div class="card-fine">${escapeHtml(getFineDisplayText(item))}</div>
+              <div class="card-note">${escapeHtml(item.note || "")}</div>
+
+              <div class="card-bottom">
+                <div class="card-stars">${renderWantedIcons(item.fixedWanted, selectedGray, grayMax)}</div>
+
+                ${
+                  grayMax > 0
+                    ? `
+                      <div class="gray-wanted-tools" data-stop-click="true">
+                        <button class="gray-btn" type="button" data-minus="${escapeHtml(item.id)}">−</button>
+                        <div class="gray-count">${selectedGray}/${grayMax}</div>
+                        <button class="gray-btn" type="button" data-plus="${escapeHtml(item.id)}">+</button>
+                      </div>
+                    `
+                    : ""
+                }
+              </div>
+            </article>
+          `;
+        }).join("");
+
+        return `
+          <section class="catalog-section">
+            <div class="section-title">${escapeHtml(groupName)}</div>
+            <div class="cards">${cards}</div>
+          </section>
+        `;
+      }).join("");
+    }
+
+    function getHighestFine(items) {
+      if (!items.length) return 0;
+      return Math.max(...items.map((item) => getEffectiveFine(item)));
+    }
+
+    function getHighestWanted(items) {
+      if (!items.length) return 0;
+
+      let highest = Math.max(...items.map((item) => getActiveWanted(item)));
+      const systemWanted = Math.max(0, Number(els.systemWantedInput?.value || 0));
+
+      highest += systemWanted;
+
+      if (els.remorseToggle?.checked && highest > 0) {
+        highest = Math.max(1, highest - 2);
+      }
+
+      return highest;
+    }
+
+    function buildCompactLine(items) {
+      const date = getDate();
+      const time = getTime(new Date(), false);
+      const paras = items.map((item) => item.para).join(" + ");
+      return `${date} | ${time} - ${paras || "—"}`;
+    }
+
+    function buildLongText(items, highestFine, highestWanted) {
+      const lines = [];
+      const az = els.azInput.value.trim();
+      const plate = els.plateInput.value.trim();
+      const place = els.placeInput.value.trim();
+
+      lines.push(`Datum: ${getDate()}`);
+      lines.push(`Uhrzeit: ${getTime()}`);
+
+      if (az) lines.push(`Aktenzeichen: ${az}`);
+      if (plate) lines.push(`Kennzeichen: ${plate}`);
+      if (place) lines.push(`Ort: ${place}`);
+
+      lines.push("");
+      lines.push("Straftaten:");
+
+      if (!items.length) {
+        lines.push("- —");
+      } else {
+        items.forEach((item) => {
+          const activeWanted = getActiveWanted(item);
+          const graySelected = getSelectedGrayWanted(item);
+          let row = `- ${item.para} ${item.name} | ${formatMoney(getEffectiveFine(item))} | Wanteds: ${activeWanted}`;
+
+          if (graySelected > 0) {
+            row += ` | Graue Wanteds aktiviert: ${graySelected}/${item.grayWantedMax}`;
+          }
+
+          if (item.note) {
+            row += ` | Hinweis: ${item.note}`;
+          }
+
+          lines.push(row);
+        });
+      }
+
+      lines.push("");
+      lines.push(`Höchste Geldstrafe: ${formatMoney(highestFine)}`);
+      lines.push(`Höchste Wanteds: ${highestWanted || "—"}`);
+      lines.push(`Rechte vorgelesen: ${els.rightsReadToggle.checked ? "Ja" : "Nein"}`);
+      lines.push(`TV-Abtransport: ${els.transportToggle.checked ? "Ja" : "Nein"}`);
+      lines.push(`Aktenzeile: ${buildCompactLine(items)}`);
+
+      return lines.join("\n");
+    }
+
+    function updateLiveStamp() {
+      els.liveStamp.textContent = `${getDate()} | ${getTime()}`;
+    }
+
+    function updateModeLabels() {
+      if (state.longMode) {
+        els.shortLabel.classList.remove("is-active");
+        els.longLabel.classList.add("is-active");
+      } else {
+        els.shortLabel.classList.add("is-active");
+        els.longLabel.classList.remove("is-active");
+      }
+    }
+
+    function updateSummary() {
+      const items = getSelectedItems();
+      const highestFine = getHighestFine(items);
+      const highestWanted = getHighestWanted(items);
+
+      els.selectedCount.textContent = String(items.length);
+      els.sumFine.textContent = formatMoney(highestFine);
+      els.sumWanted.innerHTML = renderSummaryWantedIcons(highestWanted);
+      els.aktenLine.textContent = buildCompactLine(items);
+      els.aktenText.value = state.longMode
+        ? buildLongText(items, highestFine, highestWanted)
+        : buildCompactLine(items);
+
+      updateModeLabels();
+    }
+
+    function updateUI() {
+      renderCatalog();
+      updateSummary();
+    }
+
+    function resetAll() {
+      state.selected.clear();
+      state.extraWantedById = {};
+      state.search = "";
+
+      els.searchInput.value = "";
+      els.systemWantedInput.value = "0";
+      els.plateInput.value = "";
+      els.placeInput.value = "";
+      els.azInput.value = "";
+      els.remorseToggle.checked = false;
+      els.repeatToggle.checked = false;
+      els.transportToggle.checked = false;
+      els.rightsReadToggle.checked = false;
+      els.copyStatus.textContent = "Nicht kopiert";
+
+      updateUI();
+    }
+
+    async function copyToClipboard(text, okText, failText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        els.copyStatus.textContent = okText;
+
+        if (state.autoReset) {
+          setTimeout(() => {
+            resetAll();
+          }, 250);
+        }
+      } catch {
+        els.copyStatus.textContent = failText;
+      }
+    }
+
+    async function copyLine() {
+      if (!els.rightsReadToggle.checked) {
+        els.copyStatus.textContent = "Rechte nicht vorgelesen";
+        return;
+      }
+
+      await copyToClipboard(
+        els.aktenLine.textContent,
+        "Zeile kopiert",
+        "Zeile konnte nicht kopiert werden"
+      );
+    }
+
+    async function copyAkte() {
+      if (!els.rightsReadToggle.checked) {
+        els.copyStatus.textContent = "Rechte nicht vorgelesen";
+        return;
+      }
+
+      await copyToClipboard(
+        els.aktenText.value,
+        "Akte kopiert",
+        "Akte konnte nicht kopiert werden"
+      );
+    }
+
+    function closeAllModals() {
+      document.body.classList.remove("modal-open");
+      document.querySelectorAll(".modal-backdrop").forEach((modal) => {
+        modal.classList.add("hidden");
+      });
+    }
+
+    function openModal(id) {
+      const modal = $(id);
+      if (!modal) return;
+      document.body.classList.add("modal-open");
+      modal.classList.remove("hidden");
+    }
+
+    function setupModals() {
+      document.querySelectorAll("[data-modal]").forEach((btn) => {
+        btn.addEventListener("click", () => openModal(btn.dataset.modal));
+      });
+
+      document.querySelectorAll("[data-close-modal]").forEach((btn) => {
+        btn.addEventListener("click", closeAllModals);
+      });
+
+      document.querySelectorAll(".modal-backdrop").forEach((modal) => {
+        modal.addEventListener("click", (event) => {
+          if (event.target === modal) closeAllModals();
+        });
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeAllModals();
+          toggleThemeMenu(false);
+        }
+      });
+    }
+
+    function setupCatalogEvents() {
+      els.sections.addEventListener("click", (event) => {
+        const plus = event.target.closest("[data-plus]");
+        const minus = event.target.closest("[data-minus]");
+        const card = event.target.closest(".card");
+
+        if (plus) {
+          const item = LAW_DATA.find((law) => law.id === plus.dataset.plus);
+          if (!item) return;
+
+          const current = getSelectedGrayWanted(item);
+          state.extraWantedById[item.id] = Math.min(current + 1, Number(item.grayWantedMax || 0));
+          updateUI();
+          return;
+        }
+
+        if (minus) {
+          const item = LAW_DATA.find((law) => law.id === minus.dataset.minus);
+          if (!item) return;
+
+          const current = getSelectedGrayWanted(item);
+          state.extraWantedById[item.id] = Math.max(current - 1, 0);
+          updateUI();
+          return;
+        }
+
+        if (!card) return;
+        const id = card.dataset.id;
+        if (!id) return;
+
+        if (state.selected.has(id)) state.selected.delete(id);
+        else state.selected.add(id);
+
+        updateUI();
+      });
+    }
+
+    function getFibcoValue(id, fallback = "") {
+      const el = $(id);
+      return el ? el.value.trim() : fallback;
+    }
+
+    function buildFibcoTemplate() {
+      const name = getFibcoValue("fibcoName", "Name");
+      const coId = getFibcoValue("fibcoCoId", "CO-ID-1");
+      const date = getFibcoValue("fibcoDate", "Datum der Straftat");
+      const codename = getFibcoValue("fibcoCodename", "[Codename]");
+      const phone = getFibcoValue("fibcoPhone");
+      const agency = getFibcoValue("fibcoAgency");
+      const family = getFibcoValue("fibcoFamily");
+      const passport = getFibcoValue("fibcoPassport");
+      const badge = getFibcoValue("fibcoBadge");
+      const personnel = getFibcoValue("fibcoPersonnel");
+      const pdaMain = getFibcoValue("fibcoPdaMain");
+      const pdaVehicles = getFibcoValue("fibcoPdaVehicles");
+      const incident = getFibcoValue("fibcoIncident", "Am TT.MM.YYYY um HH:MM Uhr […]");
+      const interrogation = getFibcoValue("fibcoInterrogation", "- ABC");
+      const witness = getFibcoValue("fibcoWitness", "- ABC");
+      const evidence = getFibcoValue("fibcoEvidence", "- ABC");
+      const accusation = getFibcoValue("fibcoAccusation", "- ABC");
+      const conclusion = getFibcoValue("fibcoConclusion", "[Schlussbetrachtung]");
+
+      return [
+        `${name} | ${coId} | ${date}`,
+        "",
+        `Codename: ${codename}`,
+        "",
+        `Telefonnummer: ${phone}`,
+        `Behörde: ${agency}`,
+        `Familie: ${family}`,
+        "",
+        `Reisepass: ${passport}`,
+        `Dienstausweis: ${badge}`,
+        `Personalakte: ${personnel}`,
+        `PDA Hauptseite: ${pdaMain}`,
+        `PDA Fahrzeugliste: ${pdaVehicles}`,
+        "",
+        `[Vorfall]`,
+        `${incident}`,
+        "",
+        `[Befragung Tatverdächtiger]`,
+        `${interrogation}`,
+        "",
+        `[Zeugen-/Aussagen]`,
+        `${witness}`,
+        "",
+        `[Beweissammlung]`,
+        `${evidence}`,
+        "",
+        `[Tatvorwurf]`,
+        `${accusation}`,
+        "",
+        `[Schlussbetrachtung]`,
+        `${conclusion}`
+      ].join("\n");
+    }
+
+    function updateFibcoPreview() {
+      if (!els.fibcoPreview) return;
+      els.fibcoPreview.value = buildFibcoTemplate();
+    }
+
+    async function copyFibco() {
+      try {
+        await navigator.clipboard.writeText(els.fibcoPreview.value || "");
+      } catch {}
+    }
+
+    function setupFibco() {
+      FIBCO_FIELD_IDS.forEach((id) => {
+        const el = $(id);
+        if (!el) return;
+        el.addEventListener("input", updateFibcoPreview);
+        el.addEventListener("change", updateFibcoPreview);
+      });
+
+      if (els.fibcoCopyBtn) {
+        els.fibcoCopyBtn.addEventListener("click", copyFibco);
+      }
+
+      updateFibcoPreview();
+    }
+
+    function setActivePresetButton(themeName) {
+      document.querySelectorAll("[data-theme-preset]").forEach((btn) => {
+        btn.classList.toggle("is-active", btn.dataset.themePreset === themeName);
+      });
+    }
+
+    function applyPresetTheme(themeName) {
+      els.body.removeAttribute("style");
+      els.body.setAttribute("data-theme", themeName);
+      setActivePresetButton(themeName);
+    }
+
+    function applyCustomTheme(color1, color2) {
+      els.body.setAttribute("data-theme", "custom");
+      els.body.style.setProperty("--accent", color1);
+      els.body.style.setProperty("--accent-2", color2);
+      els.body.style.setProperty("--accent-soft", hexToRgba(color1, 0.12));
+      els.body.style.setProperty("--accent-border", hexToRgba(color2, 0.3));
+      setActivePresetButton("");
+    }
+
+    function toggleThemeMenu(force) {
+      const shouldOpen = typeof force === "boolean"
+        ? force
+        : els.themeDropdownMenu.classList.contains("hidden");
+
+      els.themeDropdownMenu.classList.toggle("hidden", !shouldOpen);
+    }
+
+    function setupThemeDropdown() {
+      els.themeDropdownBtn.addEventListener("click", (event) => {
+        event.stopPropagation();
+        toggleThemeMenu();
+      });
+
+      els.themeDropdownMenu.addEventListener("click", (event) => {
+        event.stopPropagation();
+      });
+
+      document.querySelectorAll("[data-theme-preset]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          applyPresetTheme(btn.dataset.themePreset);
+        });
+      });
+
+      els.applyCustomTheme.addEventListener("click", () => {
+        applyCustomTheme(els.customColor1.value, els.customColor2.value);
+      });
+
+      document.addEventListener("click", () => {
+        toggleThemeMenu(false);
+      });
+    }
+
+    function setupInputs() {
+      els.searchInput.addEventListener("input", (event) => {
+        state.search = event.target.value || "";
+        renderCatalog();
+      });
+
+      [
+        els.remorseToggle,
+        els.repeatToggle,
+        els.transportToggle,
+        els.rightsReadToggle,
+        els.systemWantedInput,
+        els.plateInput,
+        els.placeInput,
+        els.azInput
+      ].forEach((el) => {
+        el.addEventListener("input", updateSummary);
+        el.addEventListener("change", updateSummary);
+      });
+
+      els.modeToggle.addEventListener("change", () => {
+        state.longMode = !!els.modeToggle.checked;
+        updateSummary();
+      });
+
+      els.autoResetToggle.addEventListener("change", () => {
+        state.autoReset = !!els.autoResetToggle.checked;
+      });
+
+      els.pinSidebarToggle.addEventListener("change", () => {
+        els.sidebar.classList.toggle("is-pinned", !!els.pinSidebarToggle.checked);
+      });
+
+      els.btnReset.addEventListener("click", resetAll);
+      els.btnCopyLine.addEventListener("click", copyLine);
+      els.btnCopy.addEventListener("click", copyAkte);
+      els.aktenLine.addEventListener("click", copyLine);
+    }
+
+    function boot() {
+      state.longMode = !!els.modeToggle.checked;
+      state.autoReset = !!els.autoResetToggle.checked;
+
+      setupModals();
+      setupCatalogEvents();
+      setupInputs();
+      setupFibco();
+      setupThemeDropdown();
+
+      applyPresetTheme("mono");
+      updateLiveStamp();
+      updateUI();
+
+      setInterval(() => {
+        updateLiveStamp();
+        updateSummary();
+      }, 1000);
+    }
+
+    boot();
+  </script>
 </body>
 </html>
