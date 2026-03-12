@@ -126,6 +126,5 @@ window.FIBCO_FIELD_IDS = [
   "fibcoInterrogation",
   "fibcoWitness",
   "fibcoEvidence",
-  "fibcoAccusation",
   "fibcoConclusion"
 ];
