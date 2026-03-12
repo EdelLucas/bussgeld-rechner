@@ -62,9 +62,12 @@
       aktenText: $("aktenText"),
       liveStamp: $("liveStamp"),
       rightsReadToggle: $("rightsReadToggle"),
+      rightsWarning: $("rightsWarning"),
       remorseToggle: $("remorseToggle"),
-      repeatToggle: $("repeatToggle"),
       transportToggle: $("transportToggle"),
+      transportFields: $("transportFields"),
+      transportAgencySelect: $("transportAgencySelect"),
+      transportNoteInput: $("transportNoteInput"),
       systemWantedInput: $("systemWantedInput"),
       plateInput: $("plateInput"),
       placeInput: $("placeInput"),
@@ -126,29 +129,15 @@
     }
 
     function getEffectiveFine(item) {
-      let fine = getDisplayFine(item);
-
-      if (els.repeatToggle && els.repeatToggle.checked && item.section === "STVO") {
-        fine *= 2;
-      }
-
-      return fine;
+      return getDisplayFine(item);
     }
 
     function renderWantedIcons(fixedWanted, selectedGray, grayMax) {
       let html = "";
 
-      for (let i = 0; i < fixedWanted; i += 1) {
-        html += `<span class="star-on">★</span>`;
-      }
-
-      for (let i = 0; i < selectedGray; i += 1) {
-        html += `<span class="star-on">★</span>`;
-      }
-
-      for (let i = selectedGray; i < grayMax; i += 1) {
-        html += `<span class="star-off">★</span>`;
-      }
+      for (let i = 0; i < fixedWanted; i += 1) html += `<span class="star-on">★</span>`;
+      for (let i = 0; i < selectedGray; i += 1) html += `<span class="star-on">★</span>`;
+      for (let i = selectedGray; i < grayMax; i += 1) html += `<span class="star-off">★</span>`;
 
       if (!html) html = `<span class="star-off">—</span>`;
       return html;
@@ -167,13 +156,7 @@
     }
 
     function getFineDisplayText(item) {
-      const fineText = formatMoney(getEffectiveFine(item));
-
-      if (els.repeatToggle && els.repeatToggle.checked && item.section === "STVO") {
-        return `${fineText} (x2)`;
-      }
-
-      return fineText;
+      return formatMoney(getEffectiveFine(item));
     }
 
     function groupLaws(items) {
@@ -273,6 +256,19 @@
       return `${date} | ${time} - ${paras || "—"}`;
     }
 
+    function buildTransportText() {
+      if (!els.transportToggle || !els.transportToggle.checked) return "Nein";
+
+      const agency = els.transportAgencySelect ? els.transportAgencySelect.value.trim() : "";
+      const note = els.transportNoteInput ? els.transportNoteInput.value.trim() : "";
+
+      const parts = ["Ja"];
+      if (agency) parts.push(`Behörde: ${agency}`);
+      if (note) parts.push(`Hinweis: ${note}`);
+
+      return parts.join(" | ");
+    }
+
     function buildLongText(items, highestFine, highestWanted) {
       const lines = [];
       const az = els.azInput ? els.azInput.value.trim() : "";
@@ -295,12 +291,18 @@
         items.forEach((item) => {
           const activeWanted = getActiveWanted(item);
           const graySelected = getSelectedGrayWanted(item);
-          let row = `- ${item.para} ${item.name} | ${formatMoney(getEffectiveFine(item))} | Wanteds: ${activeWanted}`;
 
-          if (graySelected > 0) row += ` | Graue Wanteds aktiviert: ${graySelected}/${item.grayWantedMax}`;
-          if (item.note) row += ` | Hinweis: ${item.note}`;
+          lines.push(`- ${item.para} — ${item.name}`);
+          lines.push(`  Geldstrafe: ${formatMoney(getEffectiveFine(item))}`);
+          lines.push(`  Wanteds: ${activeWanted}`);
 
-          lines.push(row);
+          if (graySelected > 0) {
+            lines.push(`  Graue Wanteds aktiviert: ${graySelected}/${item.grayWantedMax}`);
+          }
+
+          if (item.note) {
+            lines.push(`  Zusatzinfo: ${item.note}`);
+          }
         });
       }
 
@@ -308,7 +310,7 @@
       lines.push(`Höchste Geldstrafe: ${formatMoney(highestFine)}`);
       lines.push(`Höchste Wanteds: ${highestWanted || "—"}`);
       lines.push(`Rechte vorgelesen: ${els.rightsReadToggle && els.rightsReadToggle.checked ? "Ja" : "Nein"}`);
-      lines.push(`TV-Abtransport: ${els.transportToggle && els.transportToggle.checked ? "Ja" : "Nein"}`);
+      lines.push(`TV-Abtransport: ${buildTransportText()}`);
       lines.push(`Aktenzeile: ${buildCompactLine(items)}`);
 
       return lines.join("\n");
@@ -331,6 +333,16 @@
       }
     }
 
+    function updateRightsWarning() {
+      if (!els.rightsWarning || !els.rightsReadToggle) return;
+      els.rightsWarning.classList.toggle("is-hidden", !!els.rightsReadToggle.checked);
+    }
+
+    function updateTransportFields() {
+      if (!els.transportFields || !els.transportToggle) return;
+      els.transportFields.classList.toggle("is-hidden", !els.transportToggle.checked);
+    }
+
     function updateSummary() {
       const items = getSelectedItems();
       const highestFine = getHighestFine(items);
@@ -348,6 +360,8 @@
       }
 
       updateModeLabels();
+      updateRightsWarning();
+      updateTransportFields();
     }
 
     function updateUI() {
@@ -366,8 +380,9 @@
       if (els.placeInput) els.placeInput.value = "";
       if (els.azInput) els.azInput.value = "";
       if (els.remorseToggle) els.remorseToggle.checked = false;
-      if (els.repeatToggle) els.repeatToggle.checked = false;
       if (els.transportToggle) els.transportToggle.checked = false;
+      if (els.transportAgencySelect) els.transportAgencySelect.value = "";
+      if (els.transportNoteInput) els.transportNoteInput.value = "";
       if (els.rightsReadToggle) els.rightsReadToggle.checked = false;
       if (els.copyStatus) els.copyStatus.textContent = "Nicht kopiert";
 
@@ -390,6 +405,7 @@
     async function copyLine() {
       if (!els.rightsReadToggle || !els.rightsReadToggle.checked) {
         if (els.copyStatus) els.copyStatus.textContent = "Rechte nicht vorgelesen";
+        updateRightsWarning();
         return;
       }
 
@@ -403,6 +419,7 @@
     async function copyAkte() {
       if (!els.rightsReadToggle || !els.rightsReadToggle.checked) {
         if (els.copyStatus) els.copyStatus.textContent = "Rechte nicht vorgelesen";
+        updateRightsWarning();
         return;
       }
 
@@ -503,7 +520,6 @@
       const extra = els.fibcoAccusationExtra ? els.fibcoAccusationExtra.value.trim() : "";
 
       const parts = [];
-
       if (selectedLaws.length) parts.push(selectedLaws.join("\n"));
       if (extra) parts.push(extra);
 
@@ -677,13 +693,14 @@
 
       [
         els.remorseToggle,
-        els.repeatToggle,
-        els.transportToggle,
         els.rightsReadToggle,
         els.systemWantedInput,
         els.plateInput,
         els.placeInput,
-        els.azInput
+        els.azInput,
+        els.transportToggle,
+        els.transportAgencySelect,
+        els.transportNoteInput
       ].forEach((el) => {
         if (!el) return;
         el.addEventListener("input", updateSummary);
