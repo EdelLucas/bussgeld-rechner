@@ -737,6 +737,10 @@
       if (els.btnReset) els.btnReset.addEventListener("click", resetAll);
       if (els.btnCopyLine) els.btnCopyLine.addEventListener("click", copyLine);
       if (els.btnCopy) els.btnCopy.addEventListener("click", copyAkte);
+
+      if (els.aktenOutput) {
+        els.aktenOutput.addEventListener("click", copyAkte);
+      }
     }
 
     state.longMode = !!(els.modeToggle && els.modeToggle.checked);
