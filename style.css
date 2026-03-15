@@ -330,16 +330,16 @@ svg {
   border-color: transparent;
 }
 
-.top-btn--donate {
-  background: linear-gradient(135deg, #0070ba, #003087);
+.top-btn--discord {
+  background: linear-gradient(135deg, #5865f2, #404eed);
   border-color: transparent;
   color: #ffffff;
 }
 
-.top-btn--donate:hover,
-.top-btn--donate:focus-visible {
+.top-btn--discord:hover,
+.top-btn--discord:focus-visible {
   border-color: rgba(255,255,255,0.22);
-  box-shadow: 0 0 0 3px rgba(0,112,186,0.18);
+  box-shadow: 0 0 0 3px rgba(88,101,242,0.18);
 }
 
 .mode-switch {
@@ -511,12 +511,16 @@ svg {
 }
 
 .quickbar {
-  align-self: start;
+  align-self: stretch;
+  position: relative;
 }
 
 .quickbar-inner {
-  position: sticky;
-  top: 16px;
+  position: fixed;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 220px;
   display: grid;
   gap: 10px;
   padding: 14px;
@@ -524,6 +528,7 @@ svg {
   border-radius: 18px;
   background: linear-gradient(180deg, var(--panel-start), var(--panel-end));
   box-shadow: 0 20px 45px rgba(0,0,0,0.35);
+  z-index: 20;
 }
 
 .quick-btn {
@@ -1330,7 +1335,11 @@ select.field-input {
 
 @media (max-width: 1500px) {
   .layout {
-    grid-template-columns: 190px minmax(0, 1fr) 360px;
+    grid-template-columns: 220px minmax(0, 1fr) 360px;
+  }
+
+  .quickbar-inner {
+    width: 200px;
   }
 }
 
@@ -1360,6 +1369,8 @@ select.field-input {
 
   .quickbar-inner {
     position: static;
+    transform: none;
+    width: auto;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   }
 
