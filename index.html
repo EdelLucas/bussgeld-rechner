@@ -5,22 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Strafkatalog</title>
 
-  <link rel="icon" type="image/png" sizes="32x32" href="./favicon.png?v=5" />
-  <link rel="apple-touch-icon" href="./favicon.png?v=5" />
-  <link rel="stylesheet" href="./style.css?v=5" />
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon.png?v=6" />
+  <link rel="apple-touch-icon" href="./favicon.png?v=6" />
+  <link rel="stylesheet" href="./style.css?v=6" />
 </head>
-<body data-theme="mono">
+<body data-theme="blue">
   <div class="app">
     <header class="topbar">
       <div class="topbar-left">
         <div class="brand">
           <img
-            src="./assests/logo.png"
-            alt="Logo"
-            class="brand-logo"
-            onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';"
+            src="./favicon.png?v=6"
+            alt="Favicon"
+            class="brand-favicon"
           />
-          <div class="brand-badge-fallback">MDT</div>
 
           <div class="brand-copy">
             <div class="brand-title">Strafkatalog</div>
@@ -619,7 +617,8 @@
                 <div class="theme-menu-title">Farbdesign</div>
 
                 <div class="theme-presets">
-                  <button class="theme-preset is-active" type="button" data-theme-preset="mono">Schwarz / Weiß</button>
+                  <button class="theme-preset is-active" type="button" data-theme-preset="blue">Blau (Standard)</button>
+                  <button class="theme-preset" type="button" data-theme-preset="mono">Schwarz / Weiß</button>
                   <button class="theme-preset" type="button" data-theme-preset="redblue">Rot / Blau</button>
                   <button class="theme-preset" type="button" data-theme-preset="pinkpurple">Rosa / Lila</button>
                   <button class="theme-preset" type="button" data-theme-preset="ice">Hellblau / Cyan</button>
@@ -632,12 +631,12 @@
                 <div class="theme-custom-grid">
                   <label class="theme-color-field">
                     <span>Farbe 1</span>
-                    <input id="customColor1" type="color" value="#ffffff" />
+                    <input id="customColor1" type="color" value="#4da3ff" />
                   </label>
 
                   <label class="theme-color-field">
                     <span>Farbe 2</span>
-                    <input id="customColor2" type="color" value="#8a8a8a" />
+                    <input id="customColor2" type="color" value="#1d63ff" />
                   </label>
                 </div>
 
