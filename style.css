@@ -1,38 +1,67 @@
 :root {
   --text: #ffffff;
-  --muted: #b7b7bf;
-  --muted-2: #8f8f97;
+  --muted: #b7c3d9;
+  --muted-2: #8fa4c7;
   --good: #28d07f;
   --warning: #f5b432;
   --border: rgba(255, 255, 255, 0.12);
   --shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
 
-  --accent: #ffffff;
-  --accent-2: #8c8c94;
-  --accent-soft: rgba(255,255,255,0.08);
-  --accent-border: rgba(255,255,255,0.2);
+  --accent: #4da3ff;
+  --accent-2: #1d63ff;
+  --accent-soft: rgba(77,163,255,0.12);
+  --accent-border: rgba(29,99,255,0.3);
 
-  --page-start: #111214;
-  --page-end: #090a0c;
-  --page-glow-1: rgba(255,255,255,0.05);
-  --page-glow-2: rgba(255,255,255,0.03);
+  --page-start: #08111f;
+  --page-end: #050a14;
+  --page-glow-1: rgba(77,163,255,0.16);
+  --page-glow-2: rgba(29,99,255,0.12);
 
-  --topbar-start: rgba(19,19,23,0.98);
-  --topbar-mid: rgba(22,22,26,0.98);
-  --topbar-end: rgba(18,18,24,0.98);
+  --topbar-start: rgba(9,24,48,0.98);
+  --topbar-mid: rgba(10,21,42,0.98);
+  --topbar-end: rgba(7,16,34,0.98);
 
-  --section-start: rgba(35,35,40,0.92);
-  --section-end: rgba(22,22,26,0.92);
+  --section-start: rgba(23,61,119,0.92);
+  --section-end: rgba(12,34,74,0.92);
 
-  --panel-start: rgba(7,8,10,0.98);
-  --panel-end: rgba(5,6,8,0.98);
+  --panel-start: rgba(6,13,28,0.98);
+  --panel-end: rgba(4,9,20,0.98);
 
-  --card-start: rgba(16,16,18,1);
-  --card-end: rgba(8,8,10,1);
+  --card-start: rgba(10,24,46,1);
+  --card-end: rgba(6,14,28,1);
 
-  --button-bg: rgba(11,12,15,0.92);
-  --field-bg: rgba(4,5,7,0.96);
-  --pill-bg: rgba(255,255,255,0.05);
+  --button-bg: linear-gradient(135deg, rgba(18,48,97,0.9), rgba(10,29,66,0.9));
+  --field-bg: rgba(5,12,25,0.96);
+  --pill-bg: rgba(77,163,255,0.12);
+}
+
+body[data-theme="blue"] {
+  --accent: #4da3ff;
+  --accent-2: #1d63ff;
+  --accent-soft: rgba(77,163,255,0.12);
+  --accent-border: rgba(29,99,255,0.3);
+
+  --page-start: #08111f;
+  --page-end: #050a14;
+  --page-glow-1: rgba(77,163,255,0.16);
+  --page-glow-2: rgba(29,99,255,0.12);
+
+  --topbar-start: rgba(9,24,48,0.98);
+  --topbar-mid: rgba(10,21,42,0.98);
+  --topbar-end: rgba(7,16,34,0.98);
+
+  --section-start: rgba(23,61,119,0.92);
+  --section-end: rgba(12,34,74,0.92);
+
+  --panel-start: rgba(6,13,28,0.98);
+  --panel-end: rgba(4,9,20,0.98);
+
+  --card-start: rgba(10,24,46,1);
+  --card-end: rgba(6,14,28,1);
+
+  --button-bg: linear-gradient(135deg, rgba(18,48,97,0.9), rgba(10,29,66,0.9));
+  --field-bg: rgba(5,12,25,0.96);
+  --pill-bg: rgba(77,163,255,0.12);
 }
 
 body[data-theme="mono"] {
@@ -244,27 +273,15 @@ svg {
   flex: 0 0 auto;
 }
 
-.brand-logo {
-  width: 56px;
-  height: 56px;
-  object-fit: contain;
+.brand-favicon {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
   border-radius: 12px;
   display: block;
   flex: 0 0 auto;
-}
-
-.brand-badge-fallback {
-  display: none;
-  place-items: center;
-  width: 56px;
-  height: 36px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: #fff;
-  font-size: 13px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  flex: 0 0 auto;
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
 }
 
 .brand-title {
