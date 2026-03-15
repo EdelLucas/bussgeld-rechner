@@ -1,5 +1,5 @@
 (function () {
-  const STORAGE_KEY = "strafkatalog-theme-v2";
+  const STORAGE_KEY = "strafkatalog-theme-v3";
 
   function hexToRgb(hex) {
     const clean = hex.replace("#", "");
@@ -167,7 +167,7 @@
     } else if (saved && saved.type === "preset" && saved.themeName) {
       applyPresetTheme(saved.themeName, false);
     } else {
-      applyPresetTheme("mono", false);
+      applyPresetTheme("blue", false);
     }
   };
 })();
