@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Strafkatalog</title>
 
-  <link rel="icon" type="image/png" sizes="32x32" href="./favicon.png?v=6" />
-  <link rel="apple-touch-icon" href="./favicon.png?v=6" />
-  <link rel="stylesheet" href="./style.css?v=6" />
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon.png?v=7" />
+  <link rel="apple-touch-icon" href="./favicon.png?v=7" />
+  <link rel="stylesheet" href="./style.css?v=7" />
 </head>
 <body data-theme="blue">
   <div class="app">
@@ -15,7 +15,7 @@
       <div class="topbar-left">
         <div class="brand">
           <img
-            src="./favicon.png?v=6"
+            src="./favicon.png?v=7"
             alt="Favicon"
             class="brand-favicon"
           />
@@ -171,10 +171,18 @@
           </div>
 
           <div class="field-block">
-            <div class="sidebar-name">Kennzeichen & Ort</div>
-            <div class="field-grid">
-              <input id="plateInput" class="field-input" type="text" placeholder="z.B. LS-AB-123" />
-              <input id="placeInput" class="field-input" type="text" placeholder="z.B. Vinewood" />
+            <div class="sidebar-name">Blitzer-Rechner</div>
+
+            <button id="openBlitzerBtn" class="copy-btn copy-btn--primary blitzer-open-btn" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 7h10l2 3v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7l2-3Zm5 3.25A3.75 3.75 0 1 0 12 17.75a3.75 3.75 0 0 0 0-7.5Z"/>
+              </svg>
+              <span>Blitzer öffnen</span>
+            </button>
+
+            <div id="blitzerSummaryBox" class="blitzer-summary-box is-hidden">
+              <div class="blitzer-summary-title">Blitzer-Daten</div>
+              <div id="blitzerSummaryText" class="blitzer-summary-text">Noch keine Daten vorhanden.</div>
             </div>
           </div>
 
@@ -260,13 +268,59 @@
   </div>
 
   <div id="blitzerModal" class="modal-backdrop hidden">
-    <div class="modal">
-      <div class="modal-header">
-        <div class="modal-title">Blitzer</div>
-        <button class="modal-close" type="button" data-close-modal>✕</button>
+    <div class="modal modal-blitzer">
+      <div class="modal-header modal-header--blitzer">
+        <div class="modal-title modal-title--blitzer">
+          <span class="blitzer-title-icon">📷</span>
+          <span>Blitzer-Rechner</span>
+        </div>
+        <button class="modal-close modal-close--blitzer" type="button" data-close-modal>✕</button>
       </div>
-      <div class="modal-body">
-        <p>Platzhalter für dein Blitzer-Modul.</p>
+
+      <div class="modal-body modal-body--blitzer">
+        <p class="blitzer-intro">
+          Berechne automatisch das Bußgeld anhand der gemessenen Geschwindigkeit und Zone.
+          Die Aktenzeile wird direkt generiert.
+        </p>
+
+        <div class="blitzer-grid">
+          <div class="blitzer-field">
+            <label for="blitzerPlate">KENNZEICHEN</label>
+            <input id="blitzerPlate" class="field-input blitzer-input" type="text" placeholder="z.B. LS-AB-123" />
+          </div>
+
+          <div class="blitzer-field">
+            <label for="blitzerPlace">ORT</label>
+            <input id="blitzerPlace" class="field-input blitzer-input" type="text" placeholder="z.B. Vinewood Blvd" />
+          </div>
+
+          <div class="blitzer-field">
+            <label for="blitzerZone">ZONE</label>
+            <select id="blitzerZone" class="field-input blitzer-input">
+              <option value="50">Verkehrsberuhigter Bereich (50 km/h)</option>
+              <option value="200">Außerorts (200 km/h)</option>
+              <option value="350">Highway (350 km/h)</option>
+              <option value="300">Freeway (300 km/h)</option>
+            </select>
+          </div>
+
+          <div class="blitzer-field">
+            <label for="blitzerSpeed">GEMESSENE GESCHW. (KM/H)</label>
+            <input id="blitzerSpeed" class="field-input blitzer-input" type="number" min="0" step="1" placeholder="z.B. 120" />
+          </div>
+        </div>
+
+        <button id="blitzerCalcBtn" class="blitzer-calc-btn" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 3h6M8 7h8M7 11h10M7 15h3m4 0h3M7 19h10M6 4h12a1 1 0 0 1 1 1v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a1 1 0 0 1 1-1Z"/>
+          </svg>
+          <span>Berechnen</span>
+        </button>
+
+        <div id="blitzerResultBox" class="blitzer-result-box is-hidden">
+          <div class="blitzer-result-title">Ergebnis</div>
+          <div id="blitzerResultText" class="blitzer-result-text"></div>
+        </div>
       </div>
     </div>
   </div>
