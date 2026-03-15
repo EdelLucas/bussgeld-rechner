@@ -1424,4 +1424,8 @@ select.field-input {
   .top-btn--pill span {
     font-size: 13px;
   }
+
+  #aktenOutput {
+  cursor: pointer;
+}
 }
