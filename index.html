@@ -7,7 +7,6 @@
 
   <link rel="icon" type="image/png" sizes="32x32" href="./favicon.png?v=2" />
   <link rel="apple-touch-icon" href="./favicon.png?v=2" />
-
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body data-theme="mono">
@@ -73,68 +72,13 @@
       </div>
 
       <div class="topbar-right">
-        <div class="mode-switch">
-          <span id="shortLabel" class="mode-label is-active">Kurzform</span>
-          <label class="switch switch--compact">
-            <input id="modeToggle" type="checkbox" />
-            <span></span>
-          </label>
-          <span id="longLabel" class="mode-label">Langform</span>
-        </div>
-
-        <label class="mini-toggle">
-          <span>Auto-Zurücksetzen</span>
-          <span class="switch">
-            <input id="autoResetToggle" type="checkbox" />
-            <span></span>
-          </span>
-        </label>
-
-        <label class="mini-toggle">
-          <span>Sidebar fixieren</span>
-          <span class="switch">
-            <input id="pinSidebarToggle" type="checkbox" checked />
-            <span></span>
-          </span>
-        </label>
-
-        <div class="theme-dropdown" id="themeDropdown">
-          <button id="themeDropdownBtn" class="top-btn top-btn--pill top-btn--static" type="button">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a8 8 0 1 0 8 8c0-.34-.02-.68-.06-1.02a6 6 0 1 1-7.92-6.92c-.34-.04-.68-.06-1.02-.06Z"/></svg>
-            <span>Design</span>
-          </button>
-
-          <div id="themeDropdownMenu" class="theme-menu hidden">
-            <div class="theme-menu-title">Farbdesign</div>
-
-            <div class="theme-presets">
-              <button class="theme-preset is-active" type="button" data-theme-preset="mono">Schwarz / Weiß</button>
-              <button class="theme-preset" type="button" data-theme-preset="redblue">Rot / Blau</button>
-              <button class="theme-preset" type="button" data-theme-preset="pinkpurple">Rosa / Lila</button>
-              <button class="theme-preset" type="button" data-theme-preset="ice">Hellblau / Cyan</button>
-            </div>
-
-            <div class="theme-menu-divider"></div>
-
-            <div class="theme-menu-title">Benutzerdefiniert</div>
-
-            <div class="theme-custom-grid">
-              <label class="theme-color-field">
-                <span>Farbe 1</span>
-                <input id="customColor1" type="color" value="#ffffff" />
-              </label>
-
-              <label class="theme-color-field">
-                <span>Farbe 2</span>
-                <input id="customColor2" type="color" value="#8a8a8a" />
-              </label>
-            </div>
-
-            <button id="applyCustomTheme" class="copy-btn copy-btn--primary theme-apply-btn" type="button">
-              Eigene Farben anwenden
-            </button>
-          </div>
-        </div>
+        <button class="top-btn top-btn--pill" type="button" data-modal="settingsModal" title="Einstellungen">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 8.5A3.5 3.5 0 1 0 12 15.5A3.5 3.5 0 1 0 12 8.5Z"/>
+            <path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a1 1 0 0 1 0 1.4l-1.2 1.2a1 1 0 0 1-1.4 0l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V20a1 1 0 0 1-1 1h-1.8a1 1 0 0 1-1-1v-.2a1 1 0 0 0-.6-.9 1 1 0 0 0-1.1.2l-.1.1a1 1 0 0 1-1.4 0L4.3 18.1a1 1 0 0 1 0-1.4l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H3.5a1 1 0 0 1-1-1v-1.8a1 1 0 0 1 1-1h.2a1 1 0 0 0 .9-.6 1 1 0 0 0-.2-1.1l-.1-.1a1 1 0 0 1 0-1.4L5.5 4.8a1 1 0 0 1 1.4 0l.1.1a1 1 0 0 0 1.1.2 1 1 0 0 0 .6-.9V4a1 1 0 0 1 1-1h1.8a1 1 0 0 1 1 1v.2a1 1 0 0 0 .6.9 1 1 0 0 0 1.1-.2l.1-.1a1 1 0 0 1 1.4 0l1.2 1.2a1 1 0 0 1 0 1.4l-.1.1a1 1 0 0 0-.2 1.1 1 1 0 0 0 .9.6h.2a1 1 0 0 1 1 1v1.8a1 1 0 0 1-1 1h-.2a1 1 0 0 0-.9.6Z"/>
+          </svg>
+          <span>Einstellungen</span>
+        </button>
       </div>
     </header>
 
@@ -265,18 +209,14 @@
         </section>
 
         <section class="panel">
-          <div class="panel-title">AKTENZEILE</div>
-
-          <div id="liveStamp" class="live-stamp">--.--.---- | --:--:--</div>
-
-          <div class="field-block">
-            <div class="field-title">Kurze Aktenzeile</div>
-            <div id="aktenLine" class="copy-box">--.--.---- | --:-- - —</div>
-          </div>
-
-          <div class="field-block">
-            <div class="field-title">Langform</div>
-            <textarea id="aktenText" class="textarea" readonly placeholder="Wähle Straftaten aus..."></textarea>
+          <div class="field-block field-block--first">
+            <div id="aktenOutputLabel" class="field-title">Kurze Aktenzeile</div>
+            <textarea
+              id="aktenOutput"
+              class="textarea textarea--compact"
+              readonly
+              placeholder="Wähle Straftaten aus..."
+            ></textarea>
           </div>
 
           <div class="copy-footer">
@@ -333,23 +273,97 @@
   </div>
 
   <div id="anwaltModal" class="modal-backdrop hidden">
-    <div class="modal">
+    <div class="modal modal-lg">
       <div class="modal-header">
-        <div class="modal-title">Anwälte</div>
+        <div class="modal-title">Anwälte / Justiz</div>
         <button class="modal-close" type="button" data-close-modal>✕</button>
       </div>
+
       <div class="modal-body">
-        <div class="list-block">
-          <strong>Justizminister</strong>
-          <div>—</div>
+        <div class="anwalt-section">
+          <div class="anwalt-section-title">Rechtsanwälte</div>
+          <div class="anwalt-list">
+            <div class="anwalt-row anwalt-row--head">
+              <span>Name</span>
+              <span>Lizenz bis</span>
+              <span>Telefon / Orga</span>
+            </div>
+
+            <div class="anwalt-row"><span>Rino Tabasco</span><span>02.04.2026</span><span>17-88-671</span></div>
+            <div class="anwalt-row"><span>Armin Effinger</span><span>03.04.2026</span><span>12-84-123</span></div>
+            <div class="anwalt-row"><span>Mike Volkov</span><span>02.04.2026</span><span>23-45-677</span></div>
+            <div class="anwalt-row"><span>Jason Madrazo</span><span>03.04.2026</span><span>31-11-114</span></div>
+            <div class="anwalt-row"><span>Walter Mayson</span><span>09.04.2026</span><span>69-69-873</span></div>
+          </div>
         </div>
-        <div class="list-block">
-          <strong>Staatsanwälte</strong>
-          <div>—</div>
+
+        <div class="anwalt-section">
+          <div class="anwalt-section-title">Organanwälte</div>
+          <div class="anwalt-list">
+            <div class="anwalt-row anwalt-row--head">
+              <span>Name</span>
+              <span>Lizenz bis</span>
+              <span>Telefon / Orga</span>
+            </div>
+
+            <div class="anwalt-row"><span>Maxim Kusmin</span><span>30.03.2026</span><span>FIB</span></div>
+            <div class="anwalt-row"><span>Falk Federov</span><span>29.04.2026</span><span>LI</span></div>
+            <div class="anwalt-row"><span>Luis Einhorn</span><span>29.04.2026</span><span>LI</span></div>
+            <div class="anwalt-row"><span>Simon Kellerman</span><span>07.04.2026</span><span>GOV</span></div>
+            <div class="anwalt-row"><span>Gojira Bukur</span><span>06.04.2026</span><span>FIB</span></div>
+            <div class="anwalt-row"><span>Flo Saito</span><span>08.04.2026</span><span>LSPD</span></div>
+          </div>
         </div>
-        <div class="list-block">
-          <strong>Rechtsanwälte</strong>
-          <div>—</div>
+
+        <div class="anwalt-section">
+          <div class="anwalt-section-title">Staatsanwälte</div>
+          <div class="anwalt-list">
+            <div class="anwalt-row anwalt-row--head">
+              <span>Name</span>
+              <span>Lizenz bis</span>
+              <span>Telefon / Orga</span>
+            </div>
+
+            <div class="anwalt-row"><span>Peter Holz</span><span>—</span><span>88-67-911</span></div>
+            <div class="anwalt-row"><span>Abbas Yaeger</span><span>—</span><span>28-66-966</span></div>
+            <div class="anwalt-row"><span>Eddi Yaeger</span><span>—</span><span>/</span></div>
+            <div class="anwalt-row"><span>Kimjong Kapell</span><span>—</span><span>/</span></div>
+            <div class="anwalt-row"><span>Mike Kasettentoaster</span><span>—</span><span>/</span></div>
+            <div class="anwalt-row"><span>Susi PotterPrinz</span><span>—</span><span>56-84-123</span></div>
+            <div class="anwalt-row"><span>Jef Niceman</span><span>—</span><span>88-05-465</span></div>
+          </div>
+        </div>
+
+        <div class="anwalt-section">
+          <div class="anwalt-section-title">Richter</div>
+          <div class="anwalt-list">
+            <div class="anwalt-row anwalt-row--head">
+              <span>Name</span>
+              <span>Lizenz bis</span>
+              <span>Telefon / Orga</span>
+            </div>
+
+            <div class="anwalt-row"><span>Aizen DeLaruz</span><span>—</span><span>22-22-228</span></div>
+            <div class="anwalt-row"><span>Noah Hunt</span><span>—</span><span>99-55-678</span></div>
+            <div class="anwalt-row"><span>Philip Bierhals</span><span>—</span><span>53-53-535</span></div>
+            <div class="anwalt-row"><span>Biessed Raven</span><span>—</span><span>88-14-188</span></div>
+            <div class="anwalt-row"><span>Laura Gauner</span><span>—</span><span>—</span></div>
+            <div class="anwalt-row"><span>Kobalt Brown</span><span>—</span><span>98-76-123</span></div>
+          </div>
+        </div>
+
+        <div class="anwalt-section">
+          <div class="anwalt-section-title">Justizminister</div>
+          <div class="anwalt-list">
+            <div class="anwalt-row anwalt-row--head">
+              <span>Name</span>
+              <span>Lizenz bis</span>
+              <span>Telefon / Orga</span>
+            </div>
+
+            <div class="anwalt-row"><span>KimJong Borderline</span><span>—</span><span>18-91-791</span></div>
+            <div class="anwalt-row"><span>Liam Taylor</span><span>—</span><span>10-01-101</span></div>
+          </div>
         </div>
       </div>
     </div>
@@ -521,6 +535,105 @@
             <button id="fibcoCopyBtn" class="copy-btn copy-btn--primary" type="button">FIBCO kopieren</button>
           </div>
           <textarea id="fibcoPreview" class="textarea textarea-large" readonly></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Einstellungen</div>
+        <button class="modal-close" type="button" data-close-modal>✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="settings-stack">
+          <div class="settings-block">
+            <div class="settings-block-title">Darstellung</div>
+
+            <div class="settings-row">
+              <div class="settings-label-group">
+                <div class="sidebar-name">Modus</div>
+                <div class="sidebar-desc">Kurzform oder Langform in derselben Ausgabebox</div>
+              </div>
+
+              <div class="mode-switch">
+                <span id="shortLabel" class="mode-label is-active">Kurzform</span>
+                <label class="switch switch--compact">
+                  <input id="modeToggle" type="checkbox" />
+                  <span></span>
+                </label>
+                <span id="longLabel" class="mode-label">Langform</span>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-label-group">
+                <div class="sidebar-name">Auto-Zurücksetzen</div>
+                <div class="sidebar-desc">Nach dem Kopieren automatisch leeren</div>
+              </div>
+
+              <label class="switch">
+                <input id="autoResetToggle" type="checkbox" />
+                <span></span>
+              </label>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-label-group">
+                <div class="sidebar-name">Sidebar fixieren</div>
+                <div class="sidebar-desc">Sidebar bleibt beim Scrollen angeheftet</div>
+              </div>
+
+              <label class="switch">
+                <input id="pinSidebarToggle" type="checkbox" checked />
+                <span></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-block">
+            <div class="settings-block-title">Design</div>
+
+            <div class="theme-dropdown theme-dropdown--modal" id="themeDropdown">
+              <button id="themeDropdownBtn" class="top-btn top-btn--pill top-btn--static" type="button">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a8 8 0 1 0 8 8c0-.34-.02-.68-.06-1.02a6 6 0 1 1-7.92-6.92c-.34-.04-.68-.06-1.02-.06Z"/></svg>
+                <span>Design öffnen</span>
+              </button>
+
+              <div id="themeDropdownMenu" class="theme-menu hidden">
+                <div class="theme-menu-title">Farbdesign</div>
+
+                <div class="theme-presets">
+                  <button class="theme-preset is-active" type="button" data-theme-preset="mono">Schwarz / Weiß</button>
+                  <button class="theme-preset" type="button" data-theme-preset="redblue">Rot / Blau</button>
+                  <button class="theme-preset" type="button" data-theme-preset="pinkpurple">Rosa / Lila</button>
+                  <button class="theme-preset" type="button" data-theme-preset="ice">Hellblau / Cyan</button>
+                </div>
+
+                <div class="theme-menu-divider"></div>
+
+                <div class="theme-menu-title">Benutzerdefiniert</div>
+
+                <div class="theme-custom-grid">
+                  <label class="theme-color-field">
+                    <span>Farbe 1</span>
+                    <input id="customColor1" type="color" value="#ffffff" />
+                  </label>
+
+                  <label class="theme-color-field">
+                    <span>Farbe 2</span>
+                    <input id="customColor2" type="color" value="#8a8a8a" />
+                  </label>
+                </div>
+
+                <button id="applyCustomTheme" class="copy-btn copy-btn--primary theme-apply-btn" type="button">
+                  Eigene Farben anwenden
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
