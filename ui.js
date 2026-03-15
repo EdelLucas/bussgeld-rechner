@@ -58,8 +58,8 @@
       btnCopy: $("btnCopy"),
       btnCopyLine: $("btnCopyLine"),
       copyStatus: $("copyStatus"),
-      aktenLine: $("aktenLine"),
-      aktenText: $("aktenText"),
+      aktenOutputLabel: $("aktenOutputLabel"),
+      aktenOutput: $("aktenOutput"),
       liveStamp: $("liveStamp"),
       rightsReadToggle: $("rightsReadToggle"),
       rightsWarning: $("rightsWarning"),
@@ -252,8 +252,11 @@
     function buildCompactLine(items) {
       const date = getDate();
       const time = getTime(new Date(), false);
+      const az = els.azInput ? els.azInput.value.trim() : "";
       const paras = items.map((item) => item.para).join(" + ");
-      return `${date} | ${time} - ${paras || "—"}`;
+      const reason = paras || "—";
+
+      return `${date} | ${time} - ${az ? `${az} - ` : ""}${reason}`;
     }
 
     function buildTransportText() {
@@ -347,16 +350,21 @@
       const items = getSelectedItems();
       const highestFine = getHighestFine(items);
       const highestWanted = getHighestWanted(items);
+      const compactLine = buildCompactLine(items);
+      const longText = buildLongText(items, highestFine, highestWanted);
 
       if (els.selectedCount) els.selectedCount.textContent = String(items.length);
       if (els.sumFine) els.sumFine.textContent = formatMoney(highestFine);
       if (els.sumWanted) els.sumWanted.innerHTML = renderSummaryWantedIcons(highestWanted);
-      if (els.aktenLine) els.aktenLine.textContent = buildCompactLine(items);
 
-      if (els.aktenText) {
-        els.aktenText.value = state.longMode
-          ? buildLongText(items, highestFine, highestWanted)
-          : buildCompactLine(items);
+      if (els.aktenOutputLabel) {
+        els.aktenOutputLabel.textContent = state.longMode ? "Langform" : "Kurze Aktenzeile";
+      }
+
+      if (els.aktenOutput) {
+        els.aktenOutput.value = state.longMode ? longText : compactLine;
+        els.aktenOutput.classList.toggle("textarea-large", state.longMode);
+        els.aktenOutput.classList.toggle("textarea--compact", !state.longMode);
       }
 
       updateModeLabels();
@@ -410,7 +418,7 @@
       }
 
       await copyToClipboard(
-        els.aktenLine ? els.aktenLine.textContent : "",
+        buildCompactLine(getSelectedItems()),
         "Zeile kopiert",
         "Zeile konnte nicht kopiert werden"
       );
@@ -424,7 +432,7 @@
       }
 
       await copyToClipboard(
-        els.aktenText ? els.aktenText.value : "",
+        els.aktenOutput ? els.aktenOutput.value : "",
         "Akte kopiert",
         "Akte konnte nicht kopiert werden"
       );
@@ -729,7 +737,6 @@
       if (els.btnReset) els.btnReset.addEventListener("click", resetAll);
       if (els.btnCopyLine) els.btnCopyLine.addEventListener("click", copyLine);
       if (els.btnCopy) els.btnCopy.addEventListener("click", copyAkte);
-      if (els.aktenLine) els.aktenLine.addEventListener("click", copyLine);
     }
 
     state.longMode = !!(els.modeToggle && els.modeToggle.checked);
