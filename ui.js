@@ -17,6 +17,10 @@
       .replaceAll("'", "&#039;");
   }
 
+  function unique(array) {
+    return [...new Set((array || []).filter(Boolean))];
+  }
+
   function getDate(now = new Date()) {
     return now.toLocaleDateString("de-DE");
   }
@@ -29,9 +33,364 @@
     });
   }
 
+  const LAW_PATCHES = {
+    "stgb-20": {
+      fineType: "base_plus_per_active_wanted",
+      fine: 5000,
+      finePerWanted: 5000,
+      infoList: ["$5.000 + $5.000 pro weiteren Wanted"]
+    },
+    "stgb-28": {
+      fineType: "base_plus_per_active_wanted",
+      fine: 10000,
+      finePerWanted: 10000,
+      infoList: ["$10.000 + $10.000 pro weiteren Wanted"]
+    },
+    "stgb-43": {
+      infoList: [
+        "0 - 3 Wanteds (je nach schwere der angedrohten Straftat)",
+        "20.000$ Mindestbußgeld + 5.000$ pro ausgestelltem Wanted (max. 35.000$)"
+      ]
+    },
+    "stgb-6-9": {
+      fineType: "base_plus_per_active_wanted",
+      fine: 5000,
+      finePerWanted: 5000,
+      infoList: ["$5.000 + $5.000 pro weiteren Wanted"]
+    },
+    "stgb-41-1": {
+      infoList: ["Waffenscheinentzug"]
+    },
+    "stgb-15-7": {
+      infoList: ["Führerscheinentzug"]
+    },
+    "stgb-18-2": {
+      infoList: ["Führerscheinentzug"]
+    },
+    "stvo-2": {
+      infoList: ["Führerscheinentzug"]
+    },
+    "stvo-5": {
+      infoList: ["Führerscheinentzug"]
+    },
+    "stvo-8-61-100": {
+      infoList: ["Führerscheinentzug"]
+    },
+    "stvo-8-101plus": {
+      infoList: ["Führerscheinentzug"]
+    },
+    "stvo-10-art-12": {
+      infoList: ["Führerscheinentzug"]
+    },
+    "stvo-10-art-16": {
+      infoList: ["Führerscheinentzug"]
+    },
+    "stvo-12-3": {
+      infoList: ["Bergung aus schwer zugänglichem Gelände, z. B. Gebirge, Strand oder Wasser"]
+    },
+    "stvo-17-art-1-2": {
+      infoList: ["Führerscheinentzug"]
+    },
+    "stvo-24": {
+      infoList: ["Führerscheinentzug"]
+    },
+    "stvo-26": {
+      infoList: [
+        "15.000$: Roter Bordstein, Bushaltestelle, Grünflächen (Wald), Privatgrundstück, Behinderung - Fußverkehr, Freeway, Highway, Behinderung - Straßenverkehr, Zuparken von Einfahrten",
+        "20.000$: Greenzone, staatliche Organisationen / Postamt, Tatverdächtiger, KFZ ohne Kennzeichen, Bergung aus schwer zugänglichem Gelände"
+      ]
+    },
+    "stvo-28": {
+      infoList: ["Führerscheinentzug"]
+    },
+    "waffg-5-1": {
+      infoList: ["Waffenscheinentzug"]
+    },
+    "waffg-8-1": {
+      fineType: "base_plus_per_active_wanted",
+      fine: 5000,
+      finePerWanted: 5000,
+      infoList: ["Waffenscheinentzug", "$5.000 + $5.000 pro weiteren Wanted"]
+    },
+    "waffg-8-2": {
+      infoList: ["Waffenscheinentzug"]
+    },
+    "waffg-11": {
+      infoList: ["Waffenscheinentzug"]
+    },
+    "btmg-2-2": {
+      infoList: ["Erst ab 20 Gramm Marihuana"]
+    },
+    "btmg-3-bis-20": {
+      infoList: ["+ Die Summe, die von o.g. Mengen von Medizinprodukten verlangt wird"]
+    },
+    "btmg-3-bis-50": {
+      infoList: ["+ Die Summe, die von o.g. Mengen von Medizinprodukten verlangt wird"]
+    },
+    "btmg-3-ab-51": {
+      infoList: ["+ Die Summe, die von o.g. Mengen von Medizinprodukten verlangt wird"]
+    }
+  };
+
+  const EXTRA_LAWS = [
+    {
+      id: "stvo-10-art-8",
+      group: "Straßenverkehrsordnung (StVO)",
+      section: "STVO",
+      para: "StVO §10 Art. 8",
+      name: "Helmpflicht",
+      fineType: "fixed",
+      fine: 10000,
+      fixedWanted: 0,
+      grayWantedMax: 0
+    },
+    {
+      id: "stgb-40",
+      group: "Wirtschaftskriminalität (StGB)",
+      section: "STGB",
+      para: "StGB §40",
+      name: "Weitergabe von Staatseigentum",
+      fineType: "fixed",
+      fine: 50000,
+      fixedWanted: 5,
+      grayWantedMax: 0,
+      note: "max. 50.000$"
+    },
+    {
+      id: "bdg-2",
+      group: "Beamtendienstgesetzbuch (BDG)",
+      section: "BDG",
+      para: "BDG §2",
+      name: "Verhaltenskodex",
+      fineType: "fixed",
+      fine: 50000,
+      fixedWanted: 5,
+      grayWantedMax: 0,
+      note: "max. 50.000$"
+    },
+    {
+      id: "bdg-3",
+      group: "Beamtendienstgesetzbuch (BDG)",
+      section: "BDG",
+      para: "BDG §3",
+      name: "Dienstpflichten des Beamten",
+      fineType: "fixed",
+      fine: 50000,
+      fixedWanted: 5,
+      grayWantedMax: 0,
+      note: "max. 50.000$"
+    },
+    {
+      id: "bdg-7",
+      group: "Beamtendienstgesetzbuch (BDG)",
+      section: "BDG",
+      para: "BDG §7",
+      name: "Bestechlichkeit",
+      fineType: "fixed",
+      fine: 50000,
+      fixedWanted: 5,
+      grayWantedMax: 0,
+      note: "max. 50.000$"
+    },
+    {
+      id: "bdg-8",
+      group: "Beamtendienstgesetzbuch (BDG)",
+      section: "BDG",
+      para: "BDG §8",
+      name: "Vorteilsannahme & Vorteilsgewährung",
+      fineType: "fixed",
+      fine: 50000,
+      fixedWanted: 5,
+      grayWantedMax: 0,
+      note: "max. 50.000$"
+    },
+    {
+      id: "bdg-9",
+      group: "Beamtendienstgesetzbuch (BDG)",
+      section: "BDG",
+      para: "BDG §9",
+      name: "Verleitung eines Untergebenen/Kollegen zur Straftat",
+      fineType: "fixed",
+      fine: 50000,
+      fixedWanted: 5,
+      grayWantedMax: 0,
+      note: "max. 50.000$"
+    },
+    {
+      id: "bdg-10",
+      group: "Beamtendienstgesetzbuch (BDG)",
+      section: "BDG",
+      para: "BDG §10",
+      name: "Unterlassen der Diensthandlung",
+      fineType: "fixed",
+      fine: 50000,
+      fixedWanted: 5,
+      grayWantedMax: 0,
+      note: "max. 50.000$"
+    },
+    {
+      id: "bdg-11",
+      group: "Beamtendienstgesetzbuch (BDG)",
+      section: "BDG",
+      para: "BDG §11",
+      name: "Falschbeurkundung im Amt",
+      fineType: "fixed",
+      fine: 50000,
+      fixedWanted: 5,
+      grayWantedMax: 0,
+      note: "max. 50.000$"
+    },
+    {
+      id: "bdg-13",
+      group: "Beamtendienstgesetzbuch (BDG)",
+      section: "BDG",
+      para: "BDG §13",
+      name: "Hochverrat im öffentlichen Dienst",
+      fineType: "fixed",
+      fine: 50000,
+      fixedWanted: 5,
+      grayWantedMax: 0,
+      note: "max. 50.000$"
+    },
+    {
+      id: "bdg-14",
+      group: "Beamtendienstgesetzbuch (BDG)",
+      section: "BDG",
+      para: "BDG §14",
+      name: "Umgehung von Strafprozessen",
+      fineType: "fixed",
+      fine: 50000,
+      fixedWanted: 5,
+      grayWantedMax: 0,
+      note: "max. 50.000$"
+    },
+    {
+      id: "bdg-15",
+      group: "Beamtendienstgesetzbuch (BDG)",
+      section: "BDG",
+      para: "BDG §15",
+      name: "Verschwörung",
+      fineType: "fixed",
+      fine: 50000,
+      fixedWanted: 5,
+      grayWantedMax: 0,
+      note: "max. 50.000$"
+    },
+    {
+      id: "bdg-16",
+      group: "Beamtendienstgesetzbuch (BDG)",
+      section: "BDG",
+      para: "BDG §16",
+      name: "Schmuggel",
+      fineType: "fixed",
+      fine: 50000,
+      fixedWanted: 5,
+      grayWantedMax: 0,
+      note: "max. 50.000$"
+    }
+  ];
+
+  function mergeLawData(baseLawData) {
+    const byId = new Map(
+      (baseLawData || []).map((item) => [item.id, { ...item }])
+    );
+
+    Object.entries(LAW_PATCHES).forEach(([id, patch]) => {
+      if (!byId.has(id)) return;
+      const current = byId.get(id);
+      byId.set(id, {
+        ...current,
+        ...patch,
+        infoList: unique([...(current.infoList || []), ...(patch.infoList || [])])
+      });
+    });
+
+    EXTRA_LAWS.forEach((item) => {
+      if (!byId.has(item.id)) {
+        byId.set(item.id, { ...item });
+      }
+    });
+
+    return Array.from(byId.values());
+  }
+
+  function ensureBlitzerModal() {
+    if ($("blitzerModal")) return;
+
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = `
+      <div id="blitzerModal" class="modal-backdrop hidden">
+        <div class="modal modal-blitzer">
+          <div class="modal-header modal-header--blitzer">
+            <div class="modal-title modal-title--blitzer">
+              <span class="blitzer-title-icon">📷</span>
+              <span>Blitzer-Rechner</span>
+            </div>
+            <button class="modal-close modal-close--blitzer" type="button" data-close-modal>✕</button>
+          </div>
+
+          <div class="modal-body modal-body--blitzer">
+            <p class="blitzer-intro">
+              Berechne automatisch das Bußgeld anhand der gemessenen Geschwindigkeit und Zone.
+              Die Aktenzeile wird direkt generiert.
+            </p>
+
+            <div class="blitzer-grid">
+              <div class="blitzer-field">
+                <label for="blitzerPlate">KENNZEICHEN</label>
+                <input id="blitzerPlate" class="field-input blitzer-input" type="text" placeholder="z.B. LS-AB-123" />
+              </div>
+
+              <div class="blitzer-field">
+                <label for="blitzerPlace">ORT</label>
+                <input id="blitzerPlace" class="field-input blitzer-input" type="text" placeholder="z.B. Vinewood Blvd" />
+              </div>
+
+              <div class="blitzer-field">
+                <label for="blitzerZone">ZONE</label>
+                <select id="blitzerZone" class="field-input blitzer-input">
+                  <option value="50">Verkehrsberuhigter Bereich (50 km/h)</option>
+                  <option value="200">Außerorts (200 km/h)</option>
+                  <option value="350">Highway (350 km/h)</option>
+                  <option value="300">Freeway (300 km/h)</option>
+                </select>
+              </div>
+
+              <div class="blitzer-field">
+                <label for="blitzerSpeed">GEMESSENE GESCHW. (KM/H)</label>
+                <input id="blitzerSpeed" class="field-input blitzer-input" type="number" min="0" step="1" placeholder="z.B. 120" />
+              </div>
+            </div>
+
+            <button id="blitzerCalcBtn" class="blitzer-calc-btn" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 3h6M8 7h8M7 11h10M7 15h3m4 0h3M7 19h10M6 4h12a1 1 0 0 1 1 1v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a1 1 0 0 1 1-1Z"/>
+              </svg>
+              <span>Berechnen</span>
+            </button>
+
+            <div id="blitzerResultBox" class="blitzer-result-box is-hidden">
+              <div class="blitzer-result-title">Ergebnis</div>
+              <div id="blitzerResultText" class="blitzer-result-text"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(wrapper.firstElementChild);
+  }
+
   window.initUI = function initUI(config) {
-    const lawData = config.lawData || [];
-    const groupOrder = config.groupOrder || [];
+    const lawData = mergeLawData(config.lawData || []);
+    const lawById = new Map(lawData.map((law) => [law.id, law]));
+
+    const groupOrder = [...(config.groupOrder || [])];
+    if (!groupOrder.includes("Beamtendienstgesetzbuch (BDG)")) {
+      groupOrder.push("Beamtendienstgesetzbuch (BDG)");
+    }
+
+    ensureBlitzerModal();
+
     const fibcoFieldIds = config.fibcoFieldIds || [];
 
     const state = {
@@ -39,7 +398,18 @@
       extraWantedById: {},
       search: "",
       longMode: false,
-      autoReset: false
+      autoReset: false,
+      parkingPlate: "",
+      blitzer: {
+        isCalculated: false,
+        plate: "",
+        place: "",
+        zoneValue: 50,
+        zoneLabel: "Verkehrsberuhigter Bereich (50 km/h)",
+        speed: "",
+        lawId: "",
+        resultText: ""
+      }
     };
 
     const fibcoState = {
@@ -60,7 +430,6 @@
       copyStatus: $("copyStatus"),
       aktenOutputLabel: $("aktenOutputLabel"),
       aktenOutput: $("aktenOutput"),
-      liveStamp: $("liveStamp"),
       rightsReadToggle: $("rightsReadToggle"),
       rightsWarning: $("rightsWarning"),
       remorseToggle: $("remorseToggle"),
@@ -69,8 +438,6 @@
       transportAgencySelect: $("transportAgencySelect"),
       transportNoteInput: $("transportNoteInput"),
       systemWantedInput: $("systemWantedInput"),
-      plateInput: $("plateInput"),
-      placeInput: $("placeInput"),
       azInput: $("azInput"),
       modeToggle: $("modeToggle"),
       shortLabel: $("shortLabel"),
@@ -83,7 +450,18 @@
       fibcoLawSearch: $("fibcoLawSearch"),
       fibcoLawResults: $("fibcoLawResults"),
       fibcoLawSelected: $("fibcoLawSelected"),
-      fibcoAccusationExtra: $("fibcoAccusationExtra")
+      fibcoAccusationExtra: $("fibcoAccusationExtra"),
+      openBlitzerBtn: $("openBlitzerBtn"),
+      parkingPlateInput: $("parkingPlateInput"),
+      blitzerPlate: $("blitzerPlate"),
+      blitzerPlace: $("blitzerPlace"),
+      blitzerZone: $("blitzerZone"),
+      blitzerSpeed: $("blitzerSpeed"),
+      blitzerCalcBtn: $("blitzerCalcBtn"),
+      blitzerResultBox: $("blitzerResultBox"),
+      blitzerResultText: $("blitzerResultText"),
+      blitzerSummaryBox: $("blitzerSummaryBox"),
+      blitzerSummaryText: $("blitzerSummaryText")
     };
 
     function getFilteredLaws() {
@@ -92,17 +470,14 @@
 
       return lawData.filter((law) => {
         return (
-          law.group.toLowerCase().includes(q) ||
-          law.section.toLowerCase().includes(q) ||
-          law.para.toLowerCase().includes(q) ||
-          law.name.toLowerCase().includes(q) ||
-          (law.note || "").toLowerCase().includes(q)
+          String(law.group || "").toLowerCase().includes(q) ||
+          String(law.section || "").toLowerCase().includes(q) ||
+          String(law.para || "").toLowerCase().includes(q) ||
+          String(law.name || "").toLowerCase().includes(q) ||
+          String(law.note || "").toLowerCase().includes(q) ||
+          String((law.infoList || []).join(" ")).toLowerCase().includes(q)
         );
       });
-    }
-
-    function getSelectedItems() {
-      return lawData.filter((law) => state.selected.has(law.id));
     }
 
     function getSelectedGrayWanted(item) {
@@ -128,8 +503,84 @@
       return Number(item.fine || 0);
     }
 
-    function getEffectiveFine(item) {
-      return getDisplayFine(item);
+    function getInfoLines(item) {
+      return unique([
+        ...(item.infoList || []),
+        item.note || ""
+      ]);
+    }
+
+    function getCardInfoText(item) {
+      return getInfoLines(item).join(" • ");
+    }
+
+    function getBlitzerBaseLaw() {
+      if (!state.blitzer.isCalculated) return null;
+
+      const speed = Number(state.blitzer.speed || 0);
+      const zone = Number(state.blitzer.zoneValue || 0);
+      const diff = speed - zone;
+
+      if (!speed || diff < 10) return null;
+      if (diff <= 40) return lawById.get("stvo-8-10-40") || null;
+      if (diff <= 60) return lawById.get("stvo-8-41-60") || null;
+      if (diff <= 100) return lawById.get("stvo-8-61-100") || null;
+      return lawById.get("stvo-8-101plus") || null;
+    }
+
+    function getBlitzerVirtualItem() {
+      const baseLaw = getBlitzerBaseLaw();
+      if (!baseLaw) return null;
+
+      return {
+        ...baseLaw,
+        id: `__blitzer__${baseLaw.id}`,
+        baseId: baseLaw.id,
+        isVirtual: true,
+        virtualType: "blitzer",
+        infoList: unique([
+          ...(baseLaw.infoList || []),
+          state.blitzer.plate ? `Kennzeichen: ${state.blitzer.plate}` : "",
+          state.blitzer.place ? `Ort: ${state.blitzer.place}` : "",
+          `Zone: ${state.blitzer.zoneLabel}`,
+          `Gemessen: ${state.blitzer.speed} km/h`
+        ])
+      };
+    }
+
+    function getReueVirtualItem() {
+      if (!els.remorseToggle || !els.remorseToggle.checked) return null;
+
+      return {
+        id: "__reue__",
+        baseId: "__reue__",
+        isVirtual: true,
+        virtualType: "reue",
+        group: "Strafmodifikation",
+        section: "STGB",
+        para: "StGB §35",
+        name: "Reue",
+        fineType: "fixed",
+        fine: 0,
+        fixedWanted: 0,
+        grayWantedMax: 0,
+        infoList: ["Reue aktiv"]
+      };
+    }
+
+    function getSelectedItems() {
+      return lawData.filter((law) => state.selected.has(law.id));
+    }
+
+    function getOutputItems() {
+      const items = [...getSelectedItems()];
+      const blitzerItem = getBlitzerVirtualItem();
+      const reueItem = getReueVirtualItem();
+
+      if (blitzerItem) items.push(blitzerItem);
+      if (reueItem) items.push(reueItem);
+
+      return items;
     }
 
     function renderWantedIcons(fixedWanted, selectedGray, grayMax) {
@@ -155,13 +606,8 @@
       return `<span class="wanted-inline">${icons}<strong>${count}</strong></span>`;
     }
 
-    function getFineDisplayText(item) {
-      return formatMoney(getEffectiveFine(item));
-    }
-
     function groupLaws(items) {
       const map = new Map();
-
       groupOrder.forEach((group) => map.set(group, []));
 
       items.forEach((item) => {
@@ -198,8 +644,8 @@
               </div>
 
               <div class="card-name">${escapeHtml(item.name)}</div>
-              <div class="card-fine">${escapeHtml(getFineDisplayText(item))}</div>
-              <div class="card-note">${escapeHtml(item.note || "")}</div>
+              <div class="card-fine">${escapeHtml(formatMoney(getDisplayFine(item)))}</div>
+              <div class="card-note">${escapeHtml(getCardInfoText(item))}</div>
 
               <div class="card-bottom">
                 <div class="card-stars">${renderWantedIcons(item.fixedWanted, selectedGray, grayMax)}</div>
@@ -230,14 +676,16 @@
     }
 
     function getHighestFine(items) {
-      if (!items.length) return 0;
-      return Math.max(...items.map((item) => getEffectiveFine(item)));
+      const realItems = items.filter((item) => item.para !== "StGB §35");
+      if (!realItems.length) return 0;
+      return Math.max(...realItems.map((item) => getDisplayFine(item)));
     }
 
     function getHighestWanted(items) {
-      if (!items.length) return 0;
+      const realItems = items.filter((item) => item.para !== "StGB §35");
+      if (!realItems.length) return 0;
 
-      let highest = Math.max(...items.map((item) => getActiveWanted(item)));
+      let highest = Math.max(...realItems.map((item) => getActiveWanted(item)));
       const systemWanted = Math.max(0, Number(els.systemWantedInput ? els.systemWantedInput.value : 0));
 
       highest += systemWanted;
@@ -249,11 +697,30 @@
       return highest;
     }
 
+    function getCompactItemText(item) {
+      if (item.virtualType === "blitzer") {
+        const parts = [];
+        if (state.blitzer.plate) parts.push(state.blitzer.plate);
+        if (state.blitzer.place) parts.push(state.blitzer.place);
+        return `${item.para}${parts.length ? ` [${parts.join(" | ")}]` : ""}`;
+      }
+
+      if (item.virtualType === "reue") {
+        return item.para;
+      }
+
+      if (item.id === "stvo-12-1" && state.parkingPlate.trim()) {
+        return `${item.para} [${state.parkingPlate.trim()}]`;
+      }
+
+      return item.para;
+    }
+
     function buildCompactLine(items) {
       const date = getDate();
       const time = getTime(new Date(), false);
       const az = els.azInput ? els.azInput.value.trim() : "";
-      const paras = items.map((item) => item.para).join(" + ");
+      const paras = items.map((item) => getCompactItemText(item)).join(" + ");
       const reason = paras || "—";
 
       return `${date} | ${time} - ${az ? `${az} - ` : ""}${reason}`;
@@ -272,40 +739,49 @@
       return parts.join(" | ");
     }
 
+    function buildLongLine(item) {
+      const parts = [`- ${item.para} — ${item.name}`];
+
+      if (item.virtualType === "blitzer") {
+        if (state.blitzer.plate) parts.push(`Kennzeichen: ${state.blitzer.plate}`);
+        if (state.blitzer.place) parts.push(`Ort: ${state.blitzer.place}`);
+        parts.push(`Zone: ${state.blitzer.zoneLabel}`);
+        parts.push(`Gemessen: ${state.blitzer.speed} km/h`);
+      }
+
+      if (!item.virtualType && item.id === "stvo-12-1" && state.parkingPlate.trim()) {
+        parts.push(`Kennzeichen: ${state.parkingPlate.trim()}`);
+      }
+
+      return parts.join(" | ");
+    }
+
     function buildLongText(items, highestFine, highestWanted) {
       const lines = [];
       const az = els.azInput ? els.azInput.value.trim() : "";
-      const plate = els.plateInput ? els.plateInput.value.trim() : "";
-      const place = els.placeInput ? els.placeInput.value.trim() : "";
 
       lines.push(`Datum: ${getDate()}`);
       lines.push(`Uhrzeit: ${getTime()}`);
 
       if (az) lines.push(`Aktenzeichen: ${az}`);
-      if (plate) lines.push(`Kennzeichen: ${plate}`);
-      if (place) lines.push(`Ort: ${place}`);
-
       lines.push("");
-      lines.push("Straftaten:");
+
+      lines.push("Einträge:");
 
       if (!items.length) {
         lines.push("- —");
       } else {
         items.forEach((item) => {
-          const activeWanted = getActiveWanted(item);
-          const graySelected = getSelectedGrayWanted(item);
+          lines.push(buildLongLine(item));
 
-          lines.push(`- ${item.para} — ${item.name}`);
-          lines.push(`  Geldstrafe: ${formatMoney(getEffectiveFine(item))}`);
-          lines.push(`  Wanteds: ${activeWanted}`);
-
-          if (graySelected > 0) {
-            lines.push(`  Graue Wanteds aktiviert: ${graySelected}/${item.grayWantedMax}`);
+          if (item.para !== "StGB §35") {
+            lines.push(`  Geldstrafe: ${formatMoney(getDisplayFine(item))}`);
+            lines.push(`  Wanteds: ${getActiveWanted(item)}`);
           }
 
-          if (item.note) {
-            lines.push(`  Zusatzinfo: ${item.note}`);
-          }
+          getInfoLines(item).forEach((info) => {
+            lines.push(`  Info: ${info}`);
+          });
         });
       }
 
@@ -319,9 +795,46 @@
       return lines.join("\n");
     }
 
-    function updateLiveStamp() {
-      if (!els.liveStamp) return;
-      els.liveStamp.textContent = `${getDate()} | ${getTime()}`;
+    function ensureSummaryInfoMount() {
+      if (!els.sidebar) return null;
+      const summaryPanel = els.sidebar.querySelector(".panel");
+      if (!summaryPanel) return null;
+
+      let mount = summaryPanel.querySelector("#summaryInfoMount");
+      if (!mount) {
+        mount = document.createElement("div");
+        mount.id = "summaryInfoMount";
+        mount.className = "summary-info-mount";
+        summaryPanel.appendChild(mount);
+      }
+      return mount;
+    }
+
+    function renderSummaryInfo(items) {
+      const mount = ensureSummaryInfoMount();
+      if (!mount) return;
+
+      const blocks = items
+        .map((item) => {
+          const info = getInfoLines(item);
+          if (!info.length) return "";
+
+          return `
+            <div class="extra-info-item">
+              <div class="extra-info-item-title">${escapeHtml(item.para)} — ${escapeHtml(item.name)}</div>
+              <div class="extra-info-item-text">${escapeHtml(info.join("\n"))}</div>
+            </div>
+          `;
+        })
+        .filter(Boolean)
+        .join("");
+
+      mount.innerHTML = blocks
+        ? `
+          <div class="extra-info-title">ZUSATZINFOS</div>
+          <div class="extra-info-list">${blocks}</div>
+        `
+        : "";
     }
 
     function updateModeLabels() {
@@ -346,8 +859,21 @@
       els.transportFields.classList.toggle("is-hidden", !els.transportToggle.checked);
     }
 
+    function updateBlitzerSummaryUi() {
+      if (!els.blitzerSummaryBox || !els.blitzerSummaryText) return;
+
+      if (!state.blitzer.isCalculated) {
+        els.blitzerSummaryBox.classList.add("is-hidden");
+        els.blitzerSummaryText.textContent = "Noch keine Daten vorhanden.";
+        return;
+      }
+
+      els.blitzerSummaryBox.classList.remove("is-hidden");
+      els.blitzerSummaryText.textContent = state.blitzer.resultText || "Kein Blitzer-Eintrag.";
+    }
+
     function updateSummary() {
-      const items = getSelectedItems();
+      const items = getOutputItems();
       const highestFine = getHighestFine(items);
       const highestWanted = getHighestWanted(items);
       const compactLine = buildCompactLine(items);
@@ -370,6 +896,8 @@
       updateModeLabels();
       updateRightsWarning();
       updateTransportFields();
+      updateBlitzerSummaryUi();
+      renderSummaryInfo(items);
     }
 
     function updateUI() {
@@ -381,11 +909,20 @@
       state.selected.clear();
       state.extraWantedById = {};
       state.search = "";
+      state.parkingPlate = "";
+      state.blitzer = {
+        isCalculated: false,
+        plate: "",
+        place: "",
+        zoneValue: 50,
+        zoneLabel: "Verkehrsberuhigter Bereich (50 km/h)",
+        speed: "",
+        lawId: "",
+        resultText: ""
+      };
 
       if (els.searchInput) els.searchInput.value = "";
       if (els.systemWantedInput) els.systemWantedInput.value = "0";
-      if (els.plateInput) els.plateInput.value = "";
-      if (els.placeInput) els.placeInput.value = "";
       if (els.azInput) els.azInput.value = "";
       if (els.remorseToggle) els.remorseToggle.checked = false;
       if (els.transportToggle) els.transportToggle.checked = false;
@@ -393,6 +930,14 @@
       if (els.transportNoteInput) els.transportNoteInput.value = "";
       if (els.rightsReadToggle) els.rightsReadToggle.checked = false;
       if (els.copyStatus) els.copyStatus.textContent = "Nicht kopiert";
+      if (els.parkingPlateInput) els.parkingPlateInput.value = "";
+
+      if (els.blitzerPlate) els.blitzerPlate.value = "";
+      if (els.blitzerPlace) els.blitzerPlace.value = "";
+      if (els.blitzerZone) els.blitzerZone.value = "50";
+      if (els.blitzerSpeed) els.blitzerSpeed.value = "";
+      if (els.blitzerResultBox) els.blitzerResultBox.classList.add("is-hidden");
+      if (els.blitzerResultText) els.blitzerResultText.textContent = "";
 
       updateUI();
     }
@@ -418,7 +963,7 @@
       }
 
       await copyToClipboard(
-        buildCompactLine(getSelectedItems()),
+        buildCompactLine(getOutputItems()),
         "Zeile kopiert",
         "Zeile konnte nicht kopiert werden"
       );
@@ -457,6 +1002,10 @@
         btn.addEventListener("click", () => openModal(btn.dataset.modal));
       });
 
+      if (els.openBlitzerBtn) {
+        els.openBlitzerBtn.addEventListener("click", () => openModal("blitzerModal"));
+      }
+
       document.querySelectorAll("[data-close-modal]").forEach((btn) => {
         btn.addEventListener("click", closeAllModals);
       });
@@ -481,7 +1030,7 @@
         const card = event.target.closest(".card");
 
         if (plus) {
-          const item = lawData.find((law) => law.id === plus.dataset.plus);
+          const item = lawById.get(plus.dataset.plus);
           if (!item) return;
 
           const current = getSelectedGrayWanted(item);
@@ -491,7 +1040,7 @@
         }
 
         if (minus) {
-          const item = lawData.find((law) => law.id === minus.dataset.minus);
+          const item = lawById.get(minus.dataset.minus);
           if (!item) return;
 
           const current = getSelectedGrayWanted(item);
@@ -526,8 +1075,8 @@
         .map((law) => `- ${law.para} ${law.name}`);
 
       const extra = els.fibcoAccusationExtra ? els.fibcoAccusationExtra.value.trim() : "";
-
       const parts = [];
+
       if (selectedLaws.length) parts.push(selectedLaws.join("\n"));
       if (extra) parts.push(extra);
 
@@ -641,6 +1190,59 @@
       } catch {}
     }
 
+    function updateBlitzerStateFromInputs() {
+      state.blitzer.plate = els.blitzerPlate ? els.blitzerPlate.value.trim() : "";
+      state.blitzer.place = els.blitzerPlace ? els.blitzerPlace.value.trim() : "";
+      state.blitzer.zoneValue = els.blitzerZone ? Number(els.blitzerZone.value || 50) : 50;
+      state.blitzer.zoneLabel = els.blitzerZone
+        ? els.blitzerZone.options[els.blitzerZone.selectedIndex]?.text || "Zone"
+        : "Zone";
+      state.blitzer.speed = els.blitzerSpeed ? String(els.blitzerSpeed.value || "").trim() : "";
+    }
+
+    function calculateBlitzer() {
+      updateBlitzerStateFromInputs();
+      state.blitzer.isCalculated = true;
+
+      const speed = Number(state.blitzer.speed || 0);
+      const zone = Number(state.blitzer.zoneValue || 0);
+      const law = getBlitzerBaseLaw();
+      const diff = speed - zone;
+      const lines = [];
+
+      if (!speed || speed <= 0) {
+        state.blitzer.lawId = "";
+        state.blitzer.resultText = "Bitte eine gültige Geschwindigkeit eingeben.";
+        if (els.blitzerResultBox) els.blitzerResultBox.classList.remove("is-hidden");
+        if (els.blitzerResultText) els.blitzerResultText.textContent = state.blitzer.resultText;
+        updateSummary();
+        return;
+      }
+
+      if (state.blitzer.plate) lines.push(`Kennzeichen: ${state.blitzer.plate}`);
+      if (state.blitzer.place) lines.push(`Ort: ${state.blitzer.place}`);
+      lines.push(`Zone: ${state.blitzer.zoneLabel}`);
+      lines.push(`Gemessen: ${speed} km/h`);
+      lines.push(`Überschreitung: ${Math.max(0, diff)} km/h`);
+
+      if (!law) {
+        state.blitzer.lawId = "";
+        lines.push("Kein passender Blitzer-Eintrag (unter 10 km/h Überschreitung).");
+      } else {
+        state.blitzer.lawId = law.id;
+        lines.push(`Gesetz: ${law.para} — ${law.name}`);
+        lines.push(`Bußgeld: ${formatMoney(getDisplayFine(law))}`);
+        getInfoLines(law).forEach((info) => lines.push(`Info: ${info}`));
+      }
+
+      state.blitzer.resultText = lines.join("\n");
+
+      if (els.blitzerResultBox) els.blitzerResultBox.classList.remove("is-hidden");
+      if (els.blitzerResultText) els.blitzerResultText.textContent = state.blitzer.resultText;
+
+      updateSummary();
+    }
+
     function setupFibco() {
       fibcoFieldIds.forEach((id) => {
         const el = $(id);
@@ -703,8 +1305,6 @@
         els.remorseToggle,
         els.rightsReadToggle,
         els.systemWantedInput,
-        els.plateInput,
-        els.placeInput,
         els.azInput,
         els.transportToggle,
         els.transportAgencySelect,
@@ -714,6 +1314,17 @@
         el.addEventListener("input", updateSummary);
         el.addEventListener("change", updateSummary);
       });
+
+      if (els.parkingPlateInput) {
+        els.parkingPlateInput.addEventListener("input", () => {
+          state.parkingPlate = els.parkingPlateInput.value.trim();
+          updateSummary();
+        });
+        els.parkingPlateInput.addEventListener("change", () => {
+          state.parkingPlate = els.parkingPlateInput.value.trim();
+          updateSummary();
+        });
+      }
 
       if (els.modeToggle) {
         els.modeToggle.addEventListener("change", () => {
@@ -741,21 +1352,27 @@
       if (els.aktenOutput) {
         els.aktenOutput.addEventListener("click", copyAkte);
       }
+
+      if (els.blitzerCalcBtn) {
+        els.blitzerCalcBtn.addEventListener("click", calculateBlitzer);
+      }
+
+      [els.blitzerPlate, els.blitzerPlace, els.blitzerZone, els.blitzerSpeed].forEach((el) => {
+        if (!el) return;
+        el.addEventListener("input", updateBlitzerStateFromInputs);
+        el.addEventListener("change", updateBlitzerStateFromInputs);
+      });
     }
 
     state.longMode = !!(els.modeToggle && els.modeToggle.checked);
     state.autoReset = !!(els.autoResetToggle && els.autoResetToggle.checked);
+    state.parkingPlate = els.parkingPlateInput ? els.parkingPlateInput.value.trim() : "";
 
     setupModals();
     setupCatalogEvents();
     setupInputs();
     setupFibco();
-    updateLiveStamp();
+    updateBlitzerStateFromInputs();
     updateUI();
-
-    setInterval(() => {
-      updateLiveStamp();
-      updateSummary();
-    }, 1000);
   };
 })();
