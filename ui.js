@@ -1205,6 +1205,33 @@
 
       if (!els.reportSubmitBtn || !els.reportType || !els.reportMessage || !els.reportStatus) return;
 
+      async function sendJson(payload) {
+        const response = await fetch(`${WEBHOOK_URL}?wait=true`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error(`Webhook Fehler: ${response.status}`);
+        }
+
+        return response;
+      }
+
+      async function sendFallback(payload) {
+        const formData = new FormData();
+        formData.append("payload_json", JSON.stringify(payload));
+
+        await fetch(WEBHOOK_URL, {
+          method: "POST",
+          body: formData,
+          mode: "no-cors"
+        });
+      }
+
       els.reportSubmitBtn.addEventListener("click", async () => {
         const type = (els.reportType.value || "Bug").trim();
         const message = (els.reportMessage.value || "").trim();
@@ -1214,6 +1241,7 @@
           return;
         }
 
+        els.reportSubmitBtn.disabled = true;
         els.reportStatus.textContent = "Sende Report...";
 
         const payload = {
@@ -1239,24 +1267,28 @@
         };
 
         try {
-          const formData = new FormData();
-          formData.append("payload_json", JSON.stringify(payload));
-
-          await fetch(WEBHOOK_URL, {
-            method: "POST",
-            body: formData,
-            mode: "no-cors"
-          });
-
+          await sendJson(payload);
           els.reportMessage.value = "";
           els.reportType.value = "Bug";
           els.reportStatus.textContent = "Report gesendet.";
+        } catch (error) {
+          try {
+            await sendFallback(payload);
+            els.reportMessage.value = "";
+            els.reportType.value = "Bug";
+            els.reportStatus.textContent = "Report gesendet.";
+          } catch {
+            els.reportStatus.textContent = "Report konnte nicht gesendet werden.";
+            console.error("Report Fehler:", error);
+          }
+        } finally {
+          els.reportSubmitBtn.disabled = false;
 
           setTimeout(() => {
-            els.reportStatus.textContent = "Noch nichts gesendet.";
+            if (els.reportStatus.textContent === "Report gesendet.") {
+              els.reportStatus.textContent = "Noch nichts gesendet.";
+            }
           }, 3000);
-        } catch {
-          els.reportStatus.textContent = "Report konnte nicht gesendet werden.";
         }
       });
     }
