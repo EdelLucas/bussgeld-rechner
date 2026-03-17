@@ -17,8 +17,8 @@
       .replaceAll("'", "&#039;");
   }
 
-  function unique(array) {
-    return [...new Set((array || []).filter(Boolean))];
+  function unique(list) {
+    return [...new Set((list || []).filter(Boolean))];
   }
 
   function getDate(now = new Date()) {
@@ -46,18 +46,6 @@
       finePerWanted: 10000,
       infoList: ["$10.000 + $10.000 pro weiteren Wanted"]
     },
-    "stgb-43": {
-      infoList: [
-        "0 - 3 Wanteds (je nach schwere der angedrohten Straftat)",
-        "20.000$ Mindestbußgeld + 5.000$ pro ausgestelltem Wanted (max. 35.000$)"
-      ]
-    },
-    "stgb-6-9": {
-      fineType: "base_plus_per_active_wanted",
-      fine: 5000,
-      finePerWanted: 5000,
-      infoList: ["$5.000 + $5.000 pro weiteren Wanted"]
-    },
     "stgb-41-1": {
       infoList: ["Waffenscheinentzug"]
     },
@@ -66,6 +54,18 @@
     },
     "stgb-18-2": {
       infoList: ["Führerscheinentzug"]
+    },
+    "stgb-43": {
+      infoList: [
+        "0 - 3 Wanteds je nach Schwere",
+        "20.000$ Mindestbußgeld + 5.000$ pro ausgestelltem Wanted"
+      ]
+    },
+    "stgb-6-9": {
+      fineType: "base_plus_per_active_wanted",
+      fine: 5000,
+      finePerWanted: 5000,
+      infoList: ["$5.000 + $5.000 pro weiteren Wanted"]
     },
     "stvo-2": {
       infoList: ["Führerscheinentzug"]
@@ -85,9 +85,6 @@
     "stvo-10-art-16": {
       infoList: ["Führerscheinentzug"]
     },
-    "stvo-12-3": {
-      infoList: ["Bergung aus schwer zugänglichem Gelände, z. B. Gebirge, Strand oder Wasser"]
-    },
     "stvo-17-art-1-2": {
       infoList: ["Führerscheinentzug"]
     },
@@ -96,8 +93,8 @@
     },
     "stvo-26": {
       infoList: [
-        "15.000$: Roter Bordstein, Bushaltestelle, Grünflächen (Wald), Privatgrundstück, Behinderung - Fußverkehr, Freeway, Highway, Behinderung - Straßenverkehr, Zuparken von Einfahrten",
-        "20.000$: Greenzone, staatliche Organisationen / Postamt, Tatverdächtiger, KFZ ohne Kennzeichen, Bergung aus schwer zugänglichem Gelände"
+        "15.000$: Roter Bordstein, Bushaltestelle, Grünflächen, Privatgrundstück, Behinderung Fußverkehr, Freeway, Highway, Behinderung Straßenverkehr, Zuparken von Einfahrten",
+        "20.000$: Greenzone, staatliche Organisationen, Postamt, Tatverdächtiger, KFZ ohne Kennzeichen, Bergung aus schwer zugänglichem Gelände"
       ]
     },
     "stvo-28": {
@@ -122,13 +119,13 @@
       infoList: ["Erst ab 20 Gramm Marihuana"]
     },
     "btmg-3-bis-20": {
-      infoList: ["+ Die Summe, die von o.g. Mengen von Medizinprodukten verlangt wird"]
+      infoList: ["+ zusätzlich die verlangte Verkaufssumme"]
     },
     "btmg-3-bis-50": {
-      infoList: ["+ Die Summe, die von o.g. Mengen von Medizinprodukten verlangt wird"]
+      infoList: ["+ zusätzlich die verlangte Verkaufssumme"]
     },
     "btmg-3-ab-51": {
-      infoList: ["+ Die Summe, die von o.g. Mengen von Medizinprodukten verlangt wird"]
+      infoList: ["+ zusätzlich die verlangte Verkaufssumme"]
     }
   };
 
@@ -314,72 +311,6 @@
     return Array.from(byId.values());
   }
 
-  function ensureBlitzerModal() {
-    if ($("blitzerModal")) return;
-
-    const wrapper = document.createElement("div");
-    wrapper.innerHTML = `
-      <div id="blitzerModal" class="modal-backdrop hidden">
-        <div class="modal modal-blitzer">
-          <div class="modal-header modal-header--blitzer">
-            <div class="modal-title modal-title--blitzer">
-              <span class="blitzer-title-icon">📷</span>
-              <span>Blitzer-Rechner</span>
-            </div>
-            <button class="modal-close modal-close--blitzer" type="button" data-close-modal>✕</button>
-          </div>
-
-          <div class="modal-body modal-body--blitzer">
-            <p class="blitzer-intro">
-              Berechne automatisch das Bußgeld anhand der gemessenen Geschwindigkeit und Zone.
-              Die Aktenzeile wird direkt generiert.
-            </p>
-
-            <div class="blitzer-grid">
-              <div class="blitzer-field">
-                <label for="blitzerPlate">KENNZEICHEN</label>
-                <input id="blitzerPlate" class="field-input blitzer-input" type="text" placeholder="z.B. LS-AB-123" />
-              </div>
-
-              <div class="blitzer-field">
-                <label for="blitzerPlace">ORT</label>
-                <input id="blitzerPlace" class="field-input blitzer-input" type="text" placeholder="z.B. Vinewood Blvd" />
-              </div>
-
-              <div class="blitzer-field">
-                <label for="blitzerZone">ZONE</label>
-                <select id="blitzerZone" class="field-input blitzer-input">
-                  <option value="50">Verkehrsberuhigter Bereich (50 km/h)</option>
-                  <option value="200">Außerorts (200 km/h)</option>
-                  <option value="350">Highway (350 km/h)</option>
-                  <option value="300">Freeway (300 km/h)</option>
-                </select>
-              </div>
-
-              <div class="blitzer-field">
-                <label for="blitzerSpeed">GEMESSENE GESCHW. (KM/H)</label>
-                <input id="blitzerSpeed" class="field-input blitzer-input" type="number" min="0" step="1" placeholder="z.B. 120" />
-              </div>
-            </div>
-
-            <button id="blitzerCalcBtn" class="blitzer-calc-btn" type="button">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M9 3h6M8 7h8M7 11h10M7 15h3m4 0h3M7 19h10M6 4h12a1 1 0 0 1 1 1v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a1 1 0 0 1 1-1Z"/>
-              </svg>
-              <span>Berechnen</span>
-            </button>
-
-            <div id="blitzerResultBox" class="blitzer-result-box is-hidden">
-              <div class="blitzer-result-title">Ergebnis</div>
-              <div id="blitzerResultText" class="blitzer-result-text"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(wrapper.firstElementChild);
-  }
-
   window.initUI = function initUI(config) {
     const lawData = mergeLawData(config.lawData || []);
     const lawById = new Map(lawData.map((law) => [law.id, law]));
@@ -388,8 +319,6 @@
     if (!groupOrder.includes("Beamtendienstgesetzbuch (BDG)")) {
       groupOrder.push("Beamtendienstgesetzbuch (BDG)");
     }
-
-    ensureBlitzerModal();
 
     const fibcoFieldIds = config.fibcoFieldIds || [];
 
@@ -461,7 +390,11 @@
       blitzerResultBox: $("blitzerResultBox"),
       blitzerResultText: $("blitzerResultText"),
       blitzerSummaryBox: $("blitzerSummaryBox"),
-      blitzerSummaryText: $("blitzerSummaryText")
+      blitzerSummaryText: $("blitzerSummaryText"),
+      reportType: $("reportType"),
+      reportMessage: $("reportMessage"),
+      reportSubmitBtn: $("reportSubmitBtn"),
+      reportStatus: $("reportStatus")
     };
 
     function getFilteredLaws() {
@@ -503,17 +436,6 @@
       return Number(item.fine || 0);
     }
 
-    function getInfoLines(item) {
-      return unique([
-        ...(item.infoList || []),
-        item.note || ""
-      ]);
-    }
-
-    function getCardInfoText(item) {
-      return getInfoLines(item).join(" • ");
-    }
-
     function getBlitzerBaseLaw() {
       if (!state.blitzer.isCalculated) return null;
 
@@ -532,19 +454,15 @@
       const baseLaw = getBlitzerBaseLaw();
       if (!baseLaw) return null;
 
+      const isAlreadySelected = state.selected.has(baseLaw.id);
+      if (isAlreadySelected) return null;
+
       return {
         ...baseLaw,
         id: `__blitzer__${baseLaw.id}`,
         baseId: baseLaw.id,
         isVirtual: true,
-        virtualType: "blitzer",
-        infoList: unique([
-          ...(baseLaw.infoList || []),
-          state.blitzer.plate ? `Kennzeichen: ${state.blitzer.plate}` : "",
-          state.blitzer.place ? `Ort: ${state.blitzer.place}` : "",
-          `Zone: ${state.blitzer.zoneLabel}`,
-          `Gemessen: ${state.blitzer.speed} km/h`
-        ])
+        virtualType: "blitzer"
       };
     }
 
@@ -566,6 +484,38 @@
         grayWantedMax: 0,
         infoList: ["Reue aktiv"]
       };
+    }
+
+    function isBlitzerAttachedToItem(item) {
+      return !!(
+        state.blitzer.isCalculated &&
+        state.blitzer.lawId &&
+        (item.id === state.blitzer.lawId || item.baseId === state.blitzer.lawId)
+      );
+    }
+
+    function getInfoLines(item) {
+      const lines = unique([
+        ...(item.infoList || []),
+        item.note || ""
+      ]);
+
+      if (isBlitzerAttachedToItem(item)) {
+        lines.push(state.blitzer.plate ? `Kennzeichen: ${state.blitzer.plate}` : "");
+        lines.push(state.blitzer.place ? `Ort: ${state.blitzer.place}` : "");
+        lines.push(`Zone: ${state.blitzer.zoneLabel}`);
+        lines.push(`Gemessen: ${state.blitzer.speed} km/h`);
+      }
+
+      if (!item.isVirtual && item.id === "stvo-12-1" && state.parkingPlate.trim()) {
+        lines.push(`Kennzeichen: ${state.parkingPlate.trim()}`);
+      }
+
+      return unique(lines);
+    }
+
+    function getCardInfoText(item) {
+      return getInfoLines(item).join(" • ");
     }
 
     function getSelectedItems() {
@@ -709,6 +659,13 @@
         return item.para;
       }
 
+      if (isBlitzerAttachedToItem(item)) {
+        const parts = [];
+        if (state.blitzer.plate) parts.push(state.blitzer.plate);
+        if (state.blitzer.place) parts.push(state.blitzer.place);
+        return `${item.para}${parts.length ? ` [${parts.join(" | ")}]` : ""}`;
+      }
+
       if (item.id === "stvo-12-1" && state.parkingPlate.trim()) {
         return `${item.para} [${state.parkingPlate.trim()}]`;
       }
@@ -742,14 +699,14 @@
     function buildLongLine(item) {
       const parts = [`- ${item.para} — ${item.name}`];
 
-      if (item.virtualType === "blitzer") {
+      if (item.virtualType === "blitzer" || isBlitzerAttachedToItem(item)) {
         if (state.blitzer.plate) parts.push(`Kennzeichen: ${state.blitzer.plate}`);
         if (state.blitzer.place) parts.push(`Ort: ${state.blitzer.place}`);
         parts.push(`Zone: ${state.blitzer.zoneLabel}`);
         parts.push(`Gemessen: ${state.blitzer.speed} km/h`);
       }
 
-      if (!item.virtualType && item.id === "stvo-12-1" && state.parkingPlate.trim()) {
+      if (!item.isVirtual && item.id === "stvo-12-1" && state.parkingPlate.trim()) {
         parts.push(`Kennzeichen: ${state.parkingPlate.trim()}`);
       }
 
@@ -1243,6 +1200,67 @@
       updateSummary();
     }
 
+    function setupReport() {
+      const WEBHOOK_URL = "https://discord.com/api/webhooks/1453855487937482894/dO3DP9IQw0xXnl6m62J4rqblUan0u38uya7zEJdtKgekuOXwe0oqdYiMfpGT6okIWSeg";
+
+      if (!els.reportSubmitBtn || !els.reportType || !els.reportMessage || !els.reportStatus) return;
+
+      els.reportSubmitBtn.addEventListener("click", async () => {
+        const type = (els.reportType.value || "Bug").trim();
+        const message = (els.reportMessage.value || "").trim();
+
+        if (!message) {
+          els.reportStatus.textContent = "Bitte erst eine Beschreibung eintragen.";
+          return;
+        }
+
+        els.reportStatus.textContent = "Sende Report...";
+
+        const payload = {
+          username: "Strafkatalog Report",
+          embeds: [
+            {
+              title: `${type} gemeldet`,
+              description: message.slice(0, 4000),
+              fields: [
+                {
+                  name: "Zeit",
+                  value: `${getDate()} ${getTime(new Date(), false)}`,
+                  inline: true
+                },
+                {
+                  name: "Seite",
+                  value: window.location.href || "unbekannt",
+                  inline: false
+                }
+              ]
+            }
+          ]
+        };
+
+        try {
+          const formData = new FormData();
+          formData.append("payload_json", JSON.stringify(payload));
+
+          await fetch(WEBHOOK_URL, {
+            method: "POST",
+            body: formData,
+            mode: "no-cors"
+          });
+
+          els.reportMessage.value = "";
+          els.reportType.value = "Bug";
+          els.reportStatus.textContent = "Report gesendet.";
+
+          setTimeout(() => {
+            els.reportStatus.textContent = "Noch nichts gesendet.";
+          }, 3000);
+        } catch {
+          els.reportStatus.textContent = "Report konnte nicht gesendet werden.";
+        }
+      });
+    }
+
     function setupFibco() {
       fibcoFieldIds.forEach((id) => {
         const el = $(id);
@@ -1372,6 +1390,7 @@
     setupCatalogEvents();
     setupInputs();
     setupFibco();
+    setupReport();
     updateBlitzerStateFromInputs();
     updateUI();
   };
