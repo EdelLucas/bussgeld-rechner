@@ -514,16 +514,15 @@ svg {
 }
 
 .quickbar {
-  align-self: stretch;
-  position: relative;
+  align-self: start;
+  min-width: 0;
 }
 
 .quickbar-inner {
-  position: fixed;
-  left: 16px;
+  position: sticky;
   top: 16px;
-  bottom: 16px;
-  width: 220px;
+  width: 100%;
+  height: calc(100vh - 32px);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -533,6 +532,21 @@ svg {
   background: linear-gradient(180deg, var(--panel-start), var(--panel-end));
   box-shadow: 0 20px 45px rgba(0,0,0,0.35);
   z-index: 20;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.quickbar-inner::-webkit-scrollbar {
+  width: 6px;
+}
+
+.quickbar-inner::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+}
+
+.quickbar-inner::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.12);
 }
 
 .quickbar-main {
@@ -1593,8 +1607,11 @@ select.field-input {
     position: static;
     width: auto;
     min-height: auto;
+    height: auto;
+    max-height: none;
     top: auto;
     bottom: auto;
+    overflow: visible;
   }
 
   .quickbar-main {
