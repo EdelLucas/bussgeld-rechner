@@ -50,6 +50,24 @@
       </div>
     </header>
 
+    <div id="updateBanner" class="update-banner is-hidden">
+      <div class="update-banner-copy">
+        <div class="update-banner-title">Neues Update verfügbar</div>
+        <div class="update-banner-text">
+          17.03.2026 · Update-Popup, Abtransport in der Akte, sauberere Dropdowns
+        </div>
+      </div>
+
+      <div class="update-banner-actions">
+        <button id="updateBannerOpenBtn" class="copy-btn copy-btn--secondary" type="button">
+          Details
+        </button>
+        <button id="updateBannerCloseBtn" class="copy-btn copy-btn--primary" type="button">
+          Verstanden
+        </button>
+      </div>
+    </div>
+
     <main class="layout">
       <aside class="quickbar">
         <div class="quickbar-inner">
@@ -96,10 +114,16 @@
               <span>Report</span>
             </button>
 
-            <div class="quickbar-update-box">
+            <button
+              class="quickbar-update-box quickbar-update-box--button"
+              type="button"
+              data-modal="updatesModal"
+              title="Updates ansehen"
+            >
               <div class="quickbar-update-label">Letzte Aktualisierung</div>
               <div class="quickbar-update-date">17.03.2026</div>
-            </div>
+              <div class="quickbar-update-hint">Updates ansehen</div>
+            </button>
           </div>
         </div>
       </aside>
@@ -224,21 +248,21 @@
               <label class="field-title">Abtransportierende Behörde</label>
               <select id="transportAgencySelect" class="field-input">
                 <option value="">Bitte wählen</option>
-                <option value="Federal Investigation Bureau (FIB)">Federal Investigation Bureau (FIB)</option>
-                <option value="National Guard (NG)">National Guard (NG)</option>
-                <option value="Los Santos Police Department (LSPD)">Los Santos Police Department (LSPD)</option>
-                <option value="Government of Los Santos (GOV)">Government of Los Santos (GOV)</option>
-                <option value="San Andreas Highway Patrol (SAHP)">San Andreas Highway Patrol (SAHP)</option>
+                <option value="FIB">Federal Investigation Bureau (FIB)</option>
+                <option value="NG">National Guard (NG)</option>
+                <option value="LSPD">Los Santos Police Department (LSPD)</option>
+                <option value="GOV">Government of Los Santos (GOV)</option>
+                <option value="SAHP">San Andreas Highway Patrol (SAHP)</option>
               </select>
             </div>
 
             <div class="field-block">
-              <label class="field-title">Abtransport-Hinweis</label>
+              <label class="field-title">Name / Hinweis</label>
               <input
                 id="transportNoteInput"
                 class="field-input"
                 type="text"
-                placeholder="z.B. Übergabe am MRPD / medizinische Freigabe lag vor"
+                placeholder="z.B. Assan Diop"
               />
             </div>
           </div>
@@ -280,6 +304,59 @@
         <p>3. Modifikationen rechts setzen.</p>
         <p>4. Rechte vorgelesen aktivieren.</p>
         <p>5. Zeile oder ganze Akte kopieren.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="updatesModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Update / Changelog</div>
+        <button class="modal-close" type="button" data-close-modal>✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="update-changelog">
+          <div class="update-version-row">
+            <div class="update-version-badge">Version 17.03.2026</div>
+            <div class="update-version-date">Letzte Aktualisierung: 17.03.2026</div>
+          </div>
+
+          <div class="update-change-list">
+            <div class="update-change-item">
+              <div class="update-change-title">Update-Hinweis beim Besuch</div>
+              <div class="update-change-text">
+                Beim ersten Besuch nach einem neuen Update erscheint jetzt automatisch ein Hinweis.
+              </div>
+            </div>
+
+            <div class="update-change-item">
+              <div class="update-change-title">Abtransport steht jetzt in der Akte</div>
+              <div class="update-change-text">
+                Wenn Abtransport aktiv ist, wird in der Langform jetzt eine saubere Zeile wie
+                „12.12.2026 | 23:09 - BDG §2 @NG Assan Diop“ ausgegeben.
+              </div>
+            </div>
+
+            <div class="update-change-item">
+              <div class="update-change-title">Dropdowns optisch überarbeitet</div>
+              <div class="update-change-text">
+                Die Select-Felder passen jetzt besser zum dunklen Design.
+              </div>
+            </div>
+
+            <div class="update-change-item">
+              <div class="update-change-title">Updates jederzeit erreichbar</div>
+              <div class="update-change-text">
+                Über die Box „Letzte Aktualisierung“ links kannst du den Changelog jederzeit wieder öffnen.
+              </div>
+            </div>
+          </div>
+
+          <button id="updatesConfirmBtn" class="copy-btn copy-btn--primary update-confirm-btn" type="button">
+            Verstanden
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -792,6 +869,7 @@
         </div>
       </div>
     </div>
+
   </div>
 
   <script src="./data.js"></script>
