@@ -33,6 +33,9 @@
     });
   }
 
+  const UPDATE_VERSION = "2026-03-17";
+  const UPDATE_STORAGE_KEY = "strafkatalog-last-seen-update-v1";
+
   const LAW_PATCHES = {
     "stgb-20": {
       fineType: "base_plus_per_active_wanted",
@@ -394,7 +397,11 @@
       reportType: $("reportType"),
       reportMessage: $("reportMessage"),
       reportSubmitBtn: $("reportSubmitBtn"),
-      reportStatus: $("reportStatus")
+      reportStatus: $("reportStatus"),
+      updateBanner: $("updateBanner"),
+      updateBannerOpenBtn: $("updateBannerOpenBtn"),
+      updateBannerCloseBtn: $("updateBannerCloseBtn"),
+      updatesConfirmBtn: $("updatesConfirmBtn")
     };
 
     function getFilteredLaws() {
@@ -683,17 +690,20 @@
       return `${date} | ${time} - ${az ? `${az} - ` : ""}${reason}`;
     }
 
-    function buildTransportText() {
+    function getTransportLawText(items) {
+      const realItems = items.filter((item) => item.para !== "StGB §35");
+      if (!realItems.length) return "—";
+      return realItems.map((item) => item.para).join(" + ");
+    }
+
+    function buildTransportText(items) {
       if (!els.transportToggle || !els.transportToggle.checked) return "Nein";
 
       const agency = els.transportAgencySelect ? els.transportAgencySelect.value.trim() : "";
       const note = els.transportNoteInput ? els.transportNoteInput.value.trim() : "";
+      const lawText = getTransportLawText(items);
 
-      const parts = ["Ja"];
-      if (agency) parts.push(`Behörde: ${agency}`);
-      if (note) parts.push(`Hinweis: ${note}`);
-
-      return parts.join(" | ");
+      return `${getDate()} | ${getTime(new Date(), false)} - ${lawText}${agency ? ` @${agency}` : ""}${note ? ` ${note}` : ""}`;
     }
 
     function buildLongLine(item) {
@@ -746,7 +756,7 @@
       lines.push(`Höchste Geldstrafe: ${formatMoney(highestFine)}`);
       lines.push(`Höchste Wanteds: ${highestWanted || "—"}`);
       lines.push(`Rechte vorgelesen: ${els.rightsReadToggle && els.rightsReadToggle.checked ? "Ja" : "Nein"}`);
-      lines.push(`TV-Abtransport: ${buildTransportText()}`);
+      lines.push(`TV-Abtransport: ${buildTransportText(items)}`);
       lines.push(`Aktenzeile: ${buildCompactLine(items)}`);
 
       return lines.join("\n");
@@ -952,6 +962,62 @@
       if (!modal) return;
       document.body.classList.add("modal-open");
       modal.classList.remove("hidden");
+    }
+
+    function getSeenUpdateVersion() {
+      try {
+        return localStorage.getItem(UPDATE_STORAGE_KEY) || "";
+      } catch {
+        return "";
+      }
+    }
+
+    function setSeenUpdateVersion() {
+      try {
+        localStorage.setItem(UPDATE_STORAGE_KEY, UPDATE_VERSION);
+      } catch {}
+    }
+
+    function hideUpdateBanner() {
+      if (els.updateBanner) {
+        els.updateBanner.classList.add("is-hidden");
+      }
+    }
+
+    function markUpdateSeen() {
+      setSeenUpdateVersion();
+      hideUpdateBanner();
+    }
+
+    function setupUpdates() {
+      const isNewVersion = getSeenUpdateVersion() !== UPDATE_VERSION;
+
+      if (els.updateBanner) {
+        els.updateBanner.classList.toggle("is-hidden", !isNewVersion);
+      }
+
+      if (els.updateBannerOpenBtn) {
+        els.updateBannerOpenBtn.addEventListener("click", () => {
+          openModal("updatesModal");
+        });
+      }
+
+      if (els.updateBannerCloseBtn) {
+        els.updateBannerCloseBtn.addEventListener("click", () => {
+          markUpdateSeen();
+        });
+      }
+
+      if (els.updatesConfirmBtn) {
+        els.updatesConfirmBtn.addEventListener("click", () => {
+          markUpdateSeen();
+          closeAllModals();
+        });
+      }
+
+      if (isNewVersion) {
+        openModal("updatesModal");
+      }
     }
 
     function setupModals() {
@@ -1419,6 +1485,7 @@
     state.parkingPlate = els.parkingPlateInput ? els.parkingPlateInput.value.trim() : "";
 
     setupModals();
+    setupUpdates();
     setupCatalogEvents();
     setupInputs();
     setupFibco();
