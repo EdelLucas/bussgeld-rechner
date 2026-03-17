@@ -3,22 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Grand DE1 | Strafkatalog</title>
+  <title>Grand DE1 I Strafkatalog</title>
 
-  <link rel="icon" type="image/png" sizes="32x32" href="./favicon.png?v=8" />
-  <link rel="apple-touch-icon" href="./favicon.png?v=8" />
-  <link rel="stylesheet" href="./style.css?v=8" />
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon.png?v=10" />
+  <link rel="apple-touch-icon" href="./favicon.png?v=10" />
+  <link rel="stylesheet" href="./style.css?v=10" />
 </head>
 <body data-theme="blue">
   <div class="app">
     <header class="topbar">
       <div class="topbar-left">
         <div class="brand">
-          <img
-            src="./favicon.png?v=8"
-            alt="Favicon"
-            class="brand-favicon"
-          />
+          <img src="./favicon.png?v=10" alt="Favicon" class="brand-favicon" />
 
           <div class="brand-copy">
             <div class="brand-title">Strafkatalog</div>
@@ -55,54 +51,58 @@
     </header>
 
     <main class="layout">
-<aside class="quickbar">
-  <div class="quickbar-inner">
-    <button class="top-btn top-btn--pill top-btn--static quick-btn" type="button" data-modal="tutorialModal" title="Tutorials">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5C4 5.67 4.67 5 5.5 5H12v14H5.5A1.5 1.5 0 0 1 4 17.5v-11ZM20 6.5C20 5.67 19.33 5 18.5 5H12v14h6.5a1.5 1.5 0 0 0 1.5-1.5v-11Z"/></svg>
-      <span>Tutorials</span>
-    </button>
+      <aside class="quickbar">
+        <div class="quickbar-inner">
+          <div class="quickbar-main">
+            <button class="top-btn top-btn--pill top-btn--static quick-btn" type="button" data-modal="tutorialModal" title="Tutorials">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5C4 5.67 4.67 5 5.5 5H12v14H5.5A1.5 1.5 0 0 1 4 17.5v-11ZM20 6.5C20 5.67 19.33 5 18.5 5H12v14h6.5a1.5 1.5 0 0 0 1.5-1.5v-11Z"/></svg>
+              <span>Tutorials</span>
+            </button>
 
-    <button class="top-btn top-btn--pill top-btn--static quick-btn" type="button" data-modal="reportModal" title="Report">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 5h16v11H7l-3 3V5Z"/>
-        <path d="M8 9h8M8 12h5"/>
-      </svg>
-      <span>Report</span>
-    </button>
+            <button class="top-btn top-btn--pill top-btn--static quick-btn" type="button" data-modal="leaderModal" title="Leader">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 4 14.8 9.5 21 10.3l-4.5 4.3 1.1 6.1L12 17.8 6.4 20.7l1.1-6.1L3 10.3l6.2-.8L12 4Z"/>
+              </svg>
+              <span>Leader</span>
+            </button>
 
-    <button class="top-btn top-btn--pill top-btn--static quick-btn" type="button" data-modal="leaderModal" title="Leader">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 4 14.8 9.5 21 10.3l-4.5 4.3 1.1 6.1L12 17.8 6.4 20.7l1.1-6.1L3 10.3l6.2-.8L12 4Z"/>
-      </svg>
-      <span>Leader</span>
-    </button>
+            <button class="top-btn top-btn--pill top-btn--static quick-btn" type="button" data-modal="rechteModal" title="Rechte">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5V4Zm11 0v4h4"/></svg>
+              <span>Rechte</span>
+            </button>
 
-    <button class="top-btn top-btn--pill top-btn--static quick-btn" type="button" data-modal="rechteModal" title="Rechte">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5V4Zm11 0v4h4"/></svg>
-      <span>Rechte</span>
-    </button>
+            <button class="top-btn top-btn--pill top-btn--static quick-btn" type="button" data-modal="anwaltModal" title="Anwälte">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M6 8h12M8 8l-3 6h6l-3-6Zm8 0-3 6h6l-3-6ZM8 18h8"/></svg>
+              <span>Anwälte</span>
+            </button>
 
-    <button class="top-btn top-btn--pill top-btn--static quick-btn" type="button" data-modal="anwaltModal" title="Anwälte">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M6 8h12M8 8l-3 6h6l-3-6Zm8 0-3 6h6l-3-6ZM8 18h8"/></svg>
-      <span>Anwälte</span>
-    </button>
+            <button class="top-btn top-btn--pill top-btn--static quick-btn" type="button" data-modal="belehrungModal" title="Belehrung">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 20h18L12 3Zm0 6v5m0 3h.01"/></svg>
+              <span>Belehrung</span>
+            </button>
 
-    <button class="top-btn top-btn--pill top-btn--static quick-btn" type="button" data-modal="belehrungModal" title="Belehrung">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 20h18L12 3Zm0 6v5m0 3h.01"/></svg>
-      <span>Belehrung</span>
-    </button>
+            <button class="top-btn top-btn--pill top-btn--static quick-btn" type="button" data-modal="fibcoModal" title="FIBCO">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 7v5c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-4Zm0 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm-4.5 10a5.8 5.8 0 0 1 9 0"/></svg>
+              <span>FIBCO</span>
+            </button>
+          </div>
 
-    <button class="top-btn top-btn--pill top-btn--static quick-btn" type="button" data-modal="fibcoModal" title="FIBCO">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 7v5c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-4Zm0 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm-4.5 10a5.8 5.8 0 0 1 9 0"/></svg>
-      <span>FIBCO</span>
-    </button>
+          <div class="quickbar-bottom">
+            <button class="top-btn top-btn--pill top-btn--static quick-btn quick-btn--report" type="button" data-modal="reportModal" title="Report">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 5h16v11H7l-3 3V5Z"/>
+                <path d="M8 9h8M8 12h5"/>
+              </svg>
+              <span>Report</span>
+            </button>
 
-    <div class="quickbar-update-box">
-      <div class="quickbar-update-label">Letzte Aktualisierung</div>
-      <div class="quickbar-update-date">17.03.2026</div>
-    </div>
-  </div>
-</aside>
+            <div class="quickbar-update-box">
+              <div class="quickbar-update-label">Letzte Aktualisierung</div>
+              <div class="quickbar-update-date">17.03.2026</div>
+            </div>
+          </div>
+        </div>
+      </aside>
 
       <section class="content">
         <div class="search-row">
@@ -193,12 +193,7 @@
 
               <div class="side-plate-field">
                 <label class="field-title" for="parkingPlateInput">Falschparken Kennzeichen</label>
-                <input
-                  id="parkingPlateInput"
-                  class="field-input"
-                  type="text"
-                  placeholder="z.B. LS-AB-123"
-                />
+                <input id="parkingPlateInput" class="field-input" type="text" placeholder="z.B. LS-AB-123" />
               </div>
             </div>
 
@@ -289,6 +284,90 @@
     </div>
   </div>
 
+  <div id="reportModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Bug / Verbesserung melden</div>
+        <button class="modal-close" type="button" data-close-modal>✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="report-form">
+          <div class="report-field">
+            <label class="field-title" for="reportType">Thema</label>
+            <select id="reportType" class="field-input">
+              <option value="Bug">Bug</option>
+              <option value="Verbesserung">Verbesserung</option>
+            </select>
+          </div>
+
+          <div class="report-field">
+            <label class="field-title" for="reportMessage">Beschreibung</label>
+            <textarea
+              id="reportMessage"
+              class="textarea report-textarea"
+              placeholder="Beschreibe hier den Fehler oder die Verbesserung..."
+            ></textarea>
+          </div>
+
+          <button id="reportSubmitBtn" class="copy-btn copy-btn--primary report-submit-btn" type="button">
+            Report senden
+          </button>
+
+          <div id="reportStatus" class="report-status">Noch nichts gesendet.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="leaderModal" class="modal-backdrop hidden">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">Leader Übersicht</div>
+        <button class="modal-close" type="button" data-close-modal>✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="leader-list">
+          <div class="leader-row">
+            <div class="leader-org">FIB</div>
+            <div class="leader-info">Leader: Leyla Ballerina<br>Vize: Gojira Bukur</div>
+          </div>
+
+          <div class="leader-row">
+            <div class="leader-org">LSPD</div>
+            <div class="leader-info">Leader: John Bohnee<br>Vize: Panam Veto</div>
+          </div>
+
+          <div class="leader-row">
+            <div class="leader-org">SAHP</div>
+            <div class="leader-info">Leader: Lone Guard</div>
+          </div>
+
+          <div class="leader-row">
+            <div class="leader-org">GOV</div>
+            <div class="leader-info">Leader: Simon Kellerman</div>
+          </div>
+
+          <div class="leader-row">
+            <div class="leader-org">NG</div>
+            <div class="leader-info">Leader: Ray Eston<br>Vize: Hildegard Nikolaus + Angus Newton</div>
+          </div>
+
+          <div class="leader-row">
+            <div class="leader-org">LI</div>
+            <div class="leader-info">Leader: Cherry Bloom</div>
+          </div>
+
+          <div class="leader-row">
+            <div class="leader-org">EMS</div>
+            <div class="leader-info">Leader: Andrew Fuchs<br>Vize: Fabian Avocodo + Julian Hwang</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="blitzerModal" class="modal-backdrop hidden">
     <div class="modal modal-blitzer">
       <div class="modal-header modal-header--blitzer">
@@ -347,90 +426,6 @@
     </div>
   </div>
 
-  <div id="reportModal" class="modal-backdrop hidden">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Bug / Verbesserung melden</div>
-      <button class="modal-close" type="button" data-close-modal>✕</button>
-    </div>
-
-    <div class="modal-body">
-      <div class="report-form">
-        <div class="report-field">
-          <label class="field-title" for="reportType">Thema</label>
-          <select id="reportType" class="field-input">
-            <option value="Bug">Bug</option>
-            <option value="Verbesserung">Verbesserung</option>
-          </select>
-        </div>
-
-        <div class="report-field">
-          <label class="field-title" for="reportMessage">Beschreibung</label>
-          <textarea
-            id="reportMessage"
-            class="textarea report-textarea"
-            placeholder="Beschreibe hier den Fehler oder die Verbesserung..."
-          ></textarea>
-        </div>
-
-        <button id="reportSubmitBtn" class="copy-btn copy-btn--primary report-submit-btn" type="button">
-          Report senden
-        </button>
-
-        <div id="reportStatus" class="report-status">Noch nichts gesendet.</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="leaderModal" class="modal-backdrop hidden">
-  <div class="modal modal-lg">
-    <div class="modal-header">
-      <div class="modal-title">Leader Übersicht</div>
-      <button class="modal-close" type="button" data-close-modal>✕</button>
-    </div>
-
-    <div class="modal-body">
-      <div class="leader-list">
-        <div class="leader-row">
-          <div class="leader-org">FIB</div>
-          <div class="leader-info">Leader: Leyla Ballerina<br>Vize: Gojira Bukur</div>
-        </div>
-
-        <div class="leader-row">
-          <div class="leader-org">LSPD</div>
-          <div class="leader-info">Leader: John Bohnee<br>Vize: Panam Veto</div>
-        </div>
-
-        <div class="leader-row">
-          <div class="leader-org">SAHP</div>
-          <div class="leader-info">Leader: Lone Guard</div>
-        </div>
-
-        <div class="leader-row">
-          <div class="leader-org">GOV</div>
-          <div class="leader-info">Leader: Simon Kellerman</div>
-        </div>
-
-        <div class="leader-row">
-          <div class="leader-org">NG</div>
-          <div class="leader-info">Leader: Ray Eston<br>Vize: Hildegard Nikolaus + Angus Newton</div>
-        </div>
-
-        <div class="leader-row">
-          <div class="leader-org">LI</div>
-          <div class="leader-info">Leader: Cherry Bloom</div>
-        </div>
-
-        <div class="leader-row">
-          <div class="leader-org">EMS</div>
-          <div class="leader-info">Leader: Andrew Fuchs<br>Vize: Fabian Avocodo + Julian Hwang</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-  
   <div id="anwaltModal" class="modal-backdrop hidden">
     <div class="modal modal-lg">
       <div class="modal-header">
@@ -536,7 +531,7 @@
       </div>
       <div class="modal-body">
         <p>Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird gegen Sie verwendet werden.</p>
-        <p>Ab 2 Wanteds haben Sie das Recht auf einen staatlich anerkannten Anwalt, den Sie selbst benennen müssen.</p>
+        <p>Ab 3 Wanteds haben Sie das Recht auf einen Anwalt, den Sie selbst benennen müssen.</p>
         <p>Wenn kein Anwalt verfügbar ist, wird Ihnen keiner gestellt.</p>
         <p>Haben Sie Ihre Rechte verstanden?</p>
       </div>
