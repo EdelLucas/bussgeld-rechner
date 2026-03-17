@@ -1809,3 +1809,82 @@ select.field-input {
     grid-template-columns: 1fr;
   }
 }
+.quickbar-update-box {
+  margin-top: 6px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  background: var(--field-bg);
+}
+
+.quickbar-update-label {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.quickbar-update-date {
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.report-form {
+  display: grid;
+  gap: 14px;
+}
+
+.report-field {
+  display: grid;
+  gap: 6px;
+}
+
+.report-textarea {
+  min-height: 160px;
+}
+
+.report-submit-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.report-status {
+  min-height: 18px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.leader-list {
+  display: grid;
+  gap: 10px;
+}
+
+.leader-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  background: var(--field-bg);
+}
+
+.leader-org {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.leader-info {
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media (max-width: 700px) {
+  .leader-row {
+    grid-template-columns: 1fr;
+  }
+}
