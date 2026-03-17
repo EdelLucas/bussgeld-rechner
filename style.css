@@ -1039,6 +1039,22 @@ select.field-input {
   margin-top: 6px;
 }
 
+.side-action-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: end;
+}
+
+.side-plate-field {
+  display: grid;
+  gap: 6px;
+}
+
+.side-plate-field .field-title {
+  margin: 0;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -1344,7 +1360,6 @@ select.field-input {
   margin-top: 12px;
 }
 
-/* Blitzer */
 .modal-blitzer {
   width: min(760px, 100%);
   border: 1px solid rgba(255, 72, 164, 0.45);
@@ -1439,7 +1454,7 @@ select.field-input {
 .blitzer-result-box,
 .blitzer-summary-box,
 .extra-info-box {
-  margin-top: 2px;
+  margin-top: 10px;
   padding: 12px;
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 14px;
@@ -1496,7 +1511,6 @@ select.field-input {
   gap: 10px;
 }
 
-/* Responsive */
 @media (max-width: 1680px) {
   .cards {
     grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -1561,7 +1575,8 @@ select.field-input {
 
 @media (max-width: 900px) {
   .fibco-grid,
-  .blitzer-grid {
+  .blitzer-grid,
+  .side-action-grid {
     grid-template-columns: 1fr;
   }
 
