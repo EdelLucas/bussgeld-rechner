@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Strafkatalog</title>
 
-  <link rel="icon" type="image/png" sizes="32x32" href="./favicon.png?v=7" />
-  <link rel="apple-touch-icon" href="./favicon.png?v=7" />
-  <link rel="stylesheet" href="./style.css?v=7" />
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon.png?v=8" />
+  <link rel="apple-touch-icon" href="./favicon.png?v=8" />
+  <link rel="stylesheet" href="./style.css?v=8" />
 </head>
 <body data-theme="blue">
   <div class="app">
@@ -15,7 +15,7 @@
       <div class="topbar-left">
         <div class="brand">
           <img
-            src="./favicon.png?v=7"
+            src="./favicon.png?v=8"
             alt="Favicon"
             class="brand-favicon"
           />
@@ -60,11 +60,6 @@
           <button class="top-btn top-btn--pill top-btn--static quick-btn" type="button" data-modal="tutorialModal" title="Tutorials">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5C4 5.67 4.67 5 5.5 5H12v14H5.5A1.5 1.5 0 0 1 4 17.5v-11ZM20 6.5C20 5.67 19.33 5 18.5 5H12v14h6.5a1.5 1.5 0 0 0 1.5-1.5v-11Z"/></svg>
             <span>Tutorials</span>
-          </button>
-
-          <button class="top-btn top-btn--pill top-btn--static quick-btn" type="button" data-modal="blitzerModal" title="Blitzer">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10l2 3v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7l2-3Zm5 3.25A3.75 3.75 0 1 0 12 17.75a3.75 3.75 0 0 0 0-7.5Z"/></svg>
-            <span>Blitzer</span>
           </button>
 
           <button class="top-btn top-btn--pill top-btn--static quick-btn" type="button" data-modal="kalenderModal" title="Kalender">
@@ -171,14 +166,26 @@
           </div>
 
           <div class="field-block">
-            <div class="sidebar-name">Blitzer-Rechner</div>
+            <div class="sidebar-name">Blitzer / Falschparken</div>
 
-            <button id="openBlitzerBtn" class="copy-btn copy-btn--primary blitzer-open-btn" type="button">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M7 7h10l2 3v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7l2-3Zm5 3.25A3.75 3.75 0 1 0 12 17.75a3.75 3.75 0 0 0 0-7.5Z"/>
-              </svg>
-              <span>Blitzer öffnen</span>
-            </button>
+            <div class="side-action-grid">
+              <button id="openBlitzerBtn" class="copy-btn copy-btn--primary blitzer-open-btn" type="button">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M7 7h10l2 3v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7l2-3Zm5 3.25A3.75 3.75 0 1 0 12 17.75a3.75 3.75 0 0 0 0-7.5Z"/>
+                </svg>
+                <span>Blitzer öffnen</span>
+              </button>
+
+              <div class="side-plate-field">
+                <label class="field-title" for="parkingPlateInput">Falschparken Kennzeichen</label>
+                <input
+                  id="parkingPlateInput"
+                  class="field-input"
+                  type="text"
+                  placeholder="z.B. LS-AB-123"
+                />
+              </div>
+            </div>
 
             <div id="blitzerSummaryBox" class="blitzer-summary-box is-hidden">
               <div class="blitzer-summary-title">Blitzer-Daten</div>
