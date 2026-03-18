@@ -1,0 +1,23 @@
+{
+  "enabled": true,
+  "version": "2026-03-18",
+  "date": "18.03.2026",
+  "bannerTitle": "Neues Update verfügbar",
+  "bannerText": "18.03.2026 · Neue Anpassungen am Strafkatalog",
+  "modalTitle": "Update / Changelog",
+  "modalButton": "Verstanden",
+  "items": [
+    {
+      "title": "Kurzform verbessert",
+      "text": "Der TV-Abtransport wird jetzt sauber in der kurzen Aktenzeile angezeigt."
+    },
+    {
+      "title": "Infos bereinigt",
+      "text": "Es werden nur noch Führerscheinentzug und Waffenscheinentzug als Zusatzinfos angezeigt."
+    },
+    {
+      "title": "Design verbessert",
+      "text": "Dropdowns und Update-Anzeige wurden optisch überarbeitet."
+    }
+  ]
+}
