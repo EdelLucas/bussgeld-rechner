@@ -700,14 +700,23 @@
       const az = els.azInput ? els.azInput.value.trim() : "";
       const paras = items.map((item) => getCompactItemText(item)).join(" + ");
       const reason = paras || "—";
-      const baseLine = `${date} | ${time} - ${az ? `${az} - ` : ""}${reason}`;
-      const transportRecordLine = getTransportRecordLine(items);
 
-      if (transportRecordLine) {
-        return `${baseLine}\n[TV-Abtransport] ${transportRecordLine}`;
+      let line = `${date} | ${time} - ${az ? `${az} - ` : ""}${reason}`;
+
+      if (els.transportToggle && els.transportToggle.checked) {
+        const agency = els.transportAgencySelect ? els.transportAgencySelect.value.trim() : "";
+        const note = els.transportNoteInput ? els.transportNoteInput.value.trim() : "";
+        const transportParts = [];
+
+        if (agency) transportParts.push(`@${agency}`);
+        if (note) transportParts.push(note);
+
+        if (transportParts.length) {
+          line += ` ${transportParts.join(" ")}`;
+        }
       }
 
-      return baseLine;
+      return line;
     }
 
     function buildLongLine(item) {
@@ -855,7 +864,6 @@
       const highestWanted = getHighestWanted(items);
       const compactLine = buildCompactLine(items);
       const longText = buildLongText(items, highestFine, highestWanted);
-      const transportRecordLine = getTransportRecordLine(items);
 
       if (els.selectedCount) els.selectedCount.textContent = String(items.length);
       if (els.sumFine) els.sumFine.textContent = formatMoney(highestFine);
@@ -873,7 +881,8 @@
         if (state.longMode) {
           els.aktenOutput.style.height = "";
         } else {
-          els.aktenOutput.style.height = transportRecordLine ? "104px" : "54px";
+          els.aktenOutput.style.height = "auto";
+          els.aktenOutput.style.height = `${Math.max(54, els.aktenOutput.scrollHeight)}px`;
         }
       }
 
