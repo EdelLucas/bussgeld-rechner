@@ -33,8 +33,7 @@
     });
   }
 
-  const UPDATE_VERSION = "2026-03-17";
-  const UPDATE_STORAGE_KEY = "strafkatalog-last-seen-update-v1";
+  const UPDATE_STORAGE_KEY = "strafkatalog-last-seen-update-v2";
 
   const LAW_PATCHES = {
     "stgb-20": {
@@ -349,6 +348,10 @@
       selectedLawIds: new Set()
     };
 
+    const updateState = {
+      version: ""
+    };
+
     const els = {
       body: document.body,
       sections: $("catalogSections"),
@@ -399,8 +402,14 @@
       reportSubmitBtn: $("reportSubmitBtn"),
       reportStatus: $("reportStatus"),
       updateBanner: $("updateBanner"),
+      updateBannerTitleText: $("updateBannerTitleText"),
+      updateBannerTextText: $("updateBannerTextText"),
       updateBannerOpenBtn: $("updateBannerOpenBtn"),
       updateBannerCloseBtn: $("updateBannerCloseBtn"),
+      updatesModalTitleText: $("updatesModalTitleText"),
+      updateVersionBadgeText: $("updateVersionBadgeText"),
+      updateVersionDateText: $("updateVersionDateText"),
+      updateChangeList: $("updateChangeList"),
       updatesConfirmBtn: $("updatesConfirmBtn")
     };
 
@@ -1001,30 +1010,79 @@
       }
     }
 
-    function setSeenUpdateVersion() {
+    function setSeenUpdateVersion(version) {
+      if (!version) return;
       try {
-        localStorage.setItem(UPDATE_STORAGE_KEY, UPDATE_VERSION);
+        localStorage.setItem(UPDATE_STORAGE_KEY, version);
       } catch {}
     }
 
-    function hideUpdateBanner() {
-      if (els.updateBanner) {
-        els.updateBanner.classList.add("is-hidden");
-      }
+    function hideUpdateSystem() {
+      if (els.updateBanner) els.updateBanner.classList.add("is-hidden");
     }
 
     function markUpdateSeen() {
-      setSeenUpdateVersion();
-      hideUpdateBanner();
+      if (!updateState.version) return;
+      setSeenUpdateVersion(updateState.version);
+      hideUpdateSystem();
     }
 
-    function setupUpdates() {
-      const isNewVersion = getSeenUpdateVersion() !== UPDATE_VERSION;
-
-      if (els.updateBanner) {
-        els.updateBanner.classList.toggle("is-hidden", !isNewVersion);
+    function renderUpdateContent(data) {
+      if (els.updateBannerTitleText) {
+        els.updateBannerTitleText.textContent = data.bannerTitle || "Neues Update verfügbar";
       }
 
+      if (els.updateBannerTextText) {
+        els.updateBannerTextText.textContent = data.bannerText || "";
+      }
+
+      if (els.updatesModalTitleText) {
+        els.updatesModalTitleText.textContent = data.modalTitle || "Update / Changelog";
+      }
+
+      if (els.updateVersionBadgeText) {
+        els.updateVersionBadgeText.textContent = `Version ${data.version || "-"}`;
+      }
+
+      if (els.updateVersionDateText) {
+        els.updateVersionDateText.textContent = `Letzte Aktualisierung: ${data.date || "-"}`;
+      }
+
+      if (els.updatesConfirmBtn) {
+        els.updatesConfirmBtn.textContent = data.confirmText || "Verstanden";
+      }
+
+      if (els.updateChangeList) {
+        const items = Array.isArray(data.items) ? data.items : [];
+        els.updateChangeList.innerHTML = items.length
+          ? items.map((item) => `
+              <div class="update-change-item">
+                <div class="update-change-title">${escapeHtml(item.title || "")}</div>
+                <div class="update-change-text">${escapeHtml(item.text || "")}</div>
+              </div>
+            `).join("")
+          : `
+              <div class="update-change-item">
+                <div class="update-change-title">Keine Details</div>
+                <div class="update-change-text">Für dieses Update wurden keine Details hinterlegt.</div>
+              </div>
+            `;
+      }
+    }
+
+    async function loadUpdatesConfig() {
+      try {
+        const response = await fetch("./updates.json", { cache: "no-store" });
+        if (!response.ok) throw new Error(`updates.json Fehler: ${response.status}`);
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error("Updates konnten nicht geladen werden:", error);
+        return null;
+      }
+    }
+
+    async function setupUpdates() {
       if (els.updateBannerOpenBtn) {
         els.updateBannerOpenBtn.addEventListener("click", () => {
           openModal("updatesModal");
@@ -1044,7 +1102,22 @@
         });
       }
 
-      if (isNewVersion) {
+      const data = await loadUpdatesConfig();
+
+      if (!data || data.enabled !== true || !data.version) {
+        hideUpdateSystem();
+        return;
+      }
+
+      updateState.version = String(data.version);
+      renderUpdateContent(data);
+
+      if (els.updateBanner) {
+        els.updateBanner.classList.remove("is-hidden");
+      }
+
+      const seenVersion = getSeenUpdateVersion();
+      if (seenVersion !== updateState.version) {
         openModal("updatesModal");
       }
     }
