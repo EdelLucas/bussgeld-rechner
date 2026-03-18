@@ -680,30 +680,34 @@
       return item.para;
     }
 
+    function getTransportRecordLine(items) {
+      if (!els.transportToggle || !els.transportToggle.checked) return "";
+
+      const agency = els.transportAgencySelect ? els.transportAgencySelect.value.trim() : "";
+      const note = els.transportNoteInput ? els.transportNoteInput.value.trim() : "";
+
+      const realItems = items.filter((item) => item.para !== "StGB §35");
+      const lawText = realItems.length
+        ? realItems.map((item) => item.para).join(" + ")
+        : "—";
+
+      return `${getDate()} | ${getTime(new Date(), false)} - ${lawText}${agency ? ` @${agency}` : ""}${note ? ` ${note}` : ""}`;
+    }
+
     function buildCompactLine(items) {
       const date = getDate();
       const time = getTime(new Date(), false);
       const az = els.azInput ? els.azInput.value.trim() : "";
       const paras = items.map((item) => getCompactItemText(item)).join(" + ");
       const reason = paras || "—";
+      const baseLine = `${date} | ${time} - ${az ? `${az} - ` : ""}${reason}`;
+      const transportRecordLine = getTransportRecordLine(items);
 
-      return `${date} | ${time} - ${az ? `${az} - ` : ""}${reason}`;
-    }
+      if (transportRecordLine) {
+        return `${baseLine}\n[TV-Abtransport] ${transportRecordLine}`;
+      }
 
-    function getTransportLawText(items) {
-      const realItems = items.filter((item) => item.para !== "StGB §35");
-      if (!realItems.length) return "—";
-      return realItems.map((item) => item.para).join(" + ");
-    }
-
-    function buildTransportText(items) {
-      if (!els.transportToggle || !els.transportToggle.checked) return "Nein";
-
-      const agency = els.transportAgencySelect ? els.transportAgencySelect.value.trim() : "";
-      const note = els.transportNoteInput ? els.transportNoteInput.value.trim() : "";
-      const lawText = getTransportLawText(items);
-
-      return `${getDate()} | ${getTime(new Date(), false)} - ${lawText}${agency ? ` @${agency}` : ""}${note ? ` ${note}` : ""}`;
+      return baseLine;
     }
 
     function buildLongLine(item) {
@@ -726,6 +730,7 @@
     function buildLongText(items, highestFine, highestWanted) {
       const lines = [];
       const az = els.azInput ? els.azInput.value.trim() : "";
+      const transportRecordLine = getTransportRecordLine(items);
 
       lines.push(`Datum: ${getDate()}`);
       lines.push(`Uhrzeit: ${getTime()}`);
@@ -752,11 +757,16 @@
         });
       }
 
+      if (transportRecordLine) {
+        lines.push("");
+        lines.push("[TV-Abtransport]");
+        lines.push(transportRecordLine);
+      }
+
       lines.push("");
       lines.push(`Höchste Geldstrafe: ${formatMoney(highestFine)}`);
       lines.push(`Höchste Wanteds: ${highestWanted || "—"}`);
       lines.push(`Rechte vorgelesen: ${els.rightsReadToggle && els.rightsReadToggle.checked ? "Ja" : "Nein"}`);
-      lines.push(`TV-Abtransport: ${buildTransportText(items)}`);
       lines.push(`Aktenzeile: ${buildCompactLine(items)}`);
 
       return lines.join("\n");
@@ -845,6 +855,7 @@
       const highestWanted = getHighestWanted(items);
       const compactLine = buildCompactLine(items);
       const longText = buildLongText(items, highestFine, highestWanted);
+      const transportRecordLine = getTransportRecordLine(items);
 
       if (els.selectedCount) els.selectedCount.textContent = String(items.length);
       if (els.sumFine) els.sumFine.textContent = formatMoney(highestFine);
@@ -858,6 +869,12 @@
         els.aktenOutput.value = state.longMode ? longText : compactLine;
         els.aktenOutput.classList.toggle("textarea-large", state.longMode);
         els.aktenOutput.classList.toggle("textarea--compact", !state.longMode);
+
+        if (state.longMode) {
+          els.aktenOutput.style.height = "";
+        } else {
+          els.aktenOutput.style.height = transportRecordLine ? "104px" : "54px";
+        }
       }
 
       updateModeLabels();
