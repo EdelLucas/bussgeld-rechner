@@ -502,23 +502,26 @@
     }
 
     function getInfoLines(item) {
-      const lines = unique([
+      const baseLines = unique([
         ...(item.infoList || []),
         item.note || ""
-      ]);
+      ]).filter((line) => {
+        const text = String(line || "").toLowerCase();
+        return text.includes("führerscheinentzug") || text.includes("waffenscheinentzug");
+      });
 
       if (isBlitzerAttachedToItem(item)) {
-        lines.push(state.blitzer.plate ? `Kennzeichen: ${state.blitzer.plate}` : "");
-        lines.push(state.blitzer.place ? `Ort: ${state.blitzer.place}` : "");
-        lines.push(`Zone: ${state.blitzer.zoneLabel}`);
-        lines.push(`Gemessen: ${state.blitzer.speed} km/h`);
+        if (state.blitzer.plate) baseLines.push(`Kennzeichen: ${state.blitzer.plate}`);
+        if (state.blitzer.place) baseLines.push(`Ort: ${state.blitzer.place}`);
+        baseLines.push(`Zone: ${state.blitzer.zoneLabel}`);
+        baseLines.push(`Gemessen: ${state.blitzer.speed} km/h`);
       }
 
       if (!item.isVirtual && item.id === "stvo-12-1" && state.parkingPlate.trim()) {
-        lines.push(`Kennzeichen: ${state.parkingPlate.trim()}`);
+        baseLines.push(`Kennzeichen: ${state.parkingPlate.trim()}`);
       }
 
-      return unique(lines);
+      return unique(baseLines);
     }
 
     function getCardInfoText(item) {
@@ -673,7 +676,7 @@
         return `${item.para}${parts.length ? ` [${parts.join(" | ")}]` : ""}`;
       }
 
-      if (item.id === "stvo-12-1" && state.parkingPlate.trim()) {
+      if (!item.isVirtual && item.id === "stvo-12-1" && state.parkingPlate.trim()) {
         return `${item.para} [${state.parkingPlate.trim()}]`;
       }
 
