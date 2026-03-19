@@ -76,7 +76,7 @@ window.LAW_DATA = [
   { id: "stvo-26", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §26", name: "Abschleppkosten", fineType: "fixed", fine: 15000, fixedWanted: 0, grayWantedMax: 0, infoList: ["15.000$ / 20.000$ je nach Fall"] },
   { id: "stvo-27", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §27", name: "Fahren ohne KFZ Versicherung", fineType: "fixed", fine: 20000, fixedWanted: 0, grayWantedMax: 0 },
   { id: "stvo-28", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §28", name: "Sharing-Cars mit Anti-Radar wurde nicht aus dem Verkehr gezogen", fineType: "fixed", fine: 30000, fixedWanted: 3, grayWantedMax: 0, infoList: ["Führerscheinentzug"] },
-  { id: "stvo-10-art-8", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §10 Art. 8", name: "Helmpflicht", fineType: "fixed", fine: 10000, fixedWanted: 0, grayWantedMax: 0 },
+  { id: "stvo-10-art-8", group: "Straßenverkehrsordnung (StVO)", section: "STVO", para: "StVO §10 Art. 8", name: "Helmpflicht", fineType: "fixed", fine: 1000, fixedWanted: 0, grayWantedMax: 0 },
 
   // Waffengesetz (WaffG)
   { id: "waffg-1", group: "Waffengesetz (WaffG)", section: "WAFFG", para: "WaffG §1", name: "Besitz legaler Waffen ohne Waffenschein", fineType: "per_active_wanted", finePerWanted: 10000, fixedWanted: 1, grayWantedMax: 1, infoList: ["10.000$ pro ★"] },
