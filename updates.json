@@ -1,23 +1,73 @@
 {
   "enabled": true,
-  "version": "v1.2",
-  "date": "18.03.2026",
-  "bannerTitle": "Neues Update verfügbar",
-  "bannerText": "18.03.2026 · Neue Anpassungen am Strafkatalog",
-  "modalTitle": "Update / Changelog",
-  "modalButton": "Verstanden",
-  "items": [
+  "currentVersion": "2026-03-21",
+  "entries": [
     {
+      "version": "2026-03-21",
+      "date": "21.03.2026",
+      "title": "Historie eingebaut",
+      "bannerTitle": "Neues Update verfügbar",
+      "bannerText": "21.03.2026 · Update-Historie ist jetzt aktiv",
+      "modalTitle": "Update / Changelog",
+      "confirmText": "Verstanden",
+      "showBanner": true,
+      "showPopup": true,
+      "items": [
+        {
+          "title": "Update-Historie",
+          "text": "Im Update-Fenster werden jetzt ältere Updates mit angezeigt."
+        },
+        {
+          "title": "Vorbereitung für Discord",
+          "text": "Die Seite kann später dieselbe Struktur auch über eine API statt über eine lokale JSON-Datei laden."
+        },
+        {
+          "title": "Sauberer Aufbau",
+          "text": "Das neueste Update steht oben, ältere Updates darunter als Verlauf."
+        }
+      ]
+    },
+    {
+      "version": "2026-03-19",
+      "date": "19.03.2026",
+      "title": "Ankündigungen ausgelagert",
+      "bannerTitle": "Neues Update verfügbar",
+      "bannerText": "19.03.2026 · Ankündigungen laufen jetzt über updates.json",
+      "modalTitle": "Update / Changelog",
+      "confirmText": "Verstanden",
+      "showBanner": true,
+      "showPopup": true,
+      "items": [
+        {
+          "title": "updates.json",
+          "text": "Ankündigungen werden nicht mehr hart in HTML oder ui.js gepflegt."
+        },
+        {
+          "title": "Einfachere Pflege",
+          "text": "Für neue Updates musst du nur noch diese Datei ändern."
+        }
+      ]
+    },
+    {
+      "version": "2026-03-18",
+      "date": "18.03.2026",
       "title": "Kurzform verbessert",
-      "text": "Der TV-Abtransport wird jetzt sauber in der kurzen Aktenzeile angezeigt."
-    },
-    {
-      "title": "Infos bereinigt",
-      "text": "Es werden nur noch Führerscheinentzug und Waffenscheinentzug als Zusatzinfos angezeigt."
-    },
-    {
-      "title": "Design verbessert",
-      "text": "Dropdowns und Update-Anzeige wurden optisch überarbeitet."
+      "bannerTitle": "Update verfügbar",
+      "bannerText": "18.03.2026 · Kurzform und Abtransport verbessert",
+      "modalTitle": "Update / Changelog",
+      "confirmText": "Verstanden",
+      "showBanner": true,
+      "showPopup": true,
+      "items": [
+        {
+          "title": "Kurzform",
+          "text": "Die Aktenzeile wurde für den TV-Abtransport angepasst."
+        },
+        {
+          "title": "Infos",
+          "text": "Zusatzinfos wurden auf Führerscheinentzug und Waffenscheinentzug reduziert."
+        }
+      ]
     }
   ]
 }
