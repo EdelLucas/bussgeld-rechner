@@ -308,29 +308,34 @@
     </div>
   </div>
 
-  <div id="updatesModal" class="modal-backdrop hidden">
-    <div class="modal">
-      <div class="modal-header">
-        <div id="updatesModalTitleText" class="modal-title">Update / Changelog</div>
-        <button class="modal-close" type="button" data-close-modal>✕</button>
-      </div>
+<div id="updatesModal" class="modal-backdrop hidden">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div id="updatesModalTitleText" class="modal-title">Update / Changelog</div>
+      <button class="modal-close" type="button" data-close-modal>✕</button>
+    </div>
 
-      <div class="modal-body">
-        <div class="update-changelog">
-          <div class="update-version-row">
-            <div id="updateVersionBadgeText" class="update-version-badge">Version</div>
-            <div id="updateVersionDateText" class="update-version-date">Letzte Aktualisierung</div>
-          </div>
-
-          <div id="updateChangeList" class="update-change-list"></div>
-
-          <button id="updatesConfirmBtn" class="copy-btn copy-btn--primary update-confirm-btn" type="button">
-            Verstanden
-          </button>
+    <div class="modal-body">
+      <div class="update-changelog">
+        <div class="update-version-row">
+          <div id="updateVersionBadgeText" class="update-version-badge">Version</div>
+          <div id="updateVersionDateText" class="update-version-date">Letzte Aktualisierung</div>
         </div>
+
+        <div id="updateChangeList" class="update-change-list"></div>
+
+        <div class="update-history-block">
+          <div class="update-history-title">Frühere Updates</div>
+          <div id="updateHistoryList" class="update-history-list"></div>
+        </div>
+
+        <button id="updatesConfirmBtn" class="copy-btn copy-btn--primary update-confirm-btn" type="button">
+          Verstanden
+        </button>
       </div>
     </div>
   </div>
+</div>
 
   <div id="reportModal" class="modal-backdrop hidden">
     <div class="modal">
