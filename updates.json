@@ -1,7 +1,36 @@
 {
   "enabled": true,
-  "currentVersion": "2026-03-21",
+  "currentVersion": "2026-04-21",
   "entries": [
+    {
+      "version": "2026-04-21",
+      "date": "21.04.2026",
+      "title": "Codebasis überarbeitet",
+      "bannerTitle": "Neues Update verfügbar",
+      "bannerText": "21.04.2026 · Update-System, Settings und Copy-Flow wurden überarbeitet",
+      "modalTitle": "Update / Changelog",
+      "confirmText": "Verstanden",
+      "showBanner": true,
+      "showPopup": true,
+      "items": [
+        {
+          "title": "Update-System repariert",
+          "text": "updates.json arbeitet jetzt sauber mit currentVersion und entries. Historie wird im Modal korrekt angezeigt."
+        },
+        {
+          "title": "Lokale Einstellungen",
+          "text": "Langform, Auto-Zurücksetzen und Sidebar-Fixierung werden jetzt im Browser gespeichert."
+        },
+        {
+          "title": "Robusteres Kopieren",
+          "text": "Clipboard hat jetzt einen Fallback für Browser, in denen navigator.clipboard nicht zuverlässig verfügbar ist."
+        },
+        {
+          "title": "Sauberere UI-Logik",
+          "text": "Auswahlzähler, Banner-Verhalten, Report-Status und Blitzer-/Akten-Ausgabe wurden stabilisiert."
+        }
+      ]
+    },
     {
       "version": "2026-03-21",
       "date": "21.03.2026",

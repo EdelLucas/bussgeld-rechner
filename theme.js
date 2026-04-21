@@ -1,13 +1,13 @@
 (function () {
-  const STORAGE_KEY = "strafkatalog-theme-v3";
+  const STORAGE_KEY = "strafkatalog-theme-v4";
 
   function hexToRgb(hex) {
-    const clean = hex.replace("#", "");
+    const clean = String(hex || "").replace("#", "");
     const full = clean.length === 3
       ? clean.split("").map((char) => char + char).join("")
       : clean;
 
-    const bigint = Number.parseInt(full, 16);
+    const bigint = Number.parseInt(full || "000000", 16);
     return {
       r: (bigint >> 16) & 255,
       g: (bigint >> 8) & 255,
@@ -64,16 +64,46 @@
       return;
     }
 
+    function setMenuState(isOpen) {
+      dropdownMenu.classList.toggle("hidden", !isOpen);
+      dropdownBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    }
+
     function toggleThemeMenu(force) {
       const shouldOpen = typeof force === "boolean"
         ? force
         : dropdownMenu.classList.contains("hidden");
 
-      dropdownMenu.classList.toggle("hidden", !shouldOpen);
+      setMenuState(shouldOpen);
+    }
+
+    function clearCustomInlineVars() {
+      [
+        "--accent",
+        "--accent-2",
+        "--accent-soft",
+        "--accent-border",
+        "--page-start",
+        "--page-end",
+        "--page-glow-1",
+        "--page-glow-2",
+        "--topbar-start",
+        "--topbar-mid",
+        "--topbar-end",
+        "--section-start",
+        "--section-end",
+        "--panel-start",
+        "--panel-end",
+        "--card-start",
+        "--card-end",
+        "--button-bg",
+        "--field-bg",
+        "--pill-bg"
+      ].forEach((name) => body.style.removeProperty(name));
     }
 
     function applyPresetTheme(themeName, persist = true) {
-      body.removeAttribute("style");
+      clearCustomInlineVars();
       body.setAttribute("data-theme", themeName);
       setActivePresetButton(themeName);
 
@@ -89,7 +119,7 @@
       const d1 = mixWithBlack(c1, 0.18);
       const d2 = mixWithBlack(c2, 0.18);
       const d3 = mixWithBlack(c1, 0.12);
-      const d4 = mixWithBlack(c2, 0.12);
+      const d4 = mixWithBlack(c2, 0.10);
       const d5 = mixWithBlack(c1, 0.28);
       const d6 = mixWithBlack(c2, 0.28);
 
@@ -101,7 +131,7 @@
       body.style.setProperty("--accent-border", rgba(c2, 0.30));
 
       body.style.setProperty("--page-start", rgbToString(d3));
-      body.style.setProperty("--page-end", rgbToString(mixWithBlack(c2, 0.10)));
+      body.style.setProperty("--page-end", rgbToString(d4));
       body.style.setProperty("--page-glow-1", rgba(c1, 0.16));
       body.style.setProperty("--page-glow-2", rgba(c2, 0.14));
 
@@ -118,7 +148,10 @@
       body.style.setProperty("--card-start", rgba(mixWithBlack(c1, 0.22), 1));
       body.style.setProperty("--card-end", rgba(mixWithBlack(c2, 0.12), 1));
 
-      body.style.setProperty("--button-bg", `linear-gradient(135deg, ${rgba(mixWithBlack(c1, 0.34), 0.90)}, ${rgba(mixWithBlack(c2, 0.34), 0.90)})`);
+      body.style.setProperty(
+        "--button-bg",
+        `linear-gradient(135deg, ${rgba(mixWithBlack(c1, 0.34), 0.90)}, ${rgba(mixWithBlack(c2, 0.34), 0.90)})`
+      );
       body.style.setProperty("--field-bg", rgba(mixWithBlack(c2, 0.14), 0.96));
       body.style.setProperty("--pill-bg", rgba(c1, 0.12));
 
@@ -169,5 +202,7 @@
     } else {
       applyPresetTheme("blue", false);
     }
+
+    setMenuState(false);
   };
 })();

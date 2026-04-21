@@ -62,6 +62,7 @@
     }
   }
 
+  const UI_STORAGE_KEY = "strafkatalog-ui-settings-v1";
   const UPDATE_STORAGE_KEY = "strafkatalog-last-seen-update-v3";
 
   const LAW_PATCHES = {
@@ -160,19 +161,20 @@
     }
   };
 
-  const EXTRA_LAWS = [
-    {
-      id: "stvo-10-art-8",
-      group: "Straßenverkehrsordnung (StVO)",
-      section: "STVO",
-      para: "StVO §10 Art. 8",
-      name: "Helmpflicht",
-      fineType: "fixed",
-      fine: 1000,
-      fixedWanted: 0,
-      grayWantedMax: 0
+  function saveUiSettings(payload) {
+    try {
+      localStorage.setItem(UI_STORAGE_KEY, JSON.stringify(payload));
+    } catch {}
+  }
+
+  function loadUiSettings() {
+    try {
+      const raw = localStorage.getItem(UI_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
     }
-  ];
+  }
 
   function mergeLawData(baseLawData) {
     const byId = new Map(
@@ -187,12 +189,6 @@
         ...patch,
         infoList: unique([...(current.infoList || []), ...(patch.infoList || [])])
       });
-    });
-
-    EXTRA_LAWS.forEach((item) => {
-      if (!byId.has(item.id)) {
-        byId.set(item.id, { ...item });
-      }
     });
 
     return Array.from(byId.values());
@@ -248,6 +244,7 @@
       search: "",
       longMode: false,
       autoReset: false,
+      pinSidebar: true,
       parkingPlate: "",
       blitzer: {
         isCalculated: false,
@@ -334,6 +331,28 @@
       quickbarUpdateDate: document.querySelector(".quickbar-update-date")
     };
 
+    function applySavedUiSettings() {
+      const saved = loadUiSettings();
+      if (!saved) return;
+
+      state.longMode = !!saved.longMode;
+      state.autoReset = !!saved.autoReset;
+      state.pinSidebar = saved.pinSidebar !== false;
+
+      if (els.modeToggle) els.modeToggle.checked = state.longMode;
+      if (els.autoResetToggle) els.autoResetToggle.checked = state.autoReset;
+      if (els.pinSidebarToggle) els.pinSidebarToggle.checked = state.pinSidebar;
+      if (els.sidebar) els.sidebar.classList.toggle("is-pinned", state.pinSidebar);
+    }
+
+    function persistUiSettings() {
+      saveUiSettings({
+        longMode: state.longMode,
+        autoReset: state.autoReset,
+        pinSidebar: state.pinSidebar
+      });
+    }
+
     function getFilteredLaws() {
       const q = state.search.trim().toLowerCase();
       if (!q) return lawData;
@@ -390,9 +409,7 @@
     function getBlitzerVirtualItem() {
       const baseLaw = getBlitzerBaseLaw();
       if (!baseLaw) return null;
-
-      const isAlreadySelected = state.selected.has(baseLaw.id);
-      if (isAlreadySelected) return null;
+      if (state.selected.has(baseLaw.id)) return null;
 
       return {
         ...baseLaw,
@@ -944,15 +961,22 @@
       } catch {}
     }
 
-    function hideUpdateSystem() {
+    function hideUpdateBanner() {
       if (els.updateBanner) els.updateBanner.classList.add("is-hidden");
+    }
+
+    function hideUpdateSystem() {
+      hideUpdateBanner();
       if (els.quickbarUpdateDate) els.quickbarUpdateDate.textContent = "—";
+      if (els.updateHistoryList) {
+        els.updateHistoryList.innerHTML = `<div class="empty-card">Keine Update-Daten vorhanden.</div>`;
+      }
     }
 
     function markUpdateSeen() {
       if (!updateState.version) return;
       setSeenUpdateVersion(updateState.version);
-      hideUpdateSystem();
+      hideUpdateBanner();
     }
 
     function renderUpdateHistory(history) {
@@ -1080,13 +1104,14 @@
       updateState.normalized = normalized;
       renderUpdateContent(normalized);
 
-      const shouldShowBanner = normalized.currentEntry.showBanner !== false;
-      if (els.updateBanner) {
-        els.updateBanner.classList.toggle("is-hidden", !shouldShowBanner);
+      if (normalized.currentEntry.showBanner) {
+        if (els.updateBanner) els.updateBanner.classList.remove("is-hidden");
+      } else {
+        hideUpdateBanner();
       }
 
       const seenVersion = getSeenUpdateVersion();
-      const shouldOpenPopup = normalized.currentEntry.showPopup !== false && seenVersion !== updateState.version;
+      const shouldOpenPopup = normalized.currentEntry.showPopup && seenVersion !== updateState.version;
 
       if (shouldOpenPopup) {
         openModal("updatesModal");
@@ -1383,30 +1408,49 @@
           ]
         };
 
-        const formData = new FormData();
-        formData.append("payload_json", JSON.stringify(payload));
-
         try {
-          await fetch(WEBHOOK_URL, {
+          const response = await fetch(`${WEBHOOK_URL}?wait=true`, {
             method: "POST",
-            body: formData,
-            mode: "no-cors"
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
           });
+
+          if (!response.ok) throw new Error(`Webhook Fehler: ${response.status}`);
 
           els.reportMessage.value = "";
           els.reportType.value = "Bug";
           els.reportStatus.textContent = "Report gesendet.";
         } catch (error) {
-          els.reportStatus.textContent = "Report konnte nicht gesendet werden.";
-          console.error("Report Fehler:", error);
+          try {
+            const formData = new FormData();
+            formData.append("payload_json", JSON.stringify(payload));
+
+            await fetch(WEBHOOK_URL, {
+              method: "POST",
+              body: formData,
+              mode: "no-cors"
+            });
+
+            els.reportMessage.value = "";
+            els.reportType.value = "Bug";
+            els.reportStatus.textContent = "Report abgeschickt. Browser liefert dafür keine Bestätigung.";
+          } catch {
+            els.reportStatus.textContent = "Report konnte nicht gesendet werden.";
+            console.error("Report Fehler:", error);
+          }
         } finally {
           els.reportSubmitBtn.disabled = false;
 
           setTimeout(() => {
-            if (els.reportStatus.textContent === "Report gesendet.") {
+            if (
+              els.reportStatus.textContent === "Report gesendet." ||
+              els.reportStatus.textContent === "Report abgeschickt. Browser liefert dafür keine Bestätigung."
+            ) {
               els.reportStatus.textContent = "Noch nichts gesendet.";
             }
-          }, 3000);
+          }, 3500);
         }
       });
     }
@@ -1497,6 +1541,7 @@
       if (els.modeToggle) {
         els.modeToggle.addEventListener("change", () => {
           state.longMode = !!els.modeToggle.checked;
+          persistUiSettings();
           updateSummary();
         });
       }
@@ -1504,12 +1549,15 @@
       if (els.autoResetToggle) {
         els.autoResetToggle.addEventListener("change", () => {
           state.autoReset = !!els.autoResetToggle.checked;
+          persistUiSettings();
         });
       }
 
       if (els.pinSidebarToggle && els.sidebar) {
         els.pinSidebarToggle.addEventListener("change", () => {
-          els.sidebar.classList.toggle("is-pinned", !!els.pinSidebarToggle.checked);
+          state.pinSidebar = !!els.pinSidebarToggle.checked;
+          els.sidebar.classList.toggle("is-pinned", state.pinSidebar);
+          persistUiSettings();
         });
       }
 
@@ -1532,8 +1580,7 @@
       });
     }
 
-    state.longMode = !!(els.modeToggle && els.modeToggle.checked);
-    state.autoReset = !!(els.autoResetToggle && els.autoResetToggle.checked);
+    applySavedUiSettings();
     state.parkingPlate = els.parkingPlateInput ? els.parkingPlateInput.value.trim() : "";
 
     setupModals();
