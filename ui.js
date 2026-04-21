@@ -33,7 +33,36 @@
     });
   }
 
-  const UPDATE_STORAGE_KEY = "strafkatalog-last-seen-update-v2";
+  async function writeClipboard(text) {
+    const value = String(text ?? "");
+
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(value);
+      return true;
+    }
+
+    const textarea = document.createElement("textarea");
+    textarea.value = value;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.top = "-1000px";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    try {
+      const ok = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      if (!ok) throw new Error("execCommand copy fehlgeschlagen");
+      return true;
+    } catch (error) {
+      document.body.removeChild(textarea);
+      throw error;
+    }
+  }
+
+  const UPDATE_STORAGE_KEY = "strafkatalog-last-seen-update-v3";
 
   const LAW_PATCHES = {
     "stgb-20": {
@@ -139,153 +168,9 @@
       para: "StVO §10 Art. 8",
       name: "Helmpflicht",
       fineType: "fixed",
-      fine: 10000,
+      fine: 1000,
       fixedWanted: 0,
       grayWantedMax: 0
-    },
-    {
-      id: "stgb-40",
-      group: "Wirtschaftskriminalität (StGB)",
-      section: "STGB",
-      para: "StGB §40",
-      name: "Weitergabe von Staatseigentum",
-      fineType: "fixed",
-      fine: 50000,
-      fixedWanted: 5,
-      grayWantedMax: 0,
-      note: "max. 50.000$"
-    },
-    {
-      id: "bdg-2",
-      group: "Beamtendienstgesetzbuch (BDG)",
-      section: "BDG",
-      para: "BDG §2",
-      name: "Verhaltenskodex",
-      fineType: "fixed",
-      fine: 50000,
-      fixedWanted: 5,
-      grayWantedMax: 0,
-      note: "max. 50.000$"
-    },
-    {
-      id: "bdg-3",
-      group: "Beamtendienstgesetzbuch (BDG)",
-      section: "BDG",
-      para: "BDG §3",
-      name: "Dienstpflichten des Beamten",
-      fineType: "fixed",
-      fine: 50000,
-      fixedWanted: 5,
-      grayWantedMax: 0,
-      note: "max. 50.000$"
-    },
-    {
-      id: "bdg-7",
-      group: "Beamtendienstgesetzbuch (BDG)",
-      section: "BDG",
-      para: "BDG §7",
-      name: "Bestechlichkeit",
-      fineType: "fixed",
-      fine: 50000,
-      fixedWanted: 5,
-      grayWantedMax: 0,
-      note: "max. 50.000$"
-    },
-    {
-      id: "bdg-8",
-      group: "Beamtendienstgesetzbuch (BDG)",
-      section: "BDG",
-      para: "BDG §8",
-      name: "Vorteilsannahme & Vorteilsgewährung",
-      fineType: "fixed",
-      fine: 50000,
-      fixedWanted: 5,
-      grayWantedMax: 0,
-      note: "max. 50.000$"
-    },
-    {
-      id: "bdg-9",
-      group: "Beamtendienstgesetzbuch (BDG)",
-      section: "BDG",
-      para: "BDG §9",
-      name: "Verleitung eines Untergebenen/Kollegen zur Straftat",
-      fineType: "fixed",
-      fine: 50000,
-      fixedWanted: 5,
-      grayWantedMax: 0,
-      note: "max. 50.000$"
-    },
-    {
-      id: "bdg-10",
-      group: "Beamtendienstgesetzbuch (BDG)",
-      section: "BDG",
-      para: "BDG §10",
-      name: "Unterlassen der Diensthandlung",
-      fineType: "fixed",
-      fine: 50000,
-      fixedWanted: 5,
-      grayWantedMax: 0,
-      note: "max. 50.000$"
-    },
-    {
-      id: "bdg-11",
-      group: "Beamtendienstgesetzbuch (BDG)",
-      section: "BDG",
-      para: "BDG §11",
-      name: "Falschbeurkundung im Amt",
-      fineType: "fixed",
-      fine: 50000,
-      fixedWanted: 5,
-      grayWantedMax: 0,
-      note: "max. 50.000$"
-    },
-    {
-      id: "bdg-13",
-      group: "Beamtendienstgesetzbuch (BDG)",
-      section: "BDG",
-      para: "BDG §13",
-      name: "Hochverrat im öffentlichen Dienst",
-      fineType: "fixed",
-      fine: 50000,
-      fixedWanted: 5,
-      grayWantedMax: 0,
-      note: "max. 50.000$"
-    },
-    {
-      id: "bdg-14",
-      group: "Beamtendienstgesetzbuch (BDG)",
-      section: "BDG",
-      para: "BDG §14",
-      name: "Umgehung von Strafprozessen",
-      fineType: "fixed",
-      fine: 50000,
-      fixedWanted: 5,
-      grayWantedMax: 0,
-      note: "max. 50.000$"
-    },
-    {
-      id: "bdg-15",
-      group: "Beamtendienstgesetzbuch (BDG)",
-      section: "BDG",
-      para: "BDG §15",
-      name: "Verschwörung",
-      fineType: "fixed",
-      fine: 50000,
-      fixedWanted: 5,
-      grayWantedMax: 0,
-      note: "max. 50.000$"
-    },
-    {
-      id: "bdg-16",
-      group: "Beamtendienstgesetzbuch (BDG)",
-      section: "BDG",
-      para: "BDG §16",
-      name: "Schmuggel",
-      fineType: "fixed",
-      fine: 50000,
-      fixedWanted: 5,
-      grayWantedMax: 0,
-      note: "max. 50.000$"
     }
   ];
 
@@ -311,6 +196,39 @@
     });
 
     return Array.from(byId.values());
+  }
+
+  function normalizeUpdatesConfig(raw) {
+    if (!raw || raw.enabled !== true) return null;
+
+    const entries = Array.isArray(raw.entries)
+      ? raw.entries
+          .filter((entry) => entry && entry.version)
+          .map((entry) => ({
+            version: String(entry.version),
+            date: entry.date || "-",
+            title: entry.title || "Update",
+            bannerTitle: entry.bannerTitle || "Neues Update verfügbar",
+            bannerText: entry.bannerText || "",
+            modalTitle: entry.modalTitle || "Update / Changelog",
+            confirmText: entry.confirmText || "Verstanden",
+            showBanner: entry.showBanner !== false,
+            showPopup: entry.showPopup !== false,
+            items: Array.isArray(entry.items) ? entry.items : []
+          }))
+      : [];
+
+    if (!entries.length) return null;
+
+    const currentVersion = String(raw.currentVersion || entries[0].version);
+    const currentEntry = entries.find((entry) => entry.version === currentVersion) || entries[0];
+    const history = entries.filter((entry) => entry.version !== currentEntry.version);
+
+    return {
+      currentVersion,
+      currentEntry,
+      history
+    };
   }
 
   window.initUI = function initUI(config) {
@@ -349,7 +267,8 @@
     };
 
     const updateState = {
-      version: ""
+      version: "",
+      normalized: null
     };
 
     const els = {
@@ -410,7 +329,9 @@
       updateVersionBadgeText: $("updateVersionBadgeText"),
       updateVersionDateText: $("updateVersionDateText"),
       updateChangeList: $("updateChangeList"),
-      updatesConfirmBtn: $("updatesConfirmBtn")
+      updateHistoryList: $("updateHistoryList"),
+      updatesConfirmBtn: $("updatesConfirmBtn"),
+      quickbarUpdateDate: document.querySelector(".quickbar-update-date")
     };
 
     function getFilteredLaws() {
@@ -550,6 +471,12 @@
       if (reueItem) items.push(reueItem);
 
       return items;
+    }
+
+    function getSelectedCountValue() {
+      let count = state.selected.size;
+      if (getBlitzerVirtualItem()) count += 1;
+      return count;
     }
 
     function renderWantedIcons(fixedWanted, selectedGray, grayMax) {
@@ -877,7 +804,7 @@
       const compactLine = buildCompactLine(items);
       const longText = buildLongText(items, highestFine, highestWanted);
 
-      if (els.selectedCount) els.selectedCount.textContent = String(items.length);
+      if (els.selectedCount) els.selectedCount.textContent = String(getSelectedCountValue());
       if (els.sumFine) els.sumFine.textContent = formatMoney(highestFine);
       if (els.sumWanted) els.sumWanted.innerHTML = renderSummaryWantedIcons(highestWanted);
 
@@ -949,7 +876,7 @@
 
     async function copyToClipboard(text, okText, failText) {
       try {
-        await navigator.clipboard.writeText(text);
+        await writeClipboard(text);
         if (els.copyStatus) els.copyStatus.textContent = okText;
 
         if (state.autoReset) {
@@ -1019,6 +946,7 @@
 
     function hideUpdateSystem() {
       if (els.updateBanner) els.updateBanner.classList.add("is-hidden");
+      if (els.quickbarUpdateDate) els.quickbarUpdateDate.textContent = "—";
     }
 
     function markUpdateSeen() {
@@ -1027,33 +955,70 @@
       hideUpdateSystem();
     }
 
-    function renderUpdateContent(data) {
+    function renderUpdateHistory(history) {
+      if (!els.updateHistoryList) return;
+
+      if (!history.length) {
+        els.updateHistoryList.innerHTML = `<div class="empty-card">Keine älteren Updates vorhanden.</div>`;
+        return;
+      }
+
+      els.updateHistoryList.innerHTML = history.map((entry) => {
+        const itemsHtml = (entry.items || []).length
+          ? entry.items.map((item) => `
+              <div class="update-history-entry-item">
+                <strong>${escapeHtml(item.title || "")}</strong><br>
+                ${escapeHtml(item.text || "")}
+              </div>
+            `).join("")
+          : `<div class="update-history-entry-item">Keine Details hinterlegt.</div>`;
+
+        return `
+          <div class="update-history-entry">
+            <div class="update-history-entry-head">
+              <div class="update-history-entry-version">Version ${escapeHtml(entry.version)}</div>
+              <div class="update-history-entry-date">${escapeHtml(entry.date || "-")}</div>
+            </div>
+            <div class="update-history-entry-title">${escapeHtml(entry.title || "Update")}</div>
+            <div class="update-history-entry-items">${itemsHtml}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderUpdateContent(normalized) {
+      const current = normalized.currentEntry;
+
+      if (els.quickbarUpdateDate) {
+        els.quickbarUpdateDate.textContent = current.date || current.version || "-";
+      }
+
       if (els.updateBannerTitleText) {
-        els.updateBannerTitleText.textContent = data.bannerTitle || "Neues Update verfügbar";
+        els.updateBannerTitleText.textContent = current.bannerTitle || "Neues Update verfügbar";
       }
 
       if (els.updateBannerTextText) {
-        els.updateBannerTextText.textContent = data.bannerText || "";
+        els.updateBannerTextText.textContent = current.bannerText || "";
       }
 
       if (els.updatesModalTitleText) {
-        els.updatesModalTitleText.textContent = data.modalTitle || "Update / Changelog";
+        els.updatesModalTitleText.textContent = current.modalTitle || "Update / Changelog";
       }
 
       if (els.updateVersionBadgeText) {
-        els.updateVersionBadgeText.textContent = `Version ${data.version || "-"}`;
+        els.updateVersionBadgeText.textContent = `Version ${current.version || "-"}`;
       }
 
       if (els.updateVersionDateText) {
-        els.updateVersionDateText.textContent = `Letzte Aktualisierung: ${data.date || "-"}`;
+        els.updateVersionDateText.textContent = `Letzte Aktualisierung: ${current.date || "-"}`;
       }
 
       if (els.updatesConfirmBtn) {
-        els.updatesConfirmBtn.textContent = data.confirmText || "Verstanden";
+        els.updatesConfirmBtn.textContent = current.confirmText || "Verstanden";
       }
 
       if (els.updateChangeList) {
-        const items = Array.isArray(data.items) ? data.items : [];
+        const items = Array.isArray(current.items) ? current.items : [];
         els.updateChangeList.innerHTML = items.length
           ? items.map((item) => `
               <div class="update-change-item">
@@ -1068,6 +1033,8 @@
               </div>
             `;
       }
+
+      renderUpdateHistory(normalized.history || []);
     }
 
     async function loadUpdatesConfig() {
@@ -1075,7 +1042,7 @@
         const response = await fetch("./updates.json", { cache: "no-store" });
         if (!response.ok) throw new Error(`updates.json Fehler: ${response.status}`);
         const data = await response.json();
-        return data;
+        return normalizeUpdatesConfig(data);
       } catch (error) {
         console.error("Updates konnten nicht geladen werden:", error);
         return null;
@@ -1102,22 +1069,26 @@
         });
       }
 
-      const data = await loadUpdatesConfig();
+      const normalized = await loadUpdatesConfig();
 
-      if (!data || data.enabled !== true || !data.version) {
+      if (!normalized) {
         hideUpdateSystem();
         return;
       }
 
-      updateState.version = String(data.version);
-      renderUpdateContent(data);
+      updateState.version = normalized.currentVersion;
+      updateState.normalized = normalized;
+      renderUpdateContent(normalized);
 
+      const shouldShowBanner = normalized.currentEntry.showBanner !== false;
       if (els.updateBanner) {
-        els.updateBanner.classList.remove("is-hidden");
+        els.updateBanner.classList.toggle("is-hidden", !shouldShowBanner);
       }
 
       const seenVersion = getSeenUpdateVersion();
-      if (seenVersion !== updateState.version) {
+      const shouldOpenPopup = normalized.currentEntry.showPopup !== false && seenVersion !== updateState.version;
+
+      if (shouldOpenPopup) {
         openModal("updatesModal");
       }
     }
@@ -1311,7 +1282,7 @@
 
     async function copyFibco() {
       try {
-        await navigator.clipboard.writeText(els.fibcoPreview ? els.fibcoPreview.value : "");
+        await writeClipboard(els.fibcoPreview ? els.fibcoPreview.value : "");
       } catch {}
     }
 
@@ -1373,39 +1344,17 @@
 
       if (!els.reportSubmitBtn || !els.reportType || !els.reportMessage || !els.reportStatus) return;
 
-      async function sendJson(payload) {
-        const response = await fetch(`${WEBHOOK_URL}?wait=true`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-          throw new Error(`Webhook Fehler: ${response.status}`);
-        }
-
-        return response;
-      }
-
-      async function sendFallback(payload) {
-        const formData = new FormData();
-        formData.append("payload_json", JSON.stringify(payload));
-
-        await fetch(WEBHOOK_URL, {
-          method: "POST",
-          body: formData,
-          mode: "no-cors"
-        });
-      }
-
       els.reportSubmitBtn.addEventListener("click", async () => {
         const type = (els.reportType.value || "Bug").trim();
         const message = (els.reportMessage.value || "").trim();
 
         if (!message) {
           els.reportStatus.textContent = "Bitte erst eine Beschreibung eintragen.";
+          return;
+        }
+
+        if (message.length > 4000) {
+          els.reportStatus.textContent = "Beschreibung ist zu lang. Maximal 4000 Zeichen.";
           return;
         }
 
@@ -1417,7 +1366,7 @@
           embeds: [
             {
               title: `${type} gemeldet`,
-              description: message.slice(0, 4000),
+              description: message,
               fields: [
                 {
                   name: "Zeit",
@@ -1434,21 +1383,22 @@
           ]
         };
 
+        const formData = new FormData();
+        formData.append("payload_json", JSON.stringify(payload));
+
         try {
-          await sendJson(payload);
+          await fetch(WEBHOOK_URL, {
+            method: "POST",
+            body: formData,
+            mode: "no-cors"
+          });
+
           els.reportMessage.value = "";
           els.reportType.value = "Bug";
           els.reportStatus.textContent = "Report gesendet.";
         } catch (error) {
-          try {
-            await sendFallback(payload);
-            els.reportMessage.value = "";
-            els.reportType.value = "Bug";
-            els.reportStatus.textContent = "Report gesendet.";
-          } catch {
-            els.reportStatus.textContent = "Report konnte nicht gesendet werden.";
-            console.error("Report Fehler:", error);
-          }
+          els.reportStatus.textContent = "Report konnte nicht gesendet werden.";
+          console.error("Report Fehler:", error);
         } finally {
           els.reportSubmitBtn.disabled = false;
 
